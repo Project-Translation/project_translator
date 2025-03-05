@@ -11,11 +11,11 @@ suite('Extension Test Suite', () => {
 	const targetDir = path.join(tempDir, 'target');
 
 	test('Extension should be present', () => {
-		assert.ok(vscode.extensions.getExtension('jqknono.project-translator'));
+		assert.ok(vscode.extensions.getExtension('Project-Translation.project-translator'));
 	});
 
 	test('Should activate extension', async () => {
-		const ext = vscode.extensions.getExtension('jqknono.project-translator');
+		const ext = vscode.extensions.getExtension('Project-Translation.project-translator');
 		await ext?.activate();
 		assert.ok(ext?.isActive);
 	});

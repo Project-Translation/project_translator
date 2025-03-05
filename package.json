@@ -2,7 +2,7 @@
   "name": "project-translator",
   "displayName": "Project Translator",
   "description": "Translate their projects to other languages",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "publisher": "techfetch-dev",
   "icon": "resources/project-translator.png",
   "engines": {
@@ -316,7 +316,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jqknono/project_translator"
+    "url": "https://github.com/Project-Translation/project_translator"
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

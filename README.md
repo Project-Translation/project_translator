@@ -35,7 +35,7 @@ sequenceDiagram
 
 3. After the PR is merged, the translation will be added to the Samples section.
 
-Current translations in progress: [View Issues](https://github.com/jqknono/project_translator/issues)
+Current translations in progress: [View Issues](https://github.com/Project-Translation/project_translator/issues)
 
 ## Features
 
