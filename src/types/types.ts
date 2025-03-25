@@ -27,6 +27,12 @@ export interface DestFolder {
     lang: SupportedLanguage;
 }
 
+// Destination file interface (same structure as DestFolder)
+export interface DestFile {
+    path: string;
+    lang: SupportedLanguage;
+}
+
 // Language name mapping
 export const languageNameMap: Record<SupportedLanguage, string> = {
     "zh-cn": "Simplified Chinese",

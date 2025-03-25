@@ -1,8 +1,8 @@
 {
   "name": "project-translator",
   "displayName": "Project Translator",
-  "description": "Translate their projects to other languages",
-  "version": "0.3.3",
+  "description": "%description%",
+  "version": "0.4.0",
   "publisher": "techfetch-dev",
   "icon": "resources/project-translator.png",
   "engines": {
@@ -10,11 +10,16 @@
   },
   "activationEvents": [],
   "main": "./dist/extension.js",
+  "l10n": "./l10n",
   "contributes": {
     "commands": [
       {
         "command": "extension.translateProject",
         "title": "Translate Project"
+      },
+      {
+        "command": "extension.translateFile",
+        "title": "Translate File"
       },
       {
         "command": "extension.pauseTranslation",
@@ -32,11 +37,88 @@
     "configuration": {
       "title": "Project Translator",
       "properties": {
+        "projectTranslator.currentVendor": {
+          "type": "string",
+          "default": "openai",
+          "description": "%config.currentVendor.description%",
+          "order": 1
+        },
+        "projectTranslator.vendors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "%config.vendors.description%"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "description": "%config.vendors.description%"
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "%config.vendors.description%"
+              },
+              "model": {
+                "type": "string",
+                "description": "%config.vendors.description%"
+              },
+              "rpm": {
+                "type": "number",
+                "description": "%config.vendors.description%"
+              },
+              "maxTokensPerSegment": {
+                "type": "number",
+                "description": "%config.vendors.description%",
+                "default": 4096
+              },
+              "timeout": {
+                "type": "number",
+                "description": "%config.vendors.description%",
+                "default": 30
+              },
+              "temperature": {
+                "type": "number",
+                "description": "%config.vendors.description%",
+                "minimum": 0,
+                "maximum": 2,
+                "default": 0
+              }
+            },
+            "required": [
+              "name",
+              "apiEndpoint",
+              "apiKey",
+              "model"
+            ]
+          },
+          "description": "%config.vendors.description%",
+          "order": 2
+        },
+        "projectTranslator.sourceLanguage": {
+          "type": "string",
+          "default": "en-us",
+          "description": "%config.language.description%",
+          "enum": [
+            "en-us",
+            "zh-cn",
+            "zh-tw",
+            "ja-jp"
+          ],
+          "enumDescriptions": [
+            "English",
+            "Simplified Chinese",
+            "Traditional Chinese",
+            "Japanese"
+          ],
+          "order": 3
+        },
         "projectTranslator.sourceFolder": {
           "type": "string",
           "default": "",
-          "description": "${config.sourceFolder.description}",
-          "order": 1
+          "description": "%config.sourceFolder.description%",
+          "order": 4
         },
         "projectTranslator.destFolders": {
           "type": "array",
@@ -45,69 +127,53 @@
             "properties": {
               "path": {
                 "type": "string",
-                "description": "${config.destFolders.description}"
+                "description": "%config.destFolders.description%"
               },
               "lang": {
                 "type": "string",
-                "enum": [
-                  "zh-cn",
-                  "zh-tw",
-                  "en-us",
-                  "ja-jp",
-                  "ko-kr",
-                  "fr-fr",
-                  "de-de",
-                  "es-es",
-                  "pt-br",
-                  "ru-ru",
-                  "it-it",
-                  "nl-nl",
-                  "pl-pl",
-                  "tr-tr",
-                  "ar-sa",
-                  "hi-in",
-                  "vi-vn",
-                  "th-th",
-                  "id-id"
-                ],
-                "enumDescriptions": [
-                  "Simplified Chinese",
-                  "Traditional Chinese",
-                  "English (US)",
-                  "Japanese",
-                  "Korean",
-                  "French",
-                  "German",
-                  "Spanish",
-                  "Portuguese (Brazil)",
-                  "Russian",
-                  "Italian",
-                  "Dutch",
-                  "Polish",
-                  "Turkish",
-                  "Arabic",
-                  "Hindi",
-                  "Vietnamese",
-                  "Thai",
-                  "Indonesian"
-                ],
                 "default": "zh-cn",
-                "description": "Target language code"
+                "description": "%config.targetLanguage.description%"
               }
             },
             "required": [
-              "path"
+              "path",
+              "lang"
             ]
           },
           "default": [],
-          "description": "${config.destFolders.description}",
-          "order": 2
+          "description": "%config.destFolders.description%",
+          "order": 5
+        },
+        "projectTranslator.sourceFile": {
+          "type": "string",
+          "default": "",
+          "description": "%config.sourceFile.description%",
+          "order": 6
+        },
+        "projectTranslator.destFiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "%config.destFiles.description%"
+              },
+              "lang": {
+                "type": "string",
+                "default": "en-us",
+                "description": "%config.targetLanguage.description%"
+              }
+            }
+          },
+          "description": "%config.destFiles.description%",
+          "order": 7
         },
         "projectTranslator.translationIntervalDays": {
           "type": "number",
           "default": 7,
-          "description": "${config.translationIntervalDays.description}",
-          "order": 3
+          "description": "%config.translationIntervalDays.description%",
+          "order": 8
         },
         "projectTranslator.ignoreTranslationExtensions": {
           "type": "array",
@@ -117,8 +183,8 @@
           "default": [
             ".svg"
           ],
-          "description": "${config.ignoreTranslationExtensions.description}",
-          "order": 4
+          "description": "%config.ignoreTranslationExtensions.description%",
+          "order": 9
         },
         "projectTranslator.ignorePaths": {
           "type": "array",
@@ -133,67 +199,8 @@
             "**/.nuxt/**",
             "**/.next/**"
           ],
-          "description": "${config.ignorePaths.description}",
-          "order": 5
-        },
-        "projectTranslator.currentVendor": {
-          "type": "string",
-          "default": "openai",
-          "description": "${config.currentVendor.description}",
-          "order": 6
-        },
-        "projectTranslator.vendors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "${config.vendors.description}"
-              },
-              "apiEndpoint": {
-                "type": "string",
-                "description": "${config.vendors.description}"
-              },
-              "apiKey": {
-                "type": "string",
-                "description": "${config.vendors.description}"
-              },
-              "model": {
-                "type": "string",
-                "description": "${config.vendors.description}"
-              },
-              "rpm": {
-                "type": "number",
-                "description": "${config.vendors.description}"
-              },
-              "maxTokensPerSegment": {
-                "type": "number",
-                "description": "${config.vendors.description}",
-                "default": 4096
-              },
-              "timeout": {
-                "type": "number",
-                "description": "${config.vendors.description}",
-                "default": 30
-              },
-              "temperature": {
-                "type": "number",
-                "description": "${config.vendors.description}",
-                "minimum": 0,
-                "maximum": 2,
-                "default": 0
-              }
-            },
-            "required": [
-              "name",
-              "apiEndpoint",
-              "apiKey",
-              "model"
-            ]
-          },
-          "description": "${config.vendors.description}",
-          "order": 7
+          "description": "%config.ignorePaths.description%",
+          "order": 10
         },
         "projectTranslator.systemPrompts": {
           "type": "array",
@@ -201,10 +208,10 @@
             "type": "string"
           },
           "default": [
-            "Please translate according to the following rules:\n1. Translate strictly according to the specified target language\n2. Maintain professional technical accuracy\n3. For code blocks:\n   - Only translate the comment part\n   - Keep the code syntax, variable names, and function names unchanged\n   - Keep the data structure of JSON, XML, etc. unchanged\n4. For ordinary text:\n   - Maintain the professionalism of technical terms\n   - Conform to the expression habits of the target language\n5. Maintain the format and structure of the original text\n6. Only return the translation result, do not include the original text or other descriptive content\n7. When translating code files, be careful not to add meaningless \\`\\`\\` at the beginning and end\n8. When translating structured files, do not modify the structure by yourself, such as xml, html, json, etc.\n9. If there is no content to be translated, return the original text"
+            "Please translate from {sourceLanguage} to the target language according to the following rules:\n1. Translate strictly according to the specified target language\n2. Maintain professional technical accuracy\n3. For code blocks:\n   - Only translate the comment part\n   - Keep the code syntax, variable names, and function names unchanged\n   - Keep the data structure of JSON, XML, etc. unchanged\n4. For ordinary text:\n   - Maintain the professionalism of technical terms\n   - Conform to the expression habits of the target language\n5. Maintain the format and structure of the original text\n6. Only return the translation result, do not include the original text or other descriptive content\n7. When translating code files, be careful not to add meaningless \\`\\`\\` at the beginning and end\n8. When translating structured files, do not modify the structure by yourself, such as xml, html, json, etc.\n9. If there is no content to be translated, return the original text"
           ],
-          "description": "${config.systemPrompts.description}",
-          "order": 8
+          "description": "%config.systemPrompts.description%",
+          "order": 11
         },
         "projectTranslator.userPrompts": {
           "type": "array",
@@ -212,8 +219,8 @@
             "type": "string"
           },
           "default": [],
-          "description": "${config.userPrompts.description}",
-          "order": 9
+          "description": "%config.userPrompts.description%",
+          "order": 12
         },
         "projectTranslator.segmentationMarkers": {
           "type": "object",
@@ -285,31 +292,14 @@
               "^\\s*$"
             ]
           },
-          "description": "${config.segmentationMarkers.description}",
-          "order": 10
-        },
-        "projectTranslator.language": {
-          "type": "string",
-          "default": "en",
-          "description": "${config.language.description}",
-          "enum": [
-            "en",
-            "zh-cn",
-            "zh-tw",
-            "ja-jp"
-          ],
-          "enumDescriptions": [
-            "English",
-            "Simplified Chinese",
-            "Traditional Chinese",
-            "Japanese"
-          ]
+          "description": "%config.segmentationMarkers.description%",
+          "order": 13
         },
         "projectTranslator.enableMetrics": {
           "type": "boolean",
           "default": true,
-          "description": "Enable or disable sending anonymous usage metrics to help improve the extension",
-          "order": 11
+          "description": "%config.enableMetrics.description%",
+          "order": 14
         }
       }
     }

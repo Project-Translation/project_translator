@@ -124,28 +124,29 @@ export class FileProcessor {
 
     public async processFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage) {
         try {
-            this.outputChannel.appendLine("\n[File Processing] ----------------------------------------");
-            this.outputChannel.appendLine(`📄 Source file: ${path.basename(sourcePath)}`);
-            this.outputChannel.appendLine(`🎯 Target: ${path.basename(targetPath)}`);
-
-            // Check if file should be ignored
-            if (await this.shouldSkipFile(sourcePath, targetPath)) {
-                this.skippedFilesCount++;
-                return;
+            this.outputChannel.appendLine(`\nTranslating file: ${path.basename(sourcePath)} to ${targetLang}`);
+            
+            // Validate paths
+            if (!fs.existsSync(sourcePath)) {
+                throw new Error(`Source file not found: ${sourcePath}`);
             }
 
             // Ensure target directory exists
             const targetDir = path.dirname(targetPath);
             if (!fs.existsSync(targetDir)) {
-                this.outputChannel.appendLine(`📁 Creating target directory: ${targetDir}`);
                 fs.mkdirSync(targetDir, { recursive: true });
             }
 
-            // Process file based on type
-            const ext = path.extname(sourcePath).toLowerCase();
-            const ignoreTranslationExtensions = getConfiguration().ignoreTranslationExtensions;
+            // Skip if file should be ignored
+            if (await this.shouldSkipFile(sourcePath, targetPath)) {
+                return;
+            }
 
-            if (ignoreTranslationExtensions.includes(ext)) {
+            // Handle different file types
+            const ext = path.extname(sourcePath).toLowerCase();
+            const ignoreExtensions = getConfiguration().ignoreTranslationExtensions;
+
+            if (ignoreExtensions.includes(ext)) {
                 await this.handleIgnoredFile(sourcePath, targetPath);
                 return;
             }
@@ -156,10 +157,8 @@ export class FileProcessor {
             }
 
             await this.handleTextFile(sourcePath, targetPath, targetLang);
-
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            this.outputChannel.appendLine(`❌ Failed to process file: ${errorMessage}`);
+            this.outputChannel.appendLine(`❌ File translation failed: ${error instanceof Error ? error.message : String(error)}`);
             this.failedFilesCount++;
             this.failedFilePaths.push(sourcePath);
             throw error;
@@ -278,7 +277,7 @@ export class FileProcessor {
         for (let i = 0; i < segments.length; i++) {
             if (this.isStopped) {
                 this.outputChannel.appendLine("⛔ Translation stopped");
-                throw new Error("Translation stopped");
+                throw new Error(vscode.l10n.t("translation.stopped"));
             }
 
             const segment = segments[i];

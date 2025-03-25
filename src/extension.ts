@@ -5,7 +5,7 @@ import { FileProcessor } from "./services/fileProcessor";
 import { TranslatorService } from "./services/translatorService";
 import { AnalyticsService } from "./services/analytics";
 import { getConfiguration } from "./config/config";
-import { DestFolder, SupportedLanguage } from "./types/types";
+import { DestFolder, DestFile, SupportedLanguage } from "./types/types";
 import * as fs from "fs";
 
 // Global state
@@ -20,15 +20,7 @@ let translations: any = {};
 
 export async function activate(context: vscode.ExtensionContext) {
     outputChannel = vscode.window.createOutputChannel("Project Translator");
-    outputChannel.appendLine("Project Translator extension is now active!");
-
-    // Load translations
-    const config = vscode.workspace.getConfiguration("projectTranslator");
-    const language = config.get<string>("language", "en");
-    const translationsPath = path.join(context.extensionPath, "i18n", `${language}.json`);
-    if (fs.existsSync(translationsPath)) {
-        translations = JSON.parse(fs.readFileSync(translationsPath, "utf-8"));
-    }
+    outputChannel.appendLine(vscode.l10n.t("projectTranslator.extensionActive"));
 
     // Initialize machine ID
     machineId = await AnalyticsService.getMachineId();
@@ -44,8 +36,8 @@ function registerCommands(): vscode.Disposable[] {
         "extension.pauseTranslation",
         () => {
             isPaused = true;
-            outputChannel.appendLine(translations["command.pauseTranslation"] || "Translation paused");
-            vscode.window.showInformationMessage(translations["command.pauseTranslation"] || "Translation paused");
+            outputChannel.appendLine(vscode.l10n.t("translation.paused"));
+            vscode.window.showInformationMessage(vscode.l10n.t("translation.paused"));
             updatePauseResumeButton();
         }
     );
@@ -55,8 +47,8 @@ function registerCommands(): vscode.Disposable[] {
         "extension.resumeTranslation",
         () => {
             isPaused = false;
-            outputChannel.appendLine(translations["command.resumeTranslation"] || "Translation resumed");
-            vscode.window.showInformationMessage(translations["command.resumeTranslation"] || "Translation resumed");
+            outputChannel.appendLine(translations["translation.resumed"] || "Translation resumed");
+            vscode.window.showInformationMessage(translations["translation.resumed"] || "Translation resumed");
             updatePauseResumeButton();
         }
     );
@@ -66,8 +58,8 @@ function registerCommands(): vscode.Disposable[] {
         "extension.stopTranslation",
         () => {
             isStopped = true;
-            outputChannel.appendLine(translations["command.stopTranslation"] || "Translation stopped");
-            vscode.window.showInformationMessage(translations["command.stopTranslation"] || "Translation stopped");
+            outputChannel.appendLine(translations["translation.stopped"] || "Translation stopped");
+            vscode.window.showInformationMessage(translations["translation.stopped"] || "Translation stopped");
         }
     );
 
@@ -77,7 +69,12 @@ function registerCommands(): vscode.Disposable[] {
         handleTranslateProject
     );
 
-    return [translateCommand, pauseCommand, resumeCommand, stopCommand];
+    const translateFileCommand = vscode.commands.registerCommand(
+        "extension.translateFile",
+        handleTranslateFile
+    );
+
+    return [translateCommand, pauseCommand, resumeCommand, stopCommand, translateFileCommand];
 }
 
 async function handleTranslateProject() {
@@ -156,6 +153,107 @@ async function handleTranslateProject() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Translation failed: ${errorMessage}`);
+    } finally {
+        cleanup();
+    }
+}
+
+async function handleTranslateFile() {
+    try {
+        // Show and focus output panel
+        outputChannel.clear();
+        outputChannel.show(true);
+        outputChannel.appendLine("==========================================");
+        outputChannel.appendLine("Starting file translation task");
+        outputChannel.appendLine("==========================================\n");
+
+        const workspace = vscode.workspace.workspaceFolders?.[0];
+        if (!workspace) {
+            throw new Error("Please open a workspace first");
+        }
+
+        // Initialize services
+        const translatorService = new TranslatorService(outputChannel);
+        translatorService.initializeOpenAIClient();
+
+        // Get the configuration
+        const config = getConfiguration();
+        
+        // Get source file path
+        const sourceFilePath = config.sourceFile;
+        if (!sourceFilePath) {
+            throw new Error("Source file not configured");
+        }
+        
+        // Get destination files with proper typing
+        const configWorkspace = vscode.workspace.getConfiguration("projectTranslator");
+        const destFiles = configWorkspace.get<DestFile[]>("destFiles") || [];
+        if (destFiles.length === 0) {
+            throw new Error("No destination files configured");
+        }
+
+        // Initialize database
+        const translationDatabase = new TranslationDatabase(workspace.uri.fsPath);
+        translationDb = translationDatabase;
+        
+        // Set source directory for the database
+        const sourceDir = path.dirname(sourceFilePath);
+        translationDatabase.setSourceRoot(sourceDir);
+        
+        // Set target directories
+        destFiles.forEach((dest: DestFile) => {
+            const targetDir = path.dirname(dest.path);
+            translationDatabase.setTargetRoot(targetDir);
+        });
+
+        // Initialize file processor
+        const fileProcessor = new FileProcessor(outputChannel, translationDatabase, translatorService);
+        
+        // Reset state
+        isPaused = false;
+        isStopped = false;
+        translatorService.resetTokenCounts();
+        
+        // Create status bar buttons
+        createStatusBarButtons();
+        
+        // Record start time
+        const startTime = Date.now();
+
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Translating file...",
+            cancellable: true
+        }, async (progress, token) => {
+            token.onCancellationRequested(() => {
+                isStopped = true;
+                fileProcessor.setTranslationState(isPaused, isStopped);
+            });
+            
+            fileProcessor.setTranslationState(isPaused, isStopped);
+            
+            for (const dest of destFiles) {
+                if (isStopped) break;
+                await fileProcessor.processFile(sourceFilePath, dest.path, dest.lang as SupportedLanguage);
+            }
+        });
+        
+        // Output summary
+        outputSummary(startTime, fileProcessor, translatorService);
+        
+        // Send analytics
+        const analyticsService = new AnalyticsService(outputChannel, machineId);
+        await sendAnalytics(analyticsService, fileProcessor, translatorService);
+
+        if (isStopped) {
+            vscode.window.showInformationMessage("File translation stopped!");
+        } else {
+            vscode.window.showInformationMessage("File translation completed!");
+        }
+        
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        vscode.window.showErrorMessage(`File translation failed: ${errorMessage}`);
     } finally {
         cleanup();
     }

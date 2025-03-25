@@ -39,22 +39,26 @@ Current translations in progress: [View Issues](https://github.com/Project-Trans
 
 ## Features
 
-- 🌍 Support for Multiple Target Languages
-
+- 📁 Folder-level Translation Support
+  - Translate entire project folders to multiple languages
+  - Maintain original folder structure and hierarchy
+  - Support for recursive translation of subfolders
+  - Automatic detection of translatable content
+  - Batch processing for efficient large-scale translations
+- 📄 File-level Translation Support
+  - Translate individual files to multiple languages
+  - Preserve original file structure and formatting
+  - Support for both folder and file translation modes
 - 💡 Smart Translation with AI
-
   - Automatically maintains code structure integrity
   - Only translates code comments, preserves code logic
   - Maintains JSON/XML and other data structure formats
   - Professional technical documentation translation quality
-
 - ⚙️ Flexible Configuration
-
   - Configure source folder and multiple target folders
   - Support for custom file translation intervals
   - Set specific file types to ignore
   - Support for multiple AI model options
-
 - 🚀 User-Friendly Operations
   - Real-time translation progress display
   - Support for pause/resume/stop translation
@@ -76,6 +80,16 @@ The extension supports the following configuration options:
   "projectTranslator.destFolders": [
     {
       "path": "Target folder path",
+      "lang": "Target language code"
+    }
+  ],
+  "projectTranslator.sourceFile": {
+    "path": "Source file path",
+    "lang": "Source language code"
+  },
+  "projectTranslator.destFiles": [
+    {
+      "path": "Target file path",
       "lang": "Target language code"
     }
   ],
@@ -101,6 +115,8 @@ Key configuration details:
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `projectTranslator.sourceFolder`                | Source folder path                                                                                                    |
 | `projectTranslator.destFolders`                 | Translation target folder configuration, can specify multiple target folders and their corresponding target languages |
+| `projectTranslator.sourceFile`                  | Source file configuration (path and language code)                                                                    |
+| `projectTranslator.destFiles`                   | Target files configuration for file translation mode                                                                  |
 | `projectTranslator.translationIntervalDays`     | Translation interval in days (default 7 days)                                                                         |
 | `projectTranslator.ignoreTranslationExtensions` | List of text file extensions that don't need translation, these files will be copied directly                         |
 | `projectTranslator.ignorePaths`                 | List of ignored path patterns using wildcards, these files won't be copied                                            |

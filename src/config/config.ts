@@ -14,12 +14,19 @@ export function loadTranslations(context: vscode.ExtensionContext) {
     }
 }
 
+export interface Config {
+    sourceLanguage: string;
+    sourceFile?: string;  // Optional since it's file-specific
+}
+
 export function getConfiguration() {
     const config = vscode.workspace.getConfiguration("projectTranslator");
     const ignoreTranslationExtensions = config.get<string[]>("ignoreTranslationExtensions") || [];
     const sourceFolder = config.get<string>("sourceFolder");
     const currentVendorName = config.get<string>("currentVendor") || "openai";
     const vendors = config.get<VendorConfig[]>("vendors") || [];
+    const sourceFile = config.get<string>("sourceFile");
+    const destFiles = config.get<string>("destFiles");
 
     // Find current vendor configuration
     const currentVendor = vendors.find(
@@ -34,6 +41,8 @@ export function getConfiguration() {
         ignoreTranslationExtensions,
         sourceFolder,
         currentVendorName,
+        sourceFile,
+        destFiles,
     };
 }
 
@@ -41,9 +50,12 @@ export function getTranslationPrompts() {
     const projectConfig = vscode.workspace.getConfiguration("projectTranslator");
     const systemPrompts = projectConfig.get<string[]>("systemPrompts") || [];
     const userPrompts = projectConfig.get<string[]>("userPrompts") || [];
+    const sourceLanguage = projectConfig.get<string>("sourceLanguage") || "en-us";
     
     return {
-        systemPrompts,
+        systemPrompts: systemPrompts.map(prompt => 
+            prompt.replace(/\{sourceLanguage\}/g, sourceLanguage)
+        ),
         userPrompts
     };
 }

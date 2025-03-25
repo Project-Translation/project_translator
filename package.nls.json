@@ -1,0 +1,13 @@
+{
+    "config.language.description": "Target language for translation",
+    "config.currentVendor.description": "Current translation service provider",
+    "config.vendors.description": "Translation service providers configuration",
+    "config.sourceFolder.description": "Source folder path to be translated",
+    "config.destFolders.description": "Destination folders configuration for project translation",
+    "config.translationIntervalDays.description": "Interval in days between automatic translations",
+    "config.ignoreTranslationExtensions.description": "File extensions to ignore during translation",
+    "config.ignorePaths.description": "Paths to ignore during translation",
+    "config.systemPrompts.description": "System prompts for translation",
+    "config.userPrompts.description": "User prompts for translation",
+    "config.segmentationMarkers.description": "Markers used to split content into segments for translation"
+}

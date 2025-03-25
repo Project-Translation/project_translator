@@ -1,0 +1,13 @@
+{
+    "config.language.description": "翻译的目标语言",
+    "config.currentVendor.description": "当前翻译服务提供商",
+    "config.vendors.description": "翻译服务提供商配置",
+    "config.sourceFolder.description": "待翻译的源文件夹路径",
+    "config.destFolders.description": "项目翻译的目标文件夹配置",
+    "config.translationIntervalDays.description": "自动翻译的时间间隔(天)",
+    "config.ignoreTranslationExtensions.description": "翻译时忽略的文件扩展名",
+    "config.ignorePaths.description": "翻译时忽略的路径",
+    "config.systemPrompts.description": "翻译的系统提示",
+    "config.userPrompts.description": "翻译的用户提示",
+    "config.segmentationMarkers.description": "用于将内容分割成翻译片段的标记"
+}
