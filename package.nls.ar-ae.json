@@ -1,5 +1,5 @@
 {
-    "description": "مترجم المشروع",
+    "description.description": "مترجم المشروع",
     "command.translateProject": "ترجمة المشروع",
     "command.pauseTranslation": "إيقاف الترجمة مؤقتًا",
     "command.resumeTranslation": "استئناف الترجمة",
@@ -19,8 +19,4 @@
     "config.destFiles.description": "إعدادات الملفات الوجهة لترجمة الملف",
     "config.targetLanguage.description": "رمز اللغة الوجهة",
     "config.enableMetrics.description": "تفعيل أو تعطيل إرسال مقاييس الاستخدام المجهولة لتحسين الإضافة",
-    "projectTranslator.extensionActive": "إضافة مترجم المشروع نشطة الآن!",
-    "translation.paused": "تم إيقاف الترجمة مؤقتًا",
-    "translation.resumed": "تم استئناف الترجمة",
-    "translation.stopped": "تم إيقاف الترجمة"
 }

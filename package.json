@@ -1,7 +1,7 @@
 {
   "name": "project-translator",
   "displayName": "Project Translator",
-  "description": "%description%",
+  "description": "Project Translator",
   "version": "0.4.0",
   "publisher": "techfetch-dev",
   "icon": "resources/project-translator.png",

@@ -1,5 +1,5 @@
 {
-    "description": "Tradutor de Projeto",
+    "description.description": "Tradutor de Projeto",
     "command.translateProject": "Traduzir Projeto",
     "command.pauseTranslation": "Pausar Tradução",
     "command.resumeTranslation": "Retomar Tradução",
@@ -19,8 +19,4 @@
     "config.destFiles.description": "Configuração dos arquivos de destino para tradução de arquivos",
     "config.targetLanguage.description": "Código do idioma de destino",
     "config.enableMetrics.description": "Habilitar ou desabilitar o envio de métricas de uso anônimas para ajudar a melhorar a extensão",
-    "projectTranslator.extensionActive": "A extensão Tradutor de Projeto está agora ativa!",
-    "translation.paused": "Tradução pausada",
-    "translation.resumed": "Tradução retomada",
-    "translation.stopped": "Tradução parada"
 }

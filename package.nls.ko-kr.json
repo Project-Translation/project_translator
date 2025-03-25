@@ -1,5 +1,5 @@
 {
-    "description": "프로젝트 번역기",
+    "description.description": "프로젝트 번역기",
     "command.translateProject": "프로젝트 번역",
     "command.pauseTranslation": "번역 일시 중지",
     "command.resumeTranslation": "번역 재개",
@@ -19,8 +19,4 @@
     "config.destFiles.description": "파일 번역을 위한 대상 파일 설정",
     "config.targetLanguage.description": "대상 언어 코드",
     "config.enableMetrics.description": "확장 프로그램 개선을 돕기 위해 익명 사용 메트릭스를 보내는 기능을 활성화 또는 비활성화합니다",
-    "projectTranslator.extensionActive": "프로젝트 번역기 확장 프로그램이 활성화되었습니다!",
-    "translation.paused": "번역이 일시 중지되었습니다",
-    "translation.resumed": "번역이 재개되었습니다",
-    "translation.stopped": "번역이 중지되었습니다"
 }

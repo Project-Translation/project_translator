@@ -1,5 +1,5 @@
 {
-    "description": "Projektübersetzer",
+    "description.description": "Projektübersetzer",
     "command.translateProject": "Projekt übersetzen",
     "command.pauseTranslation": "Übersetzung pausieren",
     "command.resumeTranslation": "Übersetzung fortsetzen",
@@ -19,8 +19,4 @@
     "config.destFiles.description": "Konfiguration der Zieldateien für die Dateiübersetzung",
     "config.targetLanguage.description": "Zielsprachencode",
     "config.enableMetrics.description": "Aktivieren oder Deaktivieren des Sendens anonymer Nutzungsmetriken, um die Erweiterung zu verbessern",
-    "projectTranslator.extensionActive": "Die Projektübersetzer-Erweiterung ist jetzt aktiv!",
-    "translation.paused": "Übersetzung pausiert",
-    "translation.resumed": "Übersetzung fortgesetzt",
-    "translation.stopped": "Übersetzung gestoppt"
 }

@@ -1,5 +1,5 @@
 {
-    "description": "Проект Переводчик",
+    "description.description": "Проект Переводчик",
     "command.translateProject": "Перевести проект",
     "command.pauseTranslation": "Приостановить перевод",
     "command.resumeTranslation": "Возобновить перевод",
@@ -19,8 +19,4 @@
     "config.destFiles.description": "Конфигурация целевых файлов для перевода файлов",
     "config.targetLanguage.description": "Код целевого языка",
     "config.enableMetrics.description": "Включить или отключить отправку анонимных метрик использования для улучшения расширения",
-    "projectTranslator.extensionActive": "Расширение Проект Переводчик теперь активно!",
-    "translation.paused": "Перевод приостановлен",
-    "translation.resumed": "Перевод возобновлен",
-    "translation.stopped": "Перевод остановлен"
 }

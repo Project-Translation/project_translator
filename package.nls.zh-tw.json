@@ -1,5 +1,5 @@
 {
-    "description": "專案翻譯器",
+    "description.description": "專案翻譯器",
     "command.translateProject": "翻譯專案",
     "command.pauseTranslation": "暫停翻譯",
     "command.resumeTranslation": "繼續翻譯",
@@ -19,8 +19,4 @@
     "config.destFiles.description": "檔案翻譯的目標檔案配置",
     "config.targetLanguage.description": "目標語言代碼",
     "config.enableMetrics.description": "啟用或禁用傳送匿名使用度量數據以幫助改進擴充功能",
-    "projectTranslator.extensionActive": "專案翻譯器擴充功能現已啟動！",
-    "translation.paused": "翻譯已暫停",
-    "translation.resumed": "翻譯已繼續",
-    "translation.stopped": "翻譯已停止"
 }
