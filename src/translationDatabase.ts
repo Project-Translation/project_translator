@@ -4,14 +4,19 @@ import * as sqlite3 from 'sqlite3';
 import * as vscode from 'vscode';
 import { promisify } from 'util';
 
+// Example language codes, but system now accepts any string with length < 10
 export const SUPPORTED_LANGUAGES = [
     'zh-cn', 'zh-tw', 'en-us', 'ja-jp', 'ko-kr',
-    'fr-fr', 'de-de', 'es-es', 'pt-br', 'ru-ru',
-    'it-it', 'nl-nl', 'pl-pl', 'tr-tr', 'ar-sa',
-    'hi-in', 'vi-vn', 'th-th', 'id-id'
-] as const;
+    'fr-fr', 'de-de', 'es-es', 'pt-br', 'ru-ru'
+];
 
-export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
+// Any string with length under 10 characters is now a valid language code
+export type SupportedLanguage = string;
+
+// Validate if a string is a valid language code (under 10 characters)
+export function isValidLanguage(lang: string): boolean {
+    return typeof lang === 'string' && lang.length > 0 && lang.length < 10;
+}
 
 export class TranslationDatabase {
     private db: sqlite3.Database;
@@ -33,29 +38,42 @@ export class TranslationDatabase {
         // Only create tables for languages specified in the configuration
         const configuredLanguages = new Set<SupportedLanguage>();
         destFolders.forEach(folder => {
-            if (folder.lang) {
+            if (folder.lang && isValidLanguage(folder.lang)) {
                 configuredLanguages.add(folder.lang);
+            } else if (folder.lang) {
+                console.warn(`Warning: Invalid language code "${folder.lang}" for target folder "${folder.path}". Language codes must be non-empty strings with less than 10 characters.`);
             }
         });
 
-        // Create tables only for configured languages
+        // Create tables for configured languages
         if (configuredLanguages.size > 0) {
             configuredLanguages.forEach(lang => {
-                const tableName = `translations_${lang.replace('-', '_')}`;
-                this.db.run(`
-                    CREATE TABLE IF NOT EXISTS ${tableName} (
-                        source_path TEXT PRIMARY KEY,
-                        last_translation_time INTEGER
-                    )
-                `);
-                console.log(`Created/verified table for language: ${lang}`);
+                this.createTableForLanguage(lang);
             });
         } else {
-            console.warn('Warning: No target languages found in configuration');
+            console.warn('Warning: No valid target languages found in configuration');
         }
 
         // Initialize target roots from configuration
         this.initTargetRootsFromConfig(destFolders);
+    }
+
+    // Helper method to create a translation table for a specific language
+    private createTableForLanguage(lang: SupportedLanguage): void {
+        if (!isValidLanguage(lang)) {
+            console.warn(`Warning: Cannot create table for invalid language code "${lang}"`);
+            return;
+        }
+        
+        // Sanitize the language code to create a valid table name
+        const tableName = `translations_${lang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+        this.db.run(`
+            CREATE TABLE IF NOT EXISTS ${tableName} (
+                source_path TEXT PRIMARY KEY,
+                last_translation_time INTEGER
+            )
+        `);
+        console.log(`Created/verified table for language: ${lang}`);
     }
 
     private initTargetRootsFromConfig(destFolders: Array<{ path: string; lang: SupportedLanguage }>) {
@@ -80,25 +98,14 @@ export class TranslationDatabase {
         return this.sourceRoot;
     }
 
-    public setTargetRoot(targetPath: string) {
-        // This method is kept for backward compatibility
-        // Languages should now be set through configuration
-        const normalizedPath = path.normalize(targetPath).replace(/\\/g, '/');
-
-        // Check if we have this path in our configured paths
-        const config = vscode.workspace.getConfiguration('projectTranslator');
-        const destFolders = config.get<Array<{ path: string; lang: SupportedLanguage }>>('destFolders') || [];
-
-        const matchingFolder = destFolders.find(folder => {
-            const folderPath = path.normalize(folder.path).replace(/\\/g, '/');
-            return normalizedPath === folderPath || normalizedPath.startsWith(folderPath + '/');
-        });
-
-        if (matchingFolder && matchingFolder.lang) {
-            this.targetRoots.set(normalizedPath, matchingFolder.lang);
-        } else {
-            throw new Error(`Target path "${targetPath}" has no language set in configuration, please configure it in projectTranslator.destFolders`);
+    public setTargetRoot(targetPath: string, targetLang: SupportedLanguage) {
+        // Validate the language code
+        if (!isValidLanguage(targetLang)) {
+            throw new Error(`Invalid language code: ${targetLang}. Language codes must be non-empty strings with less than 10 characters.`);
         }
+        
+        const normalizedPath = path.normalize(targetPath).replace(/\\/g, '/');
+        this.targetRoots.set(normalizedPath, targetLang);
     }
 
     public clearTargetRoots() {
@@ -151,13 +158,17 @@ export class TranslationDatabase {
 
         for (const [rootPath, lang] of this.targetRoots.entries()) {
             if (normalizedPath.startsWith(rootPath) && rootPath.length > longestMatch) {
-                matchedLang = lang;
-                longestMatch = rootPath.length;
+                if (isValidLanguage(lang)) {
+                    matchedLang = lang;
+                    longestMatch = rootPath.length;
+                } else {
+                    console.warn(`Warning: Invalid language code "${lang}" for path "${rootPath}" is ignored.`);
+                }
             }
         }
 
         if (!matchedLang) {
-            throw new Error(`Target path "${targetPath}" has no language set in configuration, please configure it in projectTranslator.destFolders`);
+            throw new Error(`Target path "${targetPath}" has no valid language set in configuration, please configure it in projectTranslator.destFolders`);
         }
 
         return matchedLang;
@@ -166,7 +177,12 @@ export class TranslationDatabase {
     public async updateTranslationTime(sourcePath: string, targetPath: string): Promise<void> {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
         const targetLang = this.getTargetLanguageForPath(targetPath);
-        const tableName = `translations_${targetLang.replace('-', '_')}`;
+        
+        // Ensure table exists for this language
+        this.createTableForLanguage(targetLang);
+        
+        // Sanitize language code for table name
+        const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
 
         console.log('Debug - Updating translation time:', {
             sourcePath: relativeSourcePath,
@@ -192,7 +208,12 @@ export class TranslationDatabase {
     public async setOldestTranslationTime(sourcePath: string, targetPath: string): Promise<void> {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
         const targetLang = this.getTargetLanguageForPath(targetPath);
-        const tableName = `translations_${targetLang.replace('-', '_')}`;
+        
+        // Ensure table exists for this language
+        this.createTableForLanguage(targetLang);
+        
+        // Sanitize language code for table name
+        const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
         // Use Unix epoch start time (1970-01-01) as the oldest time
         const oldestTimestamp = 0;
 
@@ -225,7 +246,12 @@ export class TranslationDatabase {
 
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
         const targetLang = this.getTargetLanguageForPath(targetPath);
-        const tableName = `translations_${targetLang.replace('-', '_')}`;
+        
+        // Ensure table exists for this language
+        this.createTableForLanguage(targetLang);
+        
+        // Sanitize language code for table name
+        const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
         const intervalDays = vscode.workspace.getConfiguration('projectTranslator').get<number>('translationIntervalDays') || 7;
 
         console.log('Debug - Checking translation status:', {

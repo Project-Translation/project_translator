@@ -101,7 +101,7 @@ async function handleTranslateProject() {
         const targetPaths = await getTargetPaths();
 
         translationDatabase.setSourceRoot(sourceFolderPath);
-        targetPaths.forEach(target => translationDatabase.setTargetRoot(target.path));
+        targetPaths.forEach(target => translationDatabase.setTargetRoot(target.path, target.lang));
 
         // Set the global translationDb variable
         translationDb = translationDatabase;
@@ -203,7 +203,7 @@ async function handleTranslateFile() {
         // Set target directories
         destFiles.forEach((dest: DestFile) => {
             const targetDir = path.dirname(dest.path);
-            translationDatabase.setTargetRoot(targetDir);
+            translationDatabase.setTargetRoot(targetDir, dest.lang as SupportedLanguage);
         });
 
         // Initialize file processor

@@ -9,7 +9,7 @@
     "vscode": "^1.75.0"
   },
   "activationEvents": [],
-  "main": "./dist/extension.js",
+  "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {
     "commands": [
@@ -103,13 +103,11 @@
           "enum": [
             "en-us",
             "zh-cn",
-            "zh-tw",
             "ja-jp"
           ],
           "enumDescriptions": [
             "English",
             "Simplified Chinese",
-            "Traditional Chinese",
             "Japanese"
           ],
           "order": 3
