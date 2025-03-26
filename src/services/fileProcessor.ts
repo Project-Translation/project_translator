@@ -18,7 +18,7 @@ export class FileProcessor {
     private failedFilesCount: number = 0;
     private failedFilePaths: string[] = [];
     private isPaused: boolean = false;
-    private isStopped: boolean = false;
+    private cancellationToken?: vscode.CancellationToken;
 
     constructor(
         outputChannel: vscode.OutputChannel,
@@ -30,9 +30,9 @@ export class FileProcessor {
         this.translatorService = translatorService;
     }
 
-    public setTranslationState(isPaused: boolean, isStopped: boolean) {
+    public setTranslationState(isPaused: boolean, token: vscode.CancellationToken) {
         this.isPaused = isPaused;
-        this.isStopped = isStopped;
+        this.cancellationToken = token;
     }
 
     public getProcessingStats() {
@@ -49,6 +49,8 @@ export class FileProcessor {
         this.outputChannel.appendLine(`📂 Starting to process directory: ${sourcePath}`);
 
         try {
+            this.checkCancellation();
+
             const ignorePaths = vscode.workspace.getConfiguration("projectTranslator").get<string[]>("ignorePaths") || [];
             const sourceRoot = this.translationDb.getSourceRoot() || sourcePath;
             const relativePath = path.relative(sourceRoot, sourcePath).replace(/\\/g, "/");
@@ -65,10 +67,7 @@ export class FileProcessor {
             this.outputChannel.appendLine(`📊 Found ${files.length} files/directories`);
 
             for (const file of files) {
-                if (this.isStopped) {
-                    this.outputChannel.appendLine("⛔ Processing stopped");
-                    return;
-                }
+                this.checkCancellation();
 
                 const fullPath = path.join(sourcePath, file);
                 const stat = fs.statSync(fullPath);
@@ -88,6 +87,13 @@ export class FileProcessor {
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             this.outputChannel.appendLine(`❌ Error processing directory: ${errorMessage}`);
             throw error;
+        }
+    }
+
+    private checkCancellation() {
+        if (this.cancellationToken?.isCancellationRequested) {
+            this.outputChannel.appendLine("⛔ Translation cancelled");
+            throw new vscode.CancellationError();
         }
     }
 
@@ -219,17 +225,10 @@ export class FileProcessor {
         this.outputChannel.appendLine("🕒 Translation timestamp reset");
 
         // Handle pause state
-        while (this.isPaused && !this.isStopped) {
+        while (this.isPaused) {
+            this.checkCancellation();
             await new Promise(resolve => setTimeout(resolve, 500));
-            if (this.isStopped) {
-                this.outputChannel.appendLine("⛔ Cancel request detected, stopping pause wait");
-                return;
-            }
             this.outputChannel.appendLine("⏸️ Translation paused...");
-        }
-
-        if (this.isStopped) {
-            return;
         }
 
         // Start translation
@@ -246,7 +245,9 @@ export class FileProcessor {
             if (estimatedTokens > maxTokensPerSegment) {
                 translatedContent = await this.handleLargeFile(content, sourcePath, targetPath, targetLang);
             } else {
-                translatedContent = await this.translatorService.translateContent(content, targetLang, sourcePath, this.isStopped);
+                this.checkCancellation();
+                translatedContent = await this.translatorService.translateContent(content, targetLang, sourcePath, this.cancellationToken);
+                this.checkCancellation();
                 fs.writeFileSync(targetPath, translatedContent);
                 this.outputChannel.appendLine("💾 Translation result written");
             }
@@ -254,12 +255,15 @@ export class FileProcessor {
             const endTime = Date.now();
             this.outputChannel.appendLine(`⌛ Translation time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`);
 
-            if (!this.isPaused && !this.isStopped) {
+            if (!this.isPaused) {
                 await this.translationDb.updateTranslationTime(sourcePath, targetPath);
                 this.outputChannel.appendLine("✅ File processing completed, translation timestamp updated\n");
                 this.processedFilesCount++;
             }
         } catch (error) {
+            if (error instanceof vscode.CancellationError) {
+                throw error;
+            }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             this.outputChannel.appendLine(`❌ Translation failed: ${errorMessage}`);
             throw error;
@@ -275,10 +279,7 @@ export class FileProcessor {
         this.outputChannel.appendLine(`📑 File too large, split into ${segments.length} segments`);
 
         for (let i = 0; i < segments.length; i++) {
-            if (this.isStopped) {
-                this.outputChannel.appendLine("⛔ Translation stopped");
-                throw new Error(vscode.l10n.t("translation.stopped"));
-            }
+            this.checkCancellation();
 
             const segment = segments[i];
             const segmentTokens = estimateTokenCount(segment);
@@ -291,8 +292,9 @@ export class FileProcessor {
                     segment,
                     targetLang,
                     sourcePath,
-                    this.isStopped
+                    this.cancellationToken
                 );
+                this.checkCancellation();
                 translatedSegments.push(translatedSegment);
 
                 // Write progress to file
@@ -300,6 +302,9 @@ export class FileProcessor {
                 fs.writeFileSync(targetPath, currentContent);
                 this.outputChannel.appendLine(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
             } catch (error) {
+                if (error instanceof vscode.CancellationError) {
+                    throw error;
+                }
                 const errorMessage = error instanceof Error ? error.message : "Unknown error";
                 this.outputChannel.appendLine(`❌ Failed to translate segment ${i + 1}: ${errorMessage}`);
                 throw error;

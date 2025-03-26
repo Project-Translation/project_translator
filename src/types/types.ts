@@ -15,6 +15,15 @@ export interface VendorConfig {
     temperature?: number;
 }
 
+// Specified folder group for folder-level translation
+export interface SpecifiedFolder {
+    sourceFolder: {
+        path: string;
+        lang: SupportedLanguage;
+    };
+    destFolders: DestFolder[];
+}
+
 // Chat message interface
 export interface ChatMessage {
     role: "system" | "user" | "assistant";
@@ -27,10 +36,22 @@ export interface DestFolder {
     lang: SupportedLanguage;
 }
 
+// Source file interface
+export interface SourceFile {
+    path: string;
+    lang: SupportedLanguage;
+}
+
 // Destination file interface (same structure as DestFolder)
 export interface DestFile {
     path: string;
     lang: SupportedLanguage;
+}
+
+// Specified file group for multi-file translation
+export interface SpecifiedFile {
+    sourceFile: SourceFile;
+    destFiles: DestFile[];
 }
 
 // Language name mapping

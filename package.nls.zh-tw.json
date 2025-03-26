@@ -1,6 +1,6 @@
 {
     "description.description": "專案翻譯器",
-    "command.translateProject": "翻譯專案",
+    "command.translateFolders": "翻譯專案",
     "command.pauseTranslation": "暫停翻譯",
     "command.resumeTranslation": "繼續翻譯",
     "command.stopTranslation": "停止翻譯",

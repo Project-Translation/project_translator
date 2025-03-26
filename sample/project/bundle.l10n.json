@@ -1,6 +1,6 @@
 {
-    "projectTranslator.extensionActive": "Project Translator extension is now active!",
-    "translation.paused": "Translation paused",
-    "translation.resumed": "Translation resumed",
-    "translation.stopped": "Translation stopped"
+    "extension.activated": "Project Translator extension is now active!",
+    "status.translation.paused": "Translation paused",
+    "status.translation.resumed": "Translation resumed",
+    "status.translation.stopped": "Translation stopped"
 }

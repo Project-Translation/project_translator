@@ -1,5 +1,6 @@
 {
     "description.description": "Project Translator",
+    "command.translateFolders": "Translate Folders",
     "command.translateProject": "Translate Project",
     "command.pauseTranslation": "Pause Translation",
     "command.resumeTranslation": "Resume Translation",
@@ -18,5 +19,5 @@
     "config.sourceFile.description": "Absolute path to source file",
     "config.destFiles.description": "Target files configuration for file translation",
     "config.targetLanguage.description": "Target language code",
-    "config.enableMetrics.description": "Enable or disable sending anonymous usage metrics to help improve the extension",
+    "config.enableMetrics.description": "Enable or disable sending anonymous usage metrics to help improve the extension"
 }

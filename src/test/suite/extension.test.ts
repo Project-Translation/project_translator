@@ -31,7 +31,7 @@ suite('Extension Test Suite', () => {
 		await vscode.workspace.getConfiguration().update('projectTranslator.apiKey', 'invalid-key', vscode.ConfigurationTarget.Global);
 		
 		try {
-			await vscode.commands.executeCommand('extension.translateProject');
+			await vscode.commands.executeCommand('extension.translateFolders');
 			assert.fail('Should throw an error with invalid API key');
 		} catch (error) {
             if (error instanceof Error) {

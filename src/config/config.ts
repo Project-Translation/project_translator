@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { VendorConfig } from '../types/types';
+import { VendorConfig, SpecifiedFile, SpecifiedFolder } from '../types/types';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -15,18 +15,17 @@ export function loadTranslations(context: vscode.ExtensionContext) {
 }
 
 export interface Config {
-    sourceLanguage: string;
-    sourceFile?: string;  // Optional since it's file-specific
+    specifiedFiles?: SpecifiedFile[]; // Configuration for specified files
+    specifiedFolders?: SpecifiedFolder[]; // Configuration for specified folders
 }
 
 export function getConfiguration() {
     const config = vscode.workspace.getConfiguration("projectTranslator");
     const ignoreTranslationExtensions = config.get<string[]>("ignoreTranslationExtensions") || [];
-    const sourceFolder = config.get<string>("sourceFolder");
     const currentVendorName = config.get<string>("currentVendor") || "openai";
     const vendors = config.get<VendorConfig[]>("vendors") || [];
-    const sourceFile = config.get<string>("sourceFile");
-    const destFiles = config.get<string>("destFiles");
+    const specifiedFiles = config.get<SpecifiedFile[]>("specifiedFiles");
+    const specifiedFolders = config.get<SpecifiedFolder[]>("specifiedFolders");
 
     // Find current vendor configuration
     const currentVendor = vendors.find(
@@ -39,10 +38,9 @@ export function getConfiguration() {
     return {
         ...currentVendor,
         ignoreTranslationExtensions,
-        sourceFolder,
         currentVendorName,
-        sourceFile,
-        destFiles,
+        specifiedFiles,
+        specifiedFolders,
     };
 }
 

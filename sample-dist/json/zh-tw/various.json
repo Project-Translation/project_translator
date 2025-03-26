@@ -1,0 +1,68 @@
+{
+    "stringField": "這是一個範例 JSON 結構的描述。",
+    "numberField": 2023,
+    "booleanField": true,
+    "nullField": null,
+    "arrayField": [
+        "apple",
+        "banana",
+        "cherry",
+        {
+            "nestedObjectInArray": {
+                "key1": "fruit",
+                "key2": 3,
+                "key3": true
+            }
+        }
+    ],
+    "objectField": {
+        "nestedString": "這是一個嵌套字串的範例。",
+        "nestedNumber": 42,
+        "nestedBoolean": false,
+        "nestedArray": [10, 20, 30, 40, 50],
+        "deeplyNestedObject": {
+            "deepKey1": "deepValueExample",
+            "deepKey2": {
+                "subDeepKey": "subDeepExample"
+            }
+        }
+    },
+    "longStringField": "快如閃電的棕色狐狸跳過懶惰的狗。這句話包含了英文字母表中的每個字母，常用作打字練習。",
+    "largeArrayField": [
+        100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000,
+        2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000
+    ],
+    "complexObjectArray": [
+        {
+            "id": 1,
+            "name": "John Doe",
+            "attributes": {
+                "height": 180,
+                "weight": 75,
+                "active": true
+            }
+        },
+        {
+            "id": 2,
+            "name": "Jane Smith",
+            "attributes": {
+                "height": 165,
+                "weight": 60,
+                "active": false
+            }
+        }
+    ],
+    "timestampField": "2023-10-01T10:00:00Z",
+    "urlField": "https://www.example.com",
+    "nestedComplexObject": {
+        "level1": {
+            "level2": {
+                "level3": {
+                    "level4": {
+                        "key": "finalNestedValue"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,6 +1,6 @@
 {
   "description.description": "プロジェクト翻訳",
-  "command.translateProject": "プロジェクトを翻訳",
+  "command.translateFolders": "プロジェクトを翻訳",
   "command.pauseTranslation": "翻訳を一時停止",
   "command.resumeTranslation": "翻訳を再開",
   "command.stopTranslation": "翻訳を停止",

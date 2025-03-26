@@ -1,6 +1,6 @@
 {
     "description.description": "Проект Переводчик",
-    "command.translateProject": "Перевести проект",
+    "command.translateFolders": "Перевести проект",
     "command.pauseTranslation": "Приостановить перевод",
     "command.resumeTranslation": "Возобновить перевод",
     "command.stopTranslation": "Остановить перевод",

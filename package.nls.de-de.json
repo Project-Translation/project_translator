@@ -1,6 +1,6 @@
 {
     "description.description": "Projektübersetzer",
-    "command.translateProject": "Projekt übersetzen",
+    "command.translateFolders": "Projekt übersetzen",
     "command.pauseTranslation": "Übersetzung pausieren",
     "command.resumeTranslation": "Übersetzung fortsetzen",
     "command.stopTranslation": "Übersetzung stoppen",

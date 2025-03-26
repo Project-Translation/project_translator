@@ -18,8 +18,12 @@
         "title": "Translate Project"
       },
       {
-        "command": "extension.translateFile",
-        "title": "Translate File"
+        "command": "extension.translateFolders",
+        "title": "Translate Folders"
+      },
+      {
+        "command": "extension.translateFiles",
+        "title": "Translate Files"
       },
       {
         "command": "extension.pauseTranslation",
@@ -96,82 +100,109 @@
           "description": "%config.vendors.description%",
           "order": 2
         },
-        "projectTranslator.sourceLanguage": {
-          "type": "string",
-          "default": "en-us",
-          "description": "%config.language.description%",
-          "enum": [
-            "en-us",
-            "zh-cn",
-            "ja-jp"
-          ],
-          "enumDescriptions": [
-            "English",
-            "Simplified Chinese",
-            "Japanese"
-          ],
-          "order": 3
-        },
-        "projectTranslator.sourceFolder": {
-          "type": "string",
-          "default": "",
-          "description": "%config.sourceFolder.description%",
-          "order": 4
-        },
-        "projectTranslator.destFolders": {
+        "projectTranslator.specifiedFiles": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "path": {
-                "type": "string",
-                "description": "%config.destFolders.description%"
+              "sourceFile": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "%config.sourceFile.description%"
+                  },
+                  "lang": {
+                    "type": "string",
+                    "default": "en-us",
+                    "description": "%config.language.description%"
+                  }
+                },
+                "required": [
+                  "path",
+                  "lang"
+                ]
               },
-              "lang": {
-                "type": "string",
-                "default": "zh-cn",
-                "description": "%config.targetLanguage.description%"
+              "destFiles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "%config.destFiles.description%"
+                    },
+                    "lang": {
+                      "type": "string",
+                      "default": "zh-cn",
+                      "description": "%config.targetLanguage.description%"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "lang"
+                  ]
+                }
               }
             },
             "required": [
-              "path",
-              "lang"
+              "sourceFile",
+              "destFiles"
             ]
           },
           "default": [],
-          "description": "%config.destFolders.description%",
-          "order": 5
-        },
-        "projectTranslator.sourceFile": {
-          "type": "string",
-          "default": "",
-          "description": "%config.sourceFile.description%",
+          "description": "Multiple source files with their corresponding destination files for translation",
           "order": 6
         },
-        "projectTranslator.destFiles": {
+        "projectTranslator.specifiedFolders": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "path": {
-                "type": "string",
-                "description": "%config.destFiles.description%"
+              "sourceFolder": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "%config.sourceFolder.description%"
+                  },
+                  "lang": {
+                    "type": "string",
+                    "default": "en-us",
+                    "description": "%config.language.description%"
+                  }
+                },
+                "required": ["path", "lang"]
               },
-              "lang": {
-                "type": "string",
-                "default": "en-us",
-                "description": "%config.targetLanguage.description%"
+              "destFolders": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "%config.destFolders.description%"
+                    },
+                    "lang": {
+                      "type": "string",
+                      "description": "%config.targetLanguage.description%"
+                    }
+                  },
+                  "required": ["path", "lang"]
+                }
               }
-            }
+            },
+            "required": ["sourceFolder", "destFolders"]
           },
-          "description": "%config.destFiles.description%",
-          "order": 7
+          "default": [],
+          "description": "Multiple source folders with their corresponding destination folders for translation",
+          "order": 6
         },
         "projectTranslator.translationIntervalDays": {
           "type": "number",
           "default": 7,
           "description": "%config.translationIntervalDays.description%",
-          "order": 8
+          "order": 7
         },
         "projectTranslator.ignoreTranslationExtensions": {
           "type": "array",
@@ -182,7 +213,7 @@
             ".svg"
           ],
           "description": "%config.ignoreTranslationExtensions.description%",
-          "order": 9
+          "order": 8
         },
         "projectTranslator.ignorePaths": {
           "type": "array",
@@ -198,7 +229,7 @@
             "**/.next/**"
           ],
           "description": "%config.ignorePaths.description%",
-          "order": 10
+          "order": 9
         },
         "projectTranslator.systemPrompts": {
           "type": "array",
@@ -209,7 +240,7 @@
             "Please translate from {sourceLanguage} to the target language according to the following rules:\n1. Translate strictly according to the specified target language\n2. Maintain professional technical accuracy\n3. For code blocks:\n   - Only translate the comment part\n   - Keep the code syntax, variable names, and function names unchanged\n   - Keep the data structure of JSON, XML, etc. unchanged\n4. For ordinary text:\n   - Maintain the professionalism of technical terms\n   - Conform to the expression habits of the target language\n5. Maintain the format and structure of the original text\n6. Only return the translation result, do not include the original text or other descriptive content\n7. When translating code files, be careful not to add meaningless \\`\\`\\` at the beginning and end\n8. When translating structured files, do not modify the structure by yourself, such as xml, html, json, etc.\n9. If there is no content to be translated, return the original text"
           ],
           "description": "%config.systemPrompts.description%",
-          "order": 11
+          "order": 10
         },
         "projectTranslator.userPrompts": {
           "type": "array",
@@ -218,7 +249,7 @@
           },
           "default": [],
           "description": "%config.userPrompts.description%",
-          "order": 12
+          "order": 11
         },
         "projectTranslator.segmentationMarkers": {
           "type": "object",
@@ -291,13 +322,13 @@
             ]
           },
           "description": "%config.segmentationMarkers.description%",
-          "order": 13
+          "order": 12
         },
         "projectTranslator.enableMetrics": {
           "type": "boolean",
           "default": true,
           "description": "%config.enableMetrics.description%",
-          "order": 14
+          "order": 13
         }
       }
     }

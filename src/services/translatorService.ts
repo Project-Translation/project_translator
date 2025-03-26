@@ -45,7 +45,7 @@ export class TranslatorService {
         content: string,
         targetLang: SupportedLanguage,
         sourcePath: string,
-        isStopped: boolean
+        cancellationToken?: vscode.CancellationToken
     ): Promise<string> {
         if (!this.openaiClient) {
             const error = "OpenAI client not initialized";
@@ -63,7 +63,7 @@ export class TranslatorService {
 
         // Wait for RPM limit if needed
         if (rpm && rpm > 0) {
-            await this.handleRpmLimit(currentVendorName, rpm, isStopped);
+            await this.handleRpmLimit(currentVendorName, rpm, cancellationToken);
         }
 
         try {
@@ -116,7 +116,7 @@ export class TranslatorService {
         }
     }
 
-    private async handleRpmLimit(currentVendorName: string, rpm: number, isStopped: boolean): Promise<void> {
+    private async handleRpmLimit(currentVendorName: string, rpm: number, cancellationToken?: vscode.CancellationToken): Promise<void> {
         const lastRequestTime = vendorLastRequest.get(currentVendorName) || 0;
         const now = Date.now();
         const minInterval = (60 * 1000) / rpm;
@@ -129,16 +129,15 @@ export class TranslatorService {
 
             const waitInterval = 500;
             let waitedTime = 0;
-            while (waitedTime < timeToWait && !isStopped) {
+            while (waitedTime < timeToWait) {
+                if (cancellationToken?.isCancellationRequested) {
+                    this.outputChannel.appendLine("⛔ Cancel request detected, stopping API rate limit wait");
+                    throw new vscode.CancellationError();
+                }
                 await new Promise((resolve) =>
                     setTimeout(resolve, Math.min(waitInterval, timeToWait - waitedTime))
                 );
                 waitedTime += waitInterval;
-
-                if (isStopped) {
-                    this.outputChannel.appendLine("⛔ Cancel request detected, stopping API rate limit wait");
-                    throw new Error("Translation canceled");
-                }
             }
         }
     }

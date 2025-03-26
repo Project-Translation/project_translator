@@ -22,58 +22,74 @@ export class TranslationDatabase {
     private db: sqlite3.Database;
     private workspaceRoot: string;
     private sourceRoot: string | null = null;
-    private targetRoots: Map<string, SupportedLanguage> = new Map(); // Store target paths with their explicitly set languages
+    private targetRoots: Map<string, SupportedLanguage> = new Map();
 
     constructor(workspaceRoot: string) {
         this.workspaceRoot = workspaceRoot;
-        const dbPath = path.join(workspaceRoot, '.prj.trans.sqlite');
-        this.db = new sqlite3.Database(dbPath);
-        this.initDatabase();
+        this.db = new sqlite3.Database(path.join(workspaceRoot, '.translation-cache.db'));
+        // Initialize database asynchronously
+        this.initDatabase().catch(err => {
+            console.error('Failed to initialize database:', err);
+        });
     }
 
-    private initDatabase() {
+    private async initDatabase() {
+        // Get configuration
         const config = vscode.workspace.getConfiguration('projectTranslator');
-        const destFolders = config.get<Array<{ path: string; lang: SupportedLanguage }>>('destFolders') || [];
-
+        const specifiedFolders = config.get<Array<any>>('specifiedFolders') || [];
+        
         // Only create tables for languages specified in the configuration
         const configuredLanguages = new Set<SupportedLanguage>();
-        destFolders.forEach(folder => {
-            if (folder.lang && isValidLanguage(folder.lang)) {
-                configuredLanguages.add(folder.lang);
-            } else if (folder.lang) {
-                console.warn(`Warning: Invalid language code "${folder.lang}" for target folder "${folder.path}". Language codes must be non-empty strings with less than 10 characters.`);
-            }
-        });
+        
+        if (specifiedFolders.length > 0) {
+            specifiedFolders[0].destFolders?.forEach((folder: { lang: SupportedLanguage }) => {
+                if (folder.lang && isValidLanguage(folder.lang)) {
+                    configuredLanguages.add(folder.lang);
+                } else if (folder.lang) {
+                    console.warn(`Warning: Invalid language code "${folder.lang}". Language codes must be non-empty strings with less than 10 characters.`);
+                }
+            });
+        }
 
         // Create tables for configured languages
         if (configuredLanguages.size > 0) {
-            configuredLanguages.forEach(lang => {
-                this.createTableForLanguage(lang);
-            });
+            const createTablePromises = Array.from(configuredLanguages).map(lang => 
+                this.createTableForLanguage(lang).catch(err => {
+                    console.error(`Failed to create table for language ${lang}:`, err);
+                })
+            );
+            await Promise.all(createTablePromises);
         } else {
             console.warn('Warning: No valid target languages found in configuration');
         }
-
-        // Initialize target roots from configuration
-        this.initTargetRootsFromConfig(destFolders);
     }
 
     // Helper method to create a translation table for a specific language
-    private createTableForLanguage(lang: SupportedLanguage): void {
-        if (!isValidLanguage(lang)) {
-            console.warn(`Warning: Cannot create table for invalid language code "${lang}"`);
-            return;
-        }
-        
-        // Sanitize the language code to create a valid table name
-        const tableName = `translations_${lang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
-        this.db.run(`
-            CREATE TABLE IF NOT EXISTS ${tableName} (
-                source_path TEXT PRIMARY KEY,
-                last_translation_time INTEGER
-            )
-        `);
-        console.log(`Created/verified table for language: ${lang}`);
+    private createTableForLanguage(lang: SupportedLanguage): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!isValidLanguage(lang)) {
+                console.warn(`Warning: Cannot create table for invalid language code "${lang}"`);
+                resolve();
+                return;
+            }
+            
+            // Sanitize the language code to create a valid table name
+            const tableName = `translations_${lang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS ${tableName} (
+                    source_path TEXT PRIMARY KEY,
+                    last_translation_time INTEGER
+                )
+            `, (err) => {
+                if (err) {
+                    console.error(`Error creating table for language ${lang}:`, err);
+                    reject(err);
+                } else {
+                    console.log(`Created/verified table for language: ${lang}`);
+                    resolve();
+                }
+            });
+        });
     }
 
     private initTargetRootsFromConfig(destFolders: Array<{ path: string; lang: SupportedLanguage }>) {
@@ -179,7 +195,7 @@ export class TranslationDatabase {
         const targetLang = this.getTargetLanguageForPath(targetPath);
         
         // Ensure table exists for this language
-        this.createTableForLanguage(targetLang);
+        await this.createTableForLanguage(targetLang);
         
         // Sanitize language code for table name
         const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
@@ -210,7 +226,7 @@ export class TranslationDatabase {
         const targetLang = this.getTargetLanguageForPath(targetPath);
         
         // Ensure table exists for this language
-        this.createTableForLanguage(targetLang);
+        await this.createTableForLanguage(targetLang);
         
         // Sanitize language code for table name
         const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
@@ -247,39 +263,44 @@ export class TranslationDatabase {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
         const targetLang = this.getTargetLanguageForPath(targetPath);
         
-        // Ensure table exists for this language
-        this.createTableForLanguage(targetLang);
-        
-        // Sanitize language code for table name
-        const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
-        const intervalDays = vscode.workspace.getConfiguration('projectTranslator').get<number>('translationIntervalDays') || 7;
+        try {
+            // Ensure table exists for this language
+            await this.createTableForLanguage(targetLang);
+            
+            // Sanitize language code for table name
+            const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+            const intervalDays = vscode.workspace.getConfiguration('projectTranslator').get<number>('translationIntervalDays') || 7;
 
-        console.log('Debug - Checking translation status:', {
-            sourcePath: relativeSourcePath,
-            lang: targetLang
-        });
+            console.log('Debug - Checking translation status:', {
+                sourcePath: relativeSourcePath,
+                lang: targetLang
+            });
 
-        return new Promise((resolve, reject) => {
-            this.db.get(
-                `SELECT last_translation_time FROM ${tableName} WHERE source_path = ?`,
-                [relativeSourcePath],
-                (err: Error | null, result: { last_translation_time: number } | undefined) => {
-                    if (err) {
-                        console.error('Error checking translation status:', err);
-                        resolve(true);
-                        return;
+            return new Promise((resolve, reject) => {
+                this.db.get(
+                    `SELECT last_translation_time FROM ${tableName} WHERE source_path = ?`,
+                    [relativeSourcePath],
+                    (err: Error | null, result: { last_translation_time: number } | undefined) => {
+                        if (err) {
+                            console.error('Error checking translation status:', err);
+                            resolve(true);
+                            return;
+                        }
+
+                        if (!result) {
+                            resolve(true);
+                            return;
+                        }
+
+                        const daysSinceLastTranslation = (Date.now() - result.last_translation_time) / (1000 * 60 * 60 * 24);
+                        resolve(daysSinceLastTranslation >= intervalDays);
                     }
-
-                    if (!result) {
-                        resolve(true);
-                        return;
-                    }
-
-                    const daysSinceLastTranslation = (Date.now() - result.last_translation_time) / (1000 * 60 * 60 * 24);
-                    resolve(daysSinceLastTranslation >= intervalDays);
-                }
-            );
-        });
+                );
+            });
+        } catch (error) {
+            console.error('Error in shouldTranslate:', error);
+            return true; // If there's an error, proceed with translation
+        }
     }
 
     public close(): Promise<void> {
