@@ -164,35 +164,8 @@ export class TranslationDatabase {
         }
     }
 
-    // Get language for target path from explicit configuration
-    private getTargetLanguageForPath(targetPath: string): SupportedLanguage {
-        const normalizedPath = path.normalize(targetPath).replace(/\\/g, '/');
-
-        // Find the longest matching target root
-        let matchedLang: SupportedLanguage | undefined = undefined;
-        let longestMatch = 0;
-
-        for (const [rootPath, lang] of this.targetRoots.entries()) {
-            if (normalizedPath.startsWith(rootPath) && rootPath.length > longestMatch) {
-                if (isValidLanguage(lang)) {
-                    matchedLang = lang;
-                    longestMatch = rootPath.length;
-                } else {
-                    console.warn(`Warning: Invalid language code "${lang}" for path "${rootPath}" is ignored.`);
-                }
-            }
-        }
-
-        if (!matchedLang) {
-            throw new Error(`Target path "${targetPath}" has no valid language set in configuration, please configure it in projectTranslator.destFolders`);
-        }
-
-        return matchedLang;
-    }
-
-    public async updateTranslationTime(sourcePath: string, targetPath: string): Promise<void> {
+    public async updateTranslationTime(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<void> {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
-        const targetLang = this.getTargetLanguageForPath(targetPath);
         
         // Ensure table exists for this language
         await this.createTableForLanguage(targetLang);
@@ -221,9 +194,8 @@ export class TranslationDatabase {
         });
     }
 
-    public async setOldestTranslationTime(sourcePath: string, targetPath: string): Promise<void> {
+    public async setOldestTranslationTime(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<void> {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
-        const targetLang = this.getTargetLanguageForPath(targetPath);
         
         // Ensure table exists for this language
         await this.createTableForLanguage(targetLang);
@@ -254,14 +226,13 @@ export class TranslationDatabase {
         });
     }
 
-    public async shouldTranslate(sourcePath: string, targetPath: string): Promise<boolean> {
+    public async shouldTranslate(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
         // Always translate if target file doesn't exist
         if (!fs.existsSync(targetPath)) {
             return true;
         }
 
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
-        const targetLang = this.getTargetLanguageForPath(targetPath);
         
         try {
             // Ensure table exists for this language
@@ -307,6 +278,7 @@ export class TranslationDatabase {
         return new Promise((resolve, reject) => {
             this.db.close((err) => {
                 if (err) {
+                    console.error('Error closing database:', err);
                     reject(err);
                 } else {
                     resolve();

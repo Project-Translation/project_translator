@@ -2,10 +2,27 @@
 
 A VSCode extension: An easy-to-use tool for multi-language localization of projects.
 
+## Available Translations
+
+The extension supports translation to these languages:
+
+- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
+- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
+- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
+- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
+- [Français (fr-fr)](./readmes/README.fr-fr.md)
+- [Deutsch (de-de)](./readmes/README.de-de.md)
+- [Español (es-es)](./readmes/README.es-es.md)
+- [Português (pt-br)](./readmes/README.pt-br.md)
+- [Русский (ru-ru)](./readmes/README.ru-ru.md)
+- [العربية (ar-sa)](./readmes/README.ar-sa.md)
+- [العربية (ar-ae)](./readmes/README.ar-ae.md)
+- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+
 ## Samples
 
-| Project                                                   | Languages                                                                                                                               |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Project                                                   | Languages                                                                                                                                                 |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) origin by @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) translate by @jqknono |
 
 ## Requesting Project Translation
@@ -122,18 +139,18 @@ The extension supports the following configuration options:
 
 Key configuration details:
 
-| Configuration Option                            | Description                                                                                                           |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`            | Multiple source folders with their corresponding destination folders for translation                                   |
-| `projectTranslator.specifiedFiles`              | Multiple source files with their corresponding destination files for translation                                      |
-| `projectTranslator.translationIntervalDays`     | Translation interval in days (default 7 days)                                                                         |
-| `projectTranslator.ignoreTranslationExtensions` | List of text file extensions that don't need translation, these files will be copied directly                         |
-| `projectTranslator.ignorePaths`                 | List of ignored path patterns using wildcards, these files won't be copied                                            |
-| `projectTranslator.currentVendor`               | Current API vendor in use                                                                                             |
-| `projectTranslator.vendors`                     | API vendor configuration list                                                                                         |
-| `projectTranslator.systemPrompts`               | System prompt array for guiding the translation process                                                               |
-| `projectTranslator.userPrompts`                 | User-defined prompt array, these prompts will be added after system prompts during translation                        |
-| `projectTranslator.segmentationMarkers`         | Segmentation markers configured by file type, supports regular expressions                                            |
+| Configuration Option                            | Description                                                                                    |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`            | Multiple source folders with their corresponding destination folders for translation           |
+| `projectTranslator.specifiedFiles`              | Multiple source files with their corresponding destination files for translation               |
+| `projectTranslator.translationIntervalDays`     | Translation interval in days (default 7 days)                                                  |
+| `projectTranslator.ignoreTranslationExtensions` | List of text file extensions that don't need translation, these files will be copied directly  |
+| `projectTranslator.ignorePaths`                 | List of ignored path patterns using wildcards, these files won't be copied                     |
+| `projectTranslator.currentVendor`               | Current API vendor in use                                                                      |
+| `projectTranslator.vendors`                     | API vendor configuration list                                                                  |
+| `projectTranslator.systemPrompts`               | System prompt array for guiding the translation process                                        |
+| `projectTranslator.userPrompts`                 | User-defined prompt array, these prompts will be added after system prompts during translation |
+| `projectTranslator.segmentationMarkers`         | Segmentation markers configured by file type, supports regular expressions                     |
 
 ## Usage
 

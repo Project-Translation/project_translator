@@ -1,6 +1,6 @@
 {
-    "projectTranslator.extensionActive": "Расширение Проект Переводчик теперь активно!",
-    "translation.paused": "Перевод приостановлен",
-    "translation.resumed": "Перевод возобновлен",
-    "translation.stopped": "Перевод остановлен"
+    "extension.activated": "Расширение Project Translator теперь активно!",
+    "status.translation.paused": "Перевод приостановлен",
+    "status.translation.resumed": "Перевод возобновлен",
+    "status.translation.stopped": "Перевод остановлен"
 }

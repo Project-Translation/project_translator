@@ -13,12 +13,13 @@ export class FileProcessor {
     private outputChannel: vscode.OutputChannel;
     private translationDb: TranslationDatabase;
     private translatorService: TranslatorService;
-    private processedFilesCount: number = 0;
-    private skippedFilesCount: number = 0;
-    private failedFilesCount: number = 0;
+    private processedFilesCount = 0;
+    private skippedFilesCount = 0;
+    private failedFilesCount = 0;
     private failedFilePaths: string[] = [];
-    private isPaused: boolean = false;
+    private isPaused = false;
     private cancellationToken?: vscode.CancellationToken;
+    private workspaceRoot: string;
 
     constructor(
         outputChannel: vscode.OutputChannel,
@@ -28,6 +29,24 @@ export class FileProcessor {
         this.outputChannel = outputChannel;
         this.translationDb = translationDb;
         this.translatorService = translatorService;
+        // Get workspace root path
+        this.workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+    }
+
+    // Resolves a path that might be relative to workspace root
+    private resolvePath(filePath: string): string {
+        if (!filePath) {
+            return filePath;
+        }
+        
+        // If the path is already absolute, return it as is
+        if (path.isAbsolute(filePath)) {
+            return filePath;
+        }
+        
+        // Otherwise, resolve it relative to workspace root
+        const resolvedPath = path.resolve(this.workspaceRoot, filePath);
+        return resolvedPath;
     }
 
     public setTranslationState(isPaused: boolean, token: vscode.CancellationToken) {
@@ -44,7 +63,10 @@ export class FileProcessor {
         };
     }
 
-    public async processDirectory(sourcePath: string, targetPaths: DestFolder[]) {
+    public async processDirectory(sourcePath: string, targetPaths: DestFolder[], sourceLang: SupportedLanguage) {
+        // Resolve paths
+        const resolvedSourcePath = this.resolvePath(sourcePath);
+        
         this.outputChannel.appendLine("\n[Directory Processing] ----------------------------------------");
         this.outputChannel.appendLine(`📂 Starting to process directory: ${sourcePath}`);
 
@@ -52,34 +74,36 @@ export class FileProcessor {
             this.checkCancellation();
 
             const ignorePaths = vscode.workspace.getConfiguration("projectTranslator").get<string[]>("ignorePaths") || [];
-            const sourceRoot = this.translationDb.getSourceRoot() || sourcePath;
-            const relativePath = path.relative(sourceRoot, sourcePath).replace(/\\/g, "/");
+            const sourceRoot = this.translationDb.getSourceRoot() || resolvedSourcePath;
+            const relativePath = path.relative(sourceRoot, resolvedSourcePath).replace(/\\/g, "/");
 
             // Check if directory should be ignored
             for (const pattern of ignorePaths) {
                 if (minimatch(relativePath, pattern) || minimatch(`${relativePath}/`, pattern)) {
-                    this.outputChannel.appendLine(`⏭️ Skipping ignored directory: ${sourcePath} (matched pattern: ${pattern})`);
+                    this.outputChannel.appendLine(`⏭️ Skipping ignored directory: ${resolvedSourcePath} (matched pattern: ${pattern})`);
                     return;
                 }
             }
 
-            const files = fs.readdirSync(sourcePath);
+            const files = fs.readdirSync(resolvedSourcePath);
             this.outputChannel.appendLine(`📊 Found ${files.length} files/directories`);
 
             for (const file of files) {
                 this.checkCancellation();
 
-                const fullPath = path.join(sourcePath, file);
+                const fullPath = path.join(resolvedSourcePath, file);
                 const stat = fs.statSync(fullPath);
 
                 if (stat.isDirectory()) {
-                    await this.processSubDirectory(fullPath, targetPaths, sourceRoot, ignorePaths);
+                    await this.processSubDirectory(fullPath, targetPaths, sourceRoot, ignorePaths, sourceLang);
                 } else {
                     this.outputChannel.appendLine(`\n📄 File: ${file}`);
                     for (const target of targetPaths) {
+                        // Resolve target path
+                        const resolvedTargetPath = this.resolvePath(target.path);
                         const relativePath = path.relative(sourceRoot, fullPath);
-                        const targetFilePath = path.join(target.path, relativePath);
-                        await this.processFile(fullPath, targetFilePath, target.lang);
+                        const targetFilePath = path.join(resolvedTargetPath, relativePath);
+                        await this.processFile(fullPath, targetFilePath, sourceLang, target.lang);
                     }
                 }
             }
@@ -97,7 +121,7 @@ export class FileProcessor {
         }
     }
 
-    private async processSubDirectory(fullPath: string, targetPaths: DestFolder[], sourceRoot: string, ignorePaths: string[]) {
+    private async processSubDirectory(fullPath: string, targetPaths: DestFolder[], sourceRoot: string, ignorePaths: string[], sourceLang: SupportedLanguage) {
         const relativeSubPath = path.relative(sourceRoot, fullPath).replace(/\\/g, "/");
         let shouldSkip = false;
 
@@ -117,52 +141,58 @@ export class FileProcessor {
 
         // Create corresponding directories for each target path
         for (const target of targetPaths) {
+            // Resolve target path
+            const resolvedTargetPath = this.resolvePath(target.path);
             const relativePath = path.relative(sourceRoot, fullPath);
-            const targetDirPath = path.join(target.path, relativePath);
+            const targetDirPath = path.join(resolvedTargetPath, relativePath);
             if (!fs.existsSync(targetDirPath)) {
                 this.outputChannel.appendLine(`Creating target directory: ${targetDirPath}`);
                 fs.mkdirSync(targetDirPath, { recursive: true });
             }
         }
 
-        await this.processDirectory(fullPath, targetPaths);
+        await this.processDirectory(fullPath, targetPaths, sourceLang);
     }
 
-    public async processFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage) {
+    public async processFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
         try {
-            this.outputChannel.appendLine(`\nTranslating file: ${path.basename(sourcePath)} to ${targetLang}`);
+            // Resolve paths
+            const resolvedSourcePath = this.resolvePath(sourcePath);
+            const resolvedTargetPath = this.resolvePath(targetPath);
+            
+            this.outputChannel.appendLine(`\nTranslating file: ${path.basename(sourcePath)} from ${sourceLang} to ${targetLang}`);
             
             // Validate paths
-            if (!fs.existsSync(sourcePath)) {
+            if (!fs.existsSync(resolvedSourcePath)) {
                 throw new Error(`Source file not found: ${sourcePath}`);
             }
 
             // Ensure target directory exists
-            const targetDir = path.dirname(targetPath);
+            const targetDir = path.dirname(resolvedTargetPath);
             if (!fs.existsSync(targetDir)) {
                 fs.mkdirSync(targetDir, { recursive: true });
             }
 
             // Skip if file should be ignored
-            if (await this.shouldSkipFile(sourcePath, targetPath)) {
+            if (await this.shouldSkipFile(resolvedSourcePath, resolvedTargetPath, targetLang)) {
                 return;
             }
 
             // Handle different file types
-            const ext = path.extname(sourcePath).toLowerCase();
+            const ext = path.extname(resolvedSourcePath).toLowerCase();
             const ignoreExtensions = getConfiguration().ignoreTranslationExtensions;
 
             if (ignoreExtensions.includes(ext)) {
-                await this.handleIgnoredFile(sourcePath, targetPath);
+                await this.handleIgnoredFile(resolvedSourcePath, resolvedTargetPath);
                 return;
             }
 
-            if (await isBinaryFile(sourcePath)) {
-                await this.handleBinaryFile(sourcePath, targetPath);
+            if (await isBinaryFile(resolvedSourcePath)) {
+                await this.handleBinaryFile(resolvedSourcePath, resolvedTargetPath);
                 return;
             }
 
-            await this.handleTextFile(sourcePath, targetPath, targetLang);
+            await this.handleTextFile(resolvedSourcePath, resolvedTargetPath, sourceLang, targetLang);
         } catch (error) {
             this.outputChannel.appendLine(`❌ File translation failed: ${error instanceof Error ? error.message : String(error)}`);
             this.failedFilesCount++;
@@ -171,9 +201,9 @@ export class FileProcessor {
         }
     }
 
-    private async shouldSkipFile(sourcePath: string, targetPath: string): Promise<boolean> {
+    private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
         const ignorePaths = vscode.workspace.getConfiguration("projectTranslator").get<string[]>("ignorePaths") || [];
-        const sourceRoot = this.translationDb.getSourceRoot() || path.dirname(sourcePath);
+        const sourceRoot = this.resolvePath(this.translationDb.getSourceRoot() || path.dirname(sourcePath));
         const relativePath = path.relative(sourceRoot, sourcePath).replace(/\\/g, "/");
 
         // Check ignore patterns
@@ -185,7 +215,7 @@ export class FileProcessor {
         }
 
         // Check translation interval
-        const shouldTranslate = await this.translationDb.shouldTranslate(sourcePath, targetPath);
+        const shouldTranslate = await this.translationDb.shouldTranslate(sourcePath, targetPath, targetLang);
         if (!shouldTranslate) {
             this.outputChannel.appendLine("⏭️ File is within translation interval, skipping translation");
             return true;
@@ -219,9 +249,9 @@ export class FileProcessor {
         this.processedFilesCount++;
     }
 
-    private async handleTextFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage) {
+    private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
         // Set oldest translation time before starting
-        await this.translationDb.setOldestTranslationTime(sourcePath, targetPath);
+        await this.translationDb.setOldestTranslationTime(sourcePath, targetPath, targetLang);
         this.outputChannel.appendLine("🕒 Translation timestamp reset");
 
         // Handle pause state
@@ -243,10 +273,16 @@ export class FileProcessor {
 
             let translatedContent: string;
             if (estimatedTokens > maxTokensPerSegment) {
-                translatedContent = await this.handleLargeFile(content, sourcePath, targetPath, targetLang);
+                translatedContent = await this.handleLargeFile(content, sourcePath, targetPath, sourceLang, targetLang);
             } else {
                 this.checkCancellation();
-                translatedContent = await this.translatorService.translateContent(content, targetLang, sourcePath, this.cancellationToken);
+                translatedContent = await this.translatorService.translateContent(
+                    content, 
+                    sourceLang,
+                    targetLang, 
+                    sourcePath, 
+                    this.cancellationToken
+                );
                 this.checkCancellation();
                 fs.writeFileSync(targetPath, translatedContent);
                 this.outputChannel.appendLine("💾 Translation result written");
@@ -256,7 +292,7 @@ export class FileProcessor {
             this.outputChannel.appendLine(`⌛ Translation time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`);
 
             if (!this.isPaused) {
-                await this.translationDb.updateTranslationTime(sourcePath, targetPath);
+                await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
                 this.outputChannel.appendLine("✅ File processing completed, translation timestamp updated\n");
                 this.processedFilesCount++;
             }
@@ -270,7 +306,7 @@ export class FileProcessor {
         }
     }
 
-    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<string> {
+    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<string> {
         const config = getConfiguration();
         const { maxTokensPerSegment } = config;
         const segments = segmentText(content, sourcePath, maxTokensPerSegment);
@@ -290,6 +326,7 @@ export class FileProcessor {
             try {
                 const translatedSegment = await this.translatorService.translateContent(
                     segment,
+                    sourceLang,
                     targetLang,
                     sourcePath,
                     this.cancellationToken

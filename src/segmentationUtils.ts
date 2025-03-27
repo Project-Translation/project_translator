@@ -11,7 +11,7 @@ const DEFAULT_SEGMENTATION_MARKERS: Record<string, string[]> = {
     'python': ['^def\\s+\\w+\\(', '^class\\s+\\w+'], // Python functions and classes
     'java': ['^public\\s+(class|interface|enum)\\s+\\w+', '^\\s*public\\s+\\w+\\s+\\w+\\('], // Java classes and methods
     'go': ['^func\\s+\\w+\\(', '^type\\s+\\w+\\s+struct'], // Go functions and structs
-    'c#': ['^public\\s+(class|interface|enum)\\s+\\w+', '^\\s*public\\s+\\w+\\s+\\w+\\('], // C# classes and methods
+    'csharp': ['^public\\s+(class|interface|enum)\\s+\\w+', '^\\s*public\\s+\\w+\\s+\\w+\\('], // C# classes and methods
     'php': ['^function\\s+\\w+\\(', '^class\\s+\\w+'], // PHP functions and classes
     'ruby': ['^def\\s+\\w+', '^class\\s+\\w+'], // Ruby methods and classes
     'rust': ['^fn\\s+\\w+', '^struct\\s+\\w+', '^enum\\s+\\w+'], // Rust functions, structs, enums
@@ -22,24 +22,24 @@ const DEFAULT_SEGMENTATION_MARKERS: Record<string, string[]> = {
 
 // Extension to language mapping
 const EXTENSION_TO_LANGUAGE_MAP: Record<string, string> = {
-    '.md': 'markdown',
-    '.markdown': 'markdown',
-    '.html': 'html',
-    '.htm': 'html',
-    '.js': 'javascript',
-    '.jsx': 'javascript',
-    '.ts': 'typescript',
-    '.tsx': 'typescript',
-    '.py': 'python',
-    '.java': 'java',
-    '.go': 'go',
-    '.cs': 'c#',
-    '.php': 'php',
-    '.rb': 'ruby',
-    '.rs': 'rust',
-    '.swift': 'swift',
-    '.kt': 'kotlin',
-    '.txt': 'plaintext'
+    'md': 'markdown',
+    'markdown': 'markdown',
+    'html': 'html',
+    'htm': 'html',
+    'js': 'javascript',
+    'jsx': 'javascript',
+    'ts': 'typescript',
+    'tsx': 'typescript',
+    'py': 'python',
+    'java': 'java',
+    'go': 'go',
+    'cs': 'csharp',
+    'php': 'php',
+    'rb': 'ruby',
+    'rs': 'rust',
+    'swift': 'swift',
+    'kt': 'kotlin',
+    'txt': 'plaintext'
     // Add more mappings as needed
 };
 
@@ -50,7 +50,9 @@ const EXTENSION_TO_LANGUAGE_MAP: Record<string, string> = {
  * @returns Estimated token count
  */
 export function estimateTokenCount(text: string): number {
-    if (!text) return 0;
+    if (!text) {
+        return 0;
+    }
     
     // GPT tokenizer splits words at common boundaries
     // Roughly 4 characters per token for English text

@@ -5,3 +5,5 @@ sample-dist/.prj.trans.sqlite
 sample-dist/.vscode/
 dist/
 sample-dist/.translation-cache.db
+.vscode-test/
+.copilot-codeGeneration-instructions.md

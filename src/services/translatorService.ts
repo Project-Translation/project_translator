@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import OpenAI from 'openai';
-import { ChatMessage, languageNameMap } from '../types/types';
+import { ChatMessage } from '../types/types';
 import { estimateTokenCount } from '../segmentationUtils';
 import { getConfiguration, getTranslationPrompts } from '../config/config';
 import { SupportedLanguage } from '../translationDatabase';
@@ -10,15 +10,15 @@ import * as path from 'path';
 const vendorLastRequest: Map<string, number> = new Map();
 
 // Translation state
-let currentFileMessages: ChatMessage[] = [];
-let currentFilePath: string | null = null;
-let currentMessageId: string | null = null;
+const currentFileMessages: ChatMessage[] = [];
+const currentFilePath: string | null = null;
+const currentMessageId: string | null = null;
 
 export class TranslatorService {
     private openaiClient: OpenAI | null = null;
     private outputChannel: vscode.OutputChannel;
-    private projectTotalInputTokens: number = 0;
-    private projectTotalOutputTokens: number = 0;
+    private projectTotalInputTokens = 0;
+    private projectTotalOutputTokens = 0;
 
     constructor(outputChannel: vscode.OutputChannel) {
         this.outputChannel = outputChannel;
@@ -43,6 +43,7 @@ export class TranslatorService {
 
     public async translateContent(
         content: string,
+        sourceLang: SupportedLanguage,
         targetLang: SupportedLanguage,
         sourcePath: string,
         cancellationToken?: vscode.CancellationToken
@@ -55,10 +56,9 @@ export class TranslatorService {
 
         const config = getConfiguration();
         const { model, currentVendorName, rpm, maxTokensPerSegment, temperature } = config;
-        const languageName = languageNameMap[targetLang] || targetLang;
 
         this.outputChannel.appendLine(`🤖 Using model: ${model}`);
-        this.outputChannel.appendLine(`🌐 Target language: ${languageName}`);
+        this.outputChannel.appendLine(`🌐 Target language: ${targetLang}`);
         this.outputChannel.appendLine(`🎲 Temperature: ${temperature}`);
 
         // Wait for RPM limit if needed
@@ -87,7 +87,7 @@ export class TranslatorService {
                     })),
                     {
                         role: "user",
-                        content: `Please translate the following content to ${languageName}. The file type is ${path.extname(sourcePath)}.`,
+                        content: `Please translate the following content from ${sourceLang} to ${targetLang}. The file type is ${path.extname(sourcePath)}.`,
                     },
                     {
                         role: "user",

@@ -48,12 +48,9 @@ export function getTranslationPrompts() {
     const projectConfig = vscode.workspace.getConfiguration("projectTranslator");
     const systemPrompts = projectConfig.get<string[]>("systemPrompts") || [];
     const userPrompts = projectConfig.get<string[]>("userPrompts") || [];
-    const sourceLanguage = projectConfig.get<string>("sourceLanguage") || "en-us";
     
     return {
-        systemPrompts: systemPrompts.map(prompt => 
-            prompt.replace(/\{sourceLanguage\}/g, sourceLanguage)
-        ),
+        systemPrompts,
         userPrompts
     };
 }

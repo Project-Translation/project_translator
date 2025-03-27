@@ -172,7 +172,10 @@
                     "description": "%config.language.description%"
                   }
                 },
-                "required": ["path", "lang"]
+                "required": [
+                  "path",
+                  "lang"
+                ]
               },
               "destFolders": {
                 "type": "array",
@@ -188,11 +191,17 @@
                       "description": "%config.targetLanguage.description%"
                     }
                   },
-                  "required": ["path", "lang"]
+                  "required": [
+                    "path",
+                    "lang"
+                  ]
                 }
               }
             },
-            "required": ["sourceFolder", "destFolders"]
+            "required": [
+              "sourceFolder",
+              "destFolders"
+            ]
           },
           "default": [],
           "description": "Multiple source folders with their corresponding destination folders for translation",
@@ -237,7 +246,7 @@
             "type": "string"
           },
           "default": [
-            "Please translate from {sourceLanguage} to the target language according to the following rules:\n1. Translate strictly according to the specified target language\n2. Maintain professional technical accuracy\n3. For code blocks:\n   - Only translate the comment part\n   - Keep the code syntax, variable names, and function names unchanged\n   - Keep the data structure of JSON, XML, etc. unchanged\n4. For ordinary text:\n   - Maintain the professionalism of technical terms\n   - Conform to the expression habits of the target language\n5. Maintain the format and structure of the original text\n6. Only return the translation result, do not include the original text or other descriptive content\n7. When translating code files, be careful not to add meaningless \\`\\`\\` at the beginning and end\n8. When translating structured files, do not modify the structure by yourself, such as xml, html, json, etc.\n9. If there is no content to be translated, return the original text"
+            "Professional Translation Guidelines\n\n1. **Target Language Compliance**: Translate strictly according to the specified target language.\n2. **Technical Accuracy**: Ensure precision in technical terminology and domain-specific expressions.\n3. **Code Blocks**:\n   - Translate **only comments** within code blocks.\n   - Preserve **syntax, variable names, function names, and code structure** unchanged.\n   - Maintain **integrity of data structures** (e.g., JSON, XML, YAML). Do not alter tags, attributes, or formatting.\n4. **General Text**:\n   - Use **domain-appropriate technical terms** in the target language.\n   - Adhere to **target language expression conventions** (e.g., phrasing, terminology norms).\n5. **Formatting & Structure**:\n   - Retain the original text's formatting (e.g., indentation, line breaks, tables).\n   - Do not modify structural elements (e.g., XML/HTML tags, JSON keys).\n6. **Output Requirements**:\n   - Return **only the translated content**; exclude original text or supplementary explanations.\n   - Avoid adding/removing code delimiters (e.g., triple backticks ```) unless explicitly required.\n7. **Special Files**:\n   - For structured files (e.g., XML, JSON), translate **textual content** but leave syntax, keys, and structural elements untouched.\n8. **No Translatable Content**: If no translatable text exists (e.g., pure code or non-text data), return the original file unchanged.\n\n---\n**Note**: This prompt ensures fidelity to technical accuracy, preserves code and structural integrity, and adheres strictly to the target language's conventions."
           ],
           "description": "%config.systemPrompts.description%",
           "order": 10
@@ -338,16 +347,14 @@
     "url": "https://github.com/Project-Translation/project_translator"
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
     "package": "webpack --mode production --devtool hidden-source-map",
     "compile:web": "webpack --mode development",
     "watch:web": "webpack --mode development --watch",
-    "publish:minor": "node --no-deprecation ./node_modules/@vscode/vsce/vsce publish minor"
+    "publish:minor": "node --no-deprecation ./node_modules/@vscode/vsce/vsce publish minor",
+    "vsce:package": "vsce package"
   },
   "devDependencies": {
     "@types/chai": "^5.0.1",
@@ -367,6 +374,7 @@
     "mocha": "^10.2.0",
     "sinon": "^19.0.2",
     "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
     "typescript": "^4.0.0",
     "webpack": "^5.98.0",
     "webpack-cli": "^5.1.4"

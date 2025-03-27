@@ -18,5 +18,5 @@
     "config.sourceFile.description": "源文件的绝对路径",
     "config.destFiles.description": "文件翻译的目标文件配置",
     "config.targetLanguage.description": "目标语言代码",
-    "config.enableMetrics.description": "启用或禁用发送匿名使用指标以帮助改进扩展",
+    "config.enableMetrics.description": "启用或禁用发送匿名使用指标以帮助改进扩展"
 }

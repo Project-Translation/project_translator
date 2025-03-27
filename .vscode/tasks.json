@@ -13,7 +13,9 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$tsc"],
+            "problemMatcher": [
+                "$tsc"
+            ],
             "detail": "Compile TypeScript files"
         },
         {
@@ -25,16 +27,17 @@
                 "watch"
             ],
             "group": "build",
-            "problemMatcher": ["$tsc-watch"],
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
             "detail": "Watch TypeScript files for changes"
         },
         {
             "label": "package",
             "type": "shell",
-            "command": "npm",
+            "command": "vsce",
             "args": [
-                "run",
-                "package"
+                "package",
             ],
             "group": "build",
             "problemMatcher": [],
