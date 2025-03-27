@@ -6,7 +6,6 @@ src/**
 **/*.map
 .gitignore
 .yarnrc
-**/webpack.config.js
 **/*.ts
 **/.prettier*
 **/jest.config.*
@@ -14,12 +13,10 @@ coverage/**
 test/**
 sample/**
 sample-dist/**
-node_modules/**
 **/.git/**
 **/.github/**
 .eslintignore
 .eslintrc.js
 .prettierignore
 .prettierrc
-webpack.config.js
-dist/**
+.copilot-codeGeneration-instructions.md

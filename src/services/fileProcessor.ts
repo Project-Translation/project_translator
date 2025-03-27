@@ -147,7 +147,13 @@ export class FileProcessor {
             const targetDirPath = path.join(resolvedTargetPath, relativePath);
             if (!fs.existsSync(targetDirPath)) {
                 this.outputChannel.appendLine(`Creating target directory: ${targetDirPath}`);
-                fs.mkdirSync(targetDirPath, { recursive: true });
+                try {
+                    fs.mkdirSync(targetDirPath, { recursive: true });
+                } catch (error) {
+                    this.outputChannel.appendLine(`❌ Failed to create directory: ${targetDirPath}`);
+                    this.outputChannel.appendLine(`❌ Error details: ${error instanceof Error ? error.message : String(error)}`);
+                    throw error;
+                }
             }
         }
 

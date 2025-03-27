@@ -156,6 +156,15 @@ async function handletranslateFolders() {
                         }
 
                         outputChannel.appendLine(`\n📂 Processing source folder: ${sourceFolder.path}`);
+
+                        // Use absolute path for source folder
+                        if (!path.isAbsolute(sourceFolder.path)) {
+                            sourceFolder.path = path.join(workspace.uri.fsPath, sourceFolder.path);
+                        }
+                        if (!fs.existsSync(sourceFolder.path)) {
+                            throw new Error(`Source folder does not exist: ${sourceFolder.path}`);
+                        }
+                        // Register source directory and language
                         translationDatabase.setSourceRoot(sourceFolder.path);
 
                         // Reset target roots for this folder group
