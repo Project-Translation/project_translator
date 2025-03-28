@@ -43,7 +43,7 @@
       "properties": {
         "projectTranslator.currentVendor": {
           "type": "string",
-          "default": "openai",
+          "default": "grok",
           "description": "%config.currentVendor.description%",
           "order": 1
         },
@@ -58,24 +58,28 @@
               },
               "apiEndpoint": {
                 "type": "string",
-                "description": "%config.vendors.description%"
+                "description": "%config.vendors.description%",
+                "default": "https://api.x.ai/v1"
               },
               "apiKey": {
                 "type": "string",
-                "description": "%config.vendors.description%"
+                "description": "%config.vendors.description%",
+                "default": ""
               },
               "model": {
                 "type": "string",
-                "description": "%config.vendors.description%"
+                "description": "%config.vendors.description%",
+                "default": "grok-2"
               },
               "rpm": {
                 "type": "number",
-                "description": "%config.vendors.description%"
+                "description": "%config.vendors.description%",
+                "default": 20
               },
               "maxTokensPerSegment": {
                 "type": "number",
                 "description": "%config.vendors.description%",
-                "default": 4096
+                "default": 1500
               },
               "timeout": {
                 "type": "number",
@@ -97,6 +101,18 @@
               "model"
             ]
           },
+          "default": [
+            {
+              "name": "grok",
+              "apiEndpoint": "https://api.x.ai/v1",
+              "apiKey": "",
+              "model": "grok-2",
+              "rpm": 20,
+              "maxTokensPerSegment": 1500,
+              "timeout": 30,
+              "temperature": 0
+            }
+          ],
           "description": "%config.vendors.description%",
           "order": 2
         },
@@ -351,7 +367,7 @@
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "publish:minor": "vsce publish minor",
-    "package": "npm run compile && vsce package --githubBranch main --baseContentUrl https://github.com/Project-Translation/project_translator --dependencies"
+    "package": "npm run compile && vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
   },
   "devDependencies": {
     "@types/chai": "^5.0.1",
