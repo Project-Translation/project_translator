@@ -3,7 +3,8 @@ import { VendorConfig, SpecifiedFile, SpecifiedFolder } from '../types/types';
 import * as path from 'path';
 import * as fs from 'fs';
 
-let translations: any = {};
+// Using Record<string, string> instead of any
+let translations: Record<string, string> = {};
 
 export function loadTranslations(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration("projectTranslator");

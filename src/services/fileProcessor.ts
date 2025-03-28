@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Buffer } from 'buffer';
 import { isBinaryFile } from "isbinaryfile";
 import { minimatch } from "minimatch";
 import { TranslationDatabase } from "../translationDatabase";
@@ -263,7 +264,7 @@ export class FileProcessor {
         // Handle pause state
         while (this.isPaused) {
             this.checkCancellation();
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => globalThis.setTimeout(resolve, 500));
             this.outputChannel.appendLine("⏸️ Translation paused...");
         }
 

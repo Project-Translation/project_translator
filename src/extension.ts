@@ -5,7 +5,7 @@ import { FileProcessor } from "./services/fileProcessor";
 import { TranslatorService } from "./services/translatorService";
 import { AnalyticsService } from "./services/analytics";
 import { getConfiguration } from "./config/config";
-import { DestFolder, DestFile, SupportedLanguage } from "./types/types";
+import { DestFolder, SpecifiedFolder } from "./types/types";
 import * as fs from "fs";
 
 // Global state
@@ -15,7 +15,6 @@ let pauseResumeButton: vscode.StatusBarItem | undefined;
 let stopButton: vscode.StatusBarItem | undefined;
 let outputChannel: vscode.OutputChannel;
 let machineId: string | undefined;
-const translations: any = {};
 
 export async function activate(context: vscode.ExtensionContext) {
     outputChannel = vscode.window.createOutputChannel("Project Translator");
@@ -110,7 +109,7 @@ async function handletranslateFolders() {
 
         // Get configuration and validate
         const config = vscode.workspace.getConfiguration("projectTranslator");
-        const specifiedFolders = config.get<Array<any>>("specifiedFolders") || [];
+        const specifiedFolders = config.get<SpecifiedFolder[]>("specifiedFolders") || [];
         if (specifiedFolders.length === 0) {
             throw new Error("No folder groups configured. Please configure projectTranslator.specifiedFolders in settings.");
         }
@@ -373,7 +372,7 @@ async function handleTranslateProject() {
         const translationTasks = [];
 
         // Add folder translation task if specifiedFolders is configured
-        const specifiedFolders = vscode.workspace.getConfiguration("projectTranslator").get<Array<any>>("specifiedFolders") || [];
+        const specifiedFolders = vscode.workspace.getConfiguration("projectTranslator").get<Array<SpecifiedFolder>>("specifiedFolders") || [];
         if (specifiedFolders.length > 0) {
             translationTasks.push(handletranslateFolders());
         }
@@ -415,28 +414,6 @@ async function handleTranslateProject() {
     } finally {
         cleanup();
     }
-}
-
-async function getSourceFolderPath(): Promise<string> {
-    const config = vscode.workspace.getConfiguration("projectTranslator");
-    const specifiedFolders = config.get<Array<any>>("specifiedFolders") || [];
-    
-    if (specifiedFolders.length === 0 || !specifiedFolders[0].sourceFolder?.path) {
-        throw new Error("No source folder configured. Please configure projectTranslator.specifiedFolders in settings.");
-    }
-
-    return specifiedFolders[0].sourceFolder.path;
-}
-
-async function getTargetPaths(): Promise<DestFolder[]> {
-    const config = vscode.workspace.getConfiguration("projectTranslator");
-    const specifiedFolders = config.get<Array<any>>("specifiedFolders") || [];
-    
-    if (specifiedFolders.length === 0 || !specifiedFolders[0].destFolders?.length) {
-        throw new Error("No destination folders configured. Please configure projectTranslator.specifiedFolders in settings.");
-    }
-
-    return specifiedFolders[0].destFolders;
 }
 
 function createStatusBarButtons() {

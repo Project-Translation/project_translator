@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as sqlite3 from 'sqlite3';
 import * as vscode from 'vscode';
-import { promisify } from 'util';
+import { SpecifiedFolder } from './types/types';
 
 // Example language codes, but system now accepts any string with length < 10
 export const SUPPORTED_LANGUAGES = [
@@ -29,14 +29,16 @@ export class TranslationDatabase {
         this.db = new sqlite3.Database(path.join(workspaceRoot, '.translation-cache.db'));
         // Initialize database asynchronously
         this.initDatabase().catch(err => {
-            console.error('Failed to initialize database:', err);
+            vscode.window.showErrorMessage(`Failed to initialize database: ${err}`);
         });
     }
 
     private async initDatabase() {
         // Get configuration
         const config = vscode.workspace.getConfiguration('projectTranslator');
-        const specifiedFolders = config.get<Array<any>>('specifiedFolders') || [];
+        // Import SpecifiedFolder from types
+        
+        const specifiedFolders = config.get<Array<SpecifiedFolder>>('specifiedFolders') || [];
         
         // Only create tables for languages specified in the configuration
         const configuredLanguages = new Set<SupportedLanguage>();
@@ -46,7 +48,7 @@ export class TranslationDatabase {
                 if (folder.lang && isValidLanguage(folder.lang)) {
                     configuredLanguages.add(folder.lang);
                 } else if (folder.lang) {
-                    console.warn(`Warning: Invalid language code "${folder.lang}". Language codes must be non-empty strings with less than 10 characters.`);
+                    vscode.window.showWarningMessage(`Invalid language code "${folder.lang}". Language codes must be non-empty strings with less than 10 characters.`);
                 }
             });
         }
@@ -55,20 +57,20 @@ export class TranslationDatabase {
         if (configuredLanguages.size > 0) {
             const createTablePromises = Array.from(configuredLanguages).map(lang => 
                 this.createTableForLanguage(lang).catch(err => {
-                    console.error(`Failed to create table for language ${lang}:`, err);
+                    vscode.window.showErrorMessage(`Failed to create table for language ${lang}: ${err}`);
                 })
             );
             await Promise.all(createTablePromises);
         } else {
-            console.warn('Warning: No valid target languages found in configuration');
+            vscode.window.showWarningMessage('No valid target languages found in configuration');
         }
     }
 
     // Helper method to create a translation table for a specific language
     private createTableForLanguage(lang: SupportedLanguage): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (!isValidLanguage(lang)) {
-                console.warn(`Warning: Cannot create table for invalid language code "${lang}"`);
+                vscode.window.showWarningMessage(`Cannot create table for invalid language code "${lang}"`);
                 resolve();
                 return;
             }
@@ -78,14 +80,15 @@ export class TranslationDatabase {
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS ${tableName} (
                     source_path TEXT PRIMARY KEY,
-                    last_translation_time INTEGER
+                    lastTranslationTime INTEGER
                 )
             `, (err) => {
                 if (err) {
-                    console.error(`Error creating table for language ${lang}:`, err);
-                    reject(err);
+                    vscode.window.showErrorMessage(`Error creating table for language ${lang}: ${err}`);
+                    // No need to call reject since we're always resolving
+                    resolve();
                 } else {
-                    console.log(`Created/verified table for language: ${lang}`);
+                    // Log success
                     resolve();
                 }
             });
@@ -97,7 +100,7 @@ export class TranslationDatabase {
 
         for (const folder of destFolders) {
             if (!folder.lang) {
-                console.warn(`Warning: Target folder "${folder.path}" has no language configured, skipped`);
+                vscode.window.showWarningMessage(`Target folder "${folder.path}" has no language configured, skipped`);
                 continue;
             }
 
@@ -145,9 +148,6 @@ export class TranslationDatabase {
                 .map(root => normalizePath(root))
                 .sort((a, b) => b.length - a.length); // Sort by descending length
 
-            console.log('Debug - Target roots:', normalizedTargetRoots);
-            console.log('Debug - Looking for path:', normalizedAbsolutePath);
-
             for (const targetRoot of normalizedTargetRoots) {
                 if (normalizedAbsolutePath.startsWith(targetRoot)) {
                     // Get full relative path from target root to file, including all subfolders
@@ -159,7 +159,7 @@ export class TranslationDatabase {
             }
 
             const error = new Error(`Target root path not set. File: ${absolutePath}\nAvailable roots: ${normalizedTargetRoots.join(', ')}`);
-            console.error(error);
+            vscode.window.showErrorMessage(error.message);
             throw error;
         }
     }
@@ -173,18 +173,13 @@ export class TranslationDatabase {
         // Sanitize language code for table name
         const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
 
-        console.log('Debug - Updating translation time:', {
-            sourcePath: relativeSourcePath,
-            lang: targetLang
-        });
-
         return new Promise<void>((resolve, reject) => {
             this.db.run(
-                `INSERT OR REPLACE INTO ${tableName} (source_path, last_translation_time) VALUES (?, ?)`,
+                `INSERT OR REPLACE INTO ${tableName} (source_path, lastTranslationTime) VALUES (?, ?)`,
                 [relativeSourcePath, Date.now()],
                 (err: Error | null) => {
                     if (err) {
-                        console.error('Error updating translation time:', err);
+                        vscode.window.showErrorMessage(`Error updating translation time: ${err}`);
                         reject(err);
                     } else {
                         resolve();
@@ -205,18 +200,13 @@ export class TranslationDatabase {
         // Use Unix epoch start time (1970-01-01) as the oldest time
         const oldestTimestamp = 0;
 
-        console.log('Debug - Setting oldest translation time:', {
-            sourcePath: relativeSourcePath,
-            lang: targetLang
-        });
-
         return new Promise<void>((resolve, reject) => {
             this.db.run(
-                `INSERT OR REPLACE INTO ${tableName} (source_path, last_translation_time) VALUES (?, ?)`,
+                `INSERT OR REPLACE INTO ${tableName} (source_path, lastTranslationTime) VALUES (?, ?)`,
                 [relativeSourcePath, oldestTimestamp],
                 (err: Error | null) => {
                     if (err) {
-                        console.error('Error setting oldest translation time:', err);
+                        vscode.window.showErrorMessage(`Error setting oldest translation time: ${err}`);
                         reject(err);
                     } else {
                         resolve();
@@ -242,18 +232,13 @@ export class TranslationDatabase {
             const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
             const intervalDays = vscode.workspace.getConfiguration('projectTranslator').get<number>('translationIntervalDays') || 7;
 
-            console.log('Debug - Checking translation status:', {
-                sourcePath: relativeSourcePath,
-                lang: targetLang
-            });
-
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 this.db.get(
-                    `SELECT last_translation_time FROM ${tableName} WHERE source_path = ?`,
+                    `SELECT lastTranslationTime FROM ${tableName} WHERE source_path = ?`,
                     [relativeSourcePath],
-                    (err: Error | null, result: { last_translation_time: number } | undefined) => {
+                    (err: Error | null, result: { lastTranslationTime: number } | undefined) => {
                         if (err) {
-                            console.error('Error checking translation status:', err);
+                            vscode.window.showErrorMessage(`Error checking translation status: ${err}`);
                             resolve(true);
                             return;
                         }
@@ -263,13 +248,13 @@ export class TranslationDatabase {
                             return;
                         }
 
-                        const daysSinceLastTranslation = (Date.now() - result.last_translation_time) / (1000 * 60 * 60 * 24);
+                        const daysSinceLastTranslation = (Date.now() - result.lastTranslationTime) / (1000 * 60 * 60 * 24);
                         resolve(daysSinceLastTranslation >= intervalDays);
                     }
                 );
             });
         } catch (error) {
-            console.error('Error in shouldTranslate:', error);
+            vscode.window.showErrorMessage(`Error in shouldTranslate: ${error}`);
             return true; // If there's an error, proceed with translation
         }
     }
@@ -278,7 +263,7 @@ export class TranslationDatabase {
         return new Promise((resolve, reject) => {
             this.db.close((err) => {
                 if (err) {
-                    console.error('Error closing database:', err);
+                    vscode.window.showErrorMessage(`Error closing database: ${err}`);
                     reject(err);
                 } else {
                     resolve();

@@ -1,18 +1,11 @@
 import * as vscode from 'vscode';
 import OpenAI from 'openai';
-import { ChatMessage } from '../types/types';
-import { estimateTokenCount } from '../segmentationUtils';
 import { getConfiguration, getTranslationPrompts } from '../config/config';
 import { SupportedLanguage } from '../translationDatabase';
 import * as path from 'path';
 
 // Store the last request timestamp for each vendor
 const vendorLastRequest: Map<string, number> = new Map();
-
-// Translation state
-const currentFileMessages: ChatMessage[] = [];
-const currentFilePath: string | null = null;
-const currentMessageId: string | null = null;
 
 export class TranslatorService {
     private openaiClient: OpenAI | null = null;
@@ -27,8 +20,7 @@ export class TranslatorService {
     public initializeOpenAIClient() {
         const { apiEndpoint, apiKey, model, timeout } = getConfiguration();
         this.outputChannel.appendLine(`🔑 Using vendor API endpoint: ${apiEndpoint}`);
-
-        const config: any = {
+        const config: ConstructorParameters<typeof OpenAI>[0] = {
             apiKey,
             baseURL: apiEndpoint,
         };
@@ -55,7 +47,7 @@ export class TranslatorService {
         }
 
         const config = getConfiguration();
-        const { model, currentVendorName, rpm, maxTokensPerSegment, temperature } = config;
+        const { model, currentVendorName, rpm, temperature } = config;
 
         this.outputChannel.appendLine(`🤖 Using model: ${model}`);
         this.outputChannel.appendLine(`🌐 Target language: ${targetLang}`);
@@ -135,7 +127,7 @@ export class TranslatorService {
                     throw new vscode.CancellationError();
                 }
                 await new Promise((resolve) =>
-                    setTimeout(resolve, Math.min(waitInterval, timeToWait - waitedTime))
+                    globalThis.setTimeout(resolve, Math.min(waitInterval, timeToWait - waitedTime))
                 );
                 waitedTime += waitInterval;
             }

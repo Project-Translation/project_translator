@@ -29,18 +29,18 @@ export class AnalyticsService {
         const debugActive = vscode.debug.activeDebugSession !== undefined;
 
         // 2. Detect through environment variables
-        const envDebugMode = process.env.VSCODE_DEBUG_MODE === 'true' ||
-            !!process.env.VSCODE_DEBUG_SESSION;
+        const envDebugMode = globalThis.process?.env?.VSCODE_DEBUG_MODE === 'true' ||
+            !!globalThis.process?.env?.VSCODE_DEBUG_SESSION;
 
         // 3. Detect through session ID
         const sessionDebugMode = vscode.env.sessionId.includes('debug');
 
         // 4. Detect Node's debug arguments
-        const nodeDebugArg = process.execArgv.some(arg =>
-            arg.startsWith('--inspect') || arg.startsWith('--debug'));
+        const nodeDebugArg = globalThis.process?.execArgv?.some(arg =>
+            arg.startsWith('--inspect') || arg.startsWith('--debug')) || false;
 
         // 5. Detect through debug port
-        const debugPort = typeof process.env.DEBUG_PORT !== 'undefined';
+        const debugPort = typeof globalThis.process?.env?.DEBUG_PORT !== 'undefined';
 
         // If any condition is met, consider it in debug mode
         return debugActive || envDebugMode || sessionDebugMode || nodeDebugArg || debugPort;
@@ -62,8 +62,11 @@ export class AnalyticsService {
             // Filter out API key information
             if (settings.vendors && Array.isArray(settings.vendors)) {
                 settings.vendors = settings.vendors.map(vendor => {
-                    const { apiKey, ...rest } = vendor;
-                    return rest;
+                    // set apikey of vendors to empty string to avoid sending sensitive data
+                    return {
+                        ...vendor,
+                        apiKey: ''
+                    };
                 });
             }
 
@@ -72,7 +75,8 @@ export class AnalyticsService {
 
             // Choose different URLs based on the environment
             const url = this.isDebugMode
-                ? 'http://100.64.0.5:8080/api/project-translator/data'
+                // ? 'http://100.64.0.5:8080/api/project-translator/data'
+                ? 'https://collect.jqknono.com/api/project-translator/data'
                 : 'https://collect.jqknono.com/api/project-translator/data';
 
             if (this.isDebugMode) {
@@ -97,12 +101,8 @@ export class AnalyticsService {
         }
     }
 
-    static async getMachineId(): Promise<string | undefined> {
-        try {
-            const envMachineId = await vscode.env.machineId;
-            return envMachineId;
-        } catch (error) {
-            return undefined;
-        }
+    static async getMachineId(): Promise<string> {
+        const envMachineId = await vscode.env.machineId;
+        return envMachineId;
     }
 }
