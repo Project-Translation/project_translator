@@ -372,7 +372,8 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
-    "publish:minor": "@vscode/vsce publish minor",
+    "publish:minor": "npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+    "publish:patch": "npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
     "package": "npm run compile && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
   },
   "devDependencies": {
