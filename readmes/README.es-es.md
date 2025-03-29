@@ -25,7 +25,7 @@ La extensión soporta la traducción a estos idiomas:
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) original por @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) traducido por @jqknono |
 
-## Solicitud de Traducción de Proyecto
+## Solicitar Traducción de Proyecto
 
 Si deseas contribuir con una traducción o necesitas que se traduzca un proyecto:
 
@@ -143,10 +143,10 @@ Detalles clave de la configuración:
 | `projectTranslator.specifiedFiles`              | Archivos de origen múltiples con sus correspondientes archivos de destino para la traducción   |
 | `projectTranslator.translationIntervalDays`     | Intervalo de traducción en días (por defecto 7 días)                                          |
 | `projectTranslator.ignoreTranslationExtensions` | Lista de extensiones de archivos de texto que no necesitan traducción, estos archivos se copiarán directamente  |
-| `projectTranslator.ignorePaths`                 | Lista de patrones de rutas ignoradas usando comodines, estos archivos no se copiarán           |
+| `projectTranslator.ignorePaths`                 | Lista de patrones de rutas ignorados usando comodines, estos archivos no se copiarán           |
 | `projectTranslator.currentVendor`               | Proveedor de API actual en uso                                                                |
 | `projectTranslator.vendors`                     | Lista de configuración de proveedores de API                                                  |
-| `projectTranslator.systemPrompts`               | Matriz de prompts del sistema para guiar el proceso de traducción                              |
+| `projectTranslator.systemPrompts`               | Matriz de prompts del sistema para guiar el proceso de traducción                             |
 | `projectTranslator.userPrompts`                 | Matriz de prompts definidos por el usuario, estos prompts se añadirán después de los prompts del sistema durante la traducción |
 | `projectTranslator.segmentationMarkers`         | Marcadores de segmentación configurados por tipo de archivo, soporta expresiones regulares     |
 

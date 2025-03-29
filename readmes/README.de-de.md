@@ -29,7 +29,7 @@ Die Erweiterung unterstützt Übersetzungen in diese Sprachen:
 
 Wenn Sie eine Übersetzung beisteuern möchten oder ein Projekt übersetzt werden soll:
 
-1. Erstellen Sie ein Issue mit der folgenden Vorlage:
+1. Erstellen Sie ein Issue mit folgendem Vorlage:
 
 ```md
 **Projekt**: [project_url]
@@ -41,18 +41,18 @@ Wenn Sie eine Übersetzung beisteuern möchten oder ein Projekt übersetzt werde
 
 ```mermaid
 sequenceDiagram
-  Contributor->>Project Translator: Übersetzungs-Issue erstellen
-  Project Translator->>Community: Issue überprüfen
+  Contributor->>Project Translator: Erstelle Übersetzungs-Issue
+  Project Translator->>Community: Überprüfe Issue
   Community-->>Contributor: Genehmigen/Kommentieren
-  Contributor->>New Project: Übersetzung beginnen
-  Contributor->>New Project: Einreichen an New Project
-  Contributor->>Project Translator: Pull Request erstellen, README.Beispiele ändern
+  Contributor->>New Project: Beginne Übersetzung
+  Contributor->>New Project: Reiche an New Project ein
+  Contributor->>Project Translator: Erstelle Pull Request, ändere README.Beispiele
   Project Translator-->>Project Translator: Überprüfen & Zusammenführen
 ```
 
 3. Nach dem Zusammenführen des PRs wird die Übersetzung im Abschnitt Beispiele hinzugefügt.
 
-Aktuelle Übersetzungen im Gange: [Issues anzeigen](https://github.com/Project-Translation/project_translator/issues)
+Aktuelle Übersetzungen in Arbeit: [Issues anzeigen](https://github.com/Project-Translation/project_translator/issues)
 
 ## Funktionen
 - 📁 Unterstützung für Übersetzungen auf Ordner Ebene
@@ -145,21 +145,21 @@ Wichtige Konfigurationsdetails:
 | `projectTranslator.ignoreTranslationExtensions` | Liste der Textdateierweiterungen, die nicht übersetzt werden müssen, diese Dateien werden direkt kopiert |
 | `projectTranslator.ignorePaths`                 | Liste der ignorierten Pfadmuster mit Platzhaltern, diese Dateien werden nicht kopiert          |
 | `projectTranslator.currentVendor`               | Der aktuell verwendete API-Anbieter                                                            |
-| `projectTranslator.vendors`                     | Liste der API-Anbieter-Konfigurationen                                                         |
+| `projectTranslator.vendors`                     | API-Anbieter-Konfigurationsliste                                                               |
 | `projectTranslator.systemPrompts`               | Systemaufforderungsarray zur Steuerung des Übersetzungsprozesses                               |
 | `projectTranslator.userPrompts`                 | Benutzerdefinierte Aufforderungsarray, diese Aufforderungen werden nach den Systemaufforderungen während der Übersetzung hinzugefügt |
 | `projectTranslator.segmentationMarkers`         | Segmentierungsmarkierungen, konfiguriert nach Dateityp, unterstützt reguläre Ausdrücke         |
 
 ## Nutzung
 
-1. Öffnen Sie die Befehlspalette (Strg+Umschalt+P / Cmd+Umschalt+P)
+1. Öffnen Sie die BefehlsPalette (Strg+Umschalt+P / Cmd+Umschalt+P)
 2. Geben Sie "Projekt übersetzen" ein und wählen Sie den Befehl aus
 3. Wenn der Quellordner nicht konfiguriert ist, erscheint ein Ordnerauswahldialog
 4. Warten Sie, bis die Übersetzung abgeschlossen ist
 
 Während der Übersetzung:
 
-- Kann die Übersetzung über die Statusleistungsknöpfe pausieren/fortsetzen
+- Kann die Übersetzung über Schaltflächen in der Statusleiste pausieren/fortsetzen
 - Kann den Übersetzungsprozess jederzeit stoppen
 - Übersetzungsfortschritt wird im Benachrichtigungsbereich angezeigt
 - Detaillierte Protokolle werden im Ausgabepanel angezeigt

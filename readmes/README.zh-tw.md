@@ -34,7 +34,7 @@
 ```md
 **專案**: [project_url]
 **目標語言**: [target_lang]
-**描述**: 簡要描述為何這次翻譯會有價值
+**描述**: 簡要描述為何此翻譯會有價值
 ```
 
 2. 工作流程：
@@ -52,7 +52,7 @@ sequenceDiagram
 
 3. PR 合併後，翻譯將被添加到範例部分。
 
-目前正在進行的翻譯：[查看議題](https://github.com/Project-Translation/project_translator/issues)
+目前進行中的翻譯：[查看議題](https://github.com/Project-Translation/project_translator/issues)
 
 ## 功能
 - 📁 資料夾層級翻譯支援
@@ -68,7 +68,7 @@ sequenceDiagram
 - 💡 智能翻譯與AI
   - 自動維持程式碼結構完整性
   - 僅翻譯程式碼註解，保留程式碼邏輯
-  - 維持JSON/XML和其他資料結構格式
+  - 維持JSON/XML等資料結構格式
   - 專業技術文件翻譯品質
 - ⚙️ 靈活配置
   - 配置來源資料夾和多個目標資料夾
@@ -125,7 +125,7 @@ sequenceDiagram
     {
       "name": "openai",
       "apiEndpoint": "API端點URL",
-      "apiKey": "API驗證密鑰",
+      "apiKey": "API認證密鑰",
       "model": "使用模型名稱",
       "rpm": "每分鐘最大請求數",
       "maxTokensPerSegment": 4096,

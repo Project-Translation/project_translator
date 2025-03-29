@@ -1,8 +1,8 @@
 node_modules/
 out/
 *.vsix
-sample-dist/.prj.trans.sqlite
 sample-dist/.vscode/
-sample-dist/.translation-cache.db
 .vscode-test/
 .copilot-codeGeneration-instructions*.md
+.env
+.translation-cache/

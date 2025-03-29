@@ -46,7 +46,7 @@ sequenceDiagram
   Communauté-->>Contributeur: Approuver/Commenter
   Contributeur->>Nouveau projet: Démarrer la traduction
   Contributeur->>Nouveau projet: Soumettre au nouveau projet
-  Contributeur->>Traducteur de projet: Créer une demande de tirage, modifier README.Exemples
+  Contributeur->>Traducteur de projet: Créer une demande de pull, modifier README.Exemples
   Traducteur de projet-->>Traducteur de projet: Examiner et fusionner
 ```
 
@@ -67,7 +67,7 @@ Traductions en cours : [Voir les problèmes](https://github.com/Project-Translat
   - Support pour les modes de traduction de dossiers et de fichiers
 - 💡 Traduction intelligente avec IA
   - Maintains automatiquement l'intégrité de la structure du code
-  - Traduit uniquement les commentaires de code, préserve la logique du code
+  - Traduit uniquement les commentaires du code, préserve la logique du code
   - Maintains les formats de structures de données JSON/XML et autres
   - Qualité de traduction de documentation technique professionnelle
 - ⚙️ Configuration flexible

@@ -34,20 +34,20 @@ VSCodeの拡張機能：プロジェクトの多言語ローカライゼーシ�
 ```md
 **プロジェクト**: [project_url]
 **対象言語**: [target_lang]
-**説明**: この翻訳がなぜ価値があるのかの簡単な説明
+**説明**: この翻訳がなぜ価値があるかについての簡単な説明
 ```
 
 2. ワークフロー：
 
 ```mermaid
 sequenceDiagram
-  Contributor->>プロジェクト翻訳者: 翻訳イシューを作成
-  プロジェクト翻訳者->>コミュニティ: イシューをレビュー
-  コミュニティ-->>Contributor: 承認/コメント
-  Contributor->>新しいプロジェクト: 翻訳を開始
-  Contributor->>新しいプロジェクト: 新しいプロジェクトに提出
-  Contributor->>プロジェクト翻訳者: プルリクエストを作成、README.Samplesを修正
-  プロジェクト翻訳者-->>プロジェクト翻訳者: レビュー & マージ
+  Contributor->>Project Translator: 翻訳イシューを作成
+  Project Translator->>Community: イシューをレビュー
+  Community-->>Contributor: 承認/コメント
+  Contributor->>New Project: 翻訳を開始
+  Contributor->>New Project: 新しいプロジェクトに提出
+  Contributor->>Project Translator: プルリクエストを作成、README.Samplesを変更
+  Project Translator-->>Project Translator: レビュー & マージ
 ```
 
 3. PRがマージされた後、翻訳はサンプルセクションに追加されます。
@@ -138,17 +138,17 @@ sequenceDiagram
 
 主要な設定の詳細：
 | 設定オプション                                    | 説明                                                                                          |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`              | 翻訳のための複数のソースフォルダと対応するデスティネーションフォルダ                             |
-| `projectTranslator.specifiedFiles`                | 翻訳のための複数のソースファイルと対応するデスティネーションファイル                             |
-| `projectTranslator.translationIntervalDays`       | 翻訳の間隔（日単位）、デフォルトは7日                                                          |
-| `projectTranslator.ignoreTranslationExtensions`   | 翻訳不要のテキストファイル拡張子のリスト、これらのファイルは直接コピーされます                  |
-| `projectTranslator.ignorePaths`                   | ワイルドカードを使用した無視するパスパターンのリスト、これらのファイルはコピーされません        |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`              | 翻訳のための複数のソースフォルダと対応するデスティネーションフォルダ                           |
+| `projectTranslator.specifiedFiles`                | 翻訳のための複数のソースファイルと対応するデスティネーションファイル                           |
+| `projectTranslator.translationIntervalDays`       | 翻訳の間隔（日単位、デフォルトは7日）                                                          |
+| `projectTranslator.ignoreTranslationExtensions`   | 翻訳不要のテキストファイル拡張子のリスト、これらのファイルは直接コピーされます                |
+| `projectTranslator.ignorePaths`                   | ワイルドカードを使用した無視するパスパターンのリスト、これらのファイルはコピーされません       |
 | `projectTranslator.currentVendor`                 | 現在使用中のAPIベンダー                                                                        |
 | `projectTranslator.vendors`                       | APIベンダーの設定リスト                                                                        |
 | `projectTranslator.systemPrompts`                 | 翻訳プロセスをガイドするためのシステムプロンプトの配列                                          |
-| `projectTranslator.userPrompts`                   | ユーザー定義のプロンプトの配列、翻訳中にシステムプロンプトの後に追加されます                     |
-| `projectTranslator.segmentationMarkers`           | ファイルタイプごとに設定されたセグメンテーションマーカー、正規表現をサポート                     |
+| `projectTranslator.userPrompts`                   | ユーザー定義のプロンプトの配列、これらのプロンプトは翻訳中にシステムプロンプトの後に追加されます |
+| `projectTranslator.segmentationMarkers`           | ファイルタイプごとに設定されたセグメンテーションマーカー、正規表現をサポート                    |
 
 ## 使用方法
 
@@ -161,12 +161,12 @@ sequenceDiagram
 
 - ステータスバーのボタンで翻訳を一時停止/再開できます
 - いつでも翻訳プロセスを停止できます
-- 翻訳の進行状況は通知エリアに表示されます
+- 翻訳の進捗は通知エリアに表示されます
 - 詳細なログは出力パネルに表示されます
 
 ## 注意事項
 
-- 十分なAPI使用クオータを確保してください
+- 十分なAPI使用クォータを確保してください
 - まずは小規模なプロジェクトでテストすることをお勧めします
 - 専用のAPIキーを使用し、完了後に削除してください
 

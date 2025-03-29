@@ -50,7 +50,7 @@ sequenceDiagram
   Project Translator-->>Project Translator: 검토 및 병합
 ```
 
-3. PR이 병합되면 번역이 샘플 섹션에 추가됩니다.
+3. PR이 병합된 후, 번역은 샘플 섹션에 추가됩니다.
 
 현재 진행 중인 번역: [이슈 보기](https://github.com/Project-Translation/project_translator/issues)
 
@@ -66,7 +66,7 @@ sequenceDiagram
   - 원래 파일 구조 및 서식 유지
   - 폴더 및 파일 번역 모드 모두 지원
 - 💡 AI를 활용한 스마트 번역
-  - 자동으로 코드 구조 무결성 유지
+  - 코드 구조 무결성 자동 유지
   - 코드 주석만 번역, 코드 로직 보존
   - JSON/XML 및 기타 데이터 구조 형식 유지
   - 전문 기술 문서 번역 품질
@@ -140,35 +140,35 @@ sequenceDiagram
 | 설정 옵션                                      | 설명                                                                                          |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | `projectTranslator.specifiedFolders`            | 번역을 위한 여러 소스 폴더와 해당 대상 폴더                                                  |
-| `projectTranslator.specifiedFiles`              | 번역을 위한 여러 소스 파일과 해당 대상 파일                                                  |
+| `projectTranslator.specifiedFiles`              | 번역을 위한 여러 소스 파일과 해당 대상 파일                                                    |
 | `projectTranslator.translationIntervalDays`     | 번역 간격 (기본값 7일)                                                                        |
-| `projectTranslator.ignoreTranslationExtensions` | 번역이 필요 없는 텍스트 파일 확장자 목록, 이 파일들은 직접 복사됨                             |
-| `projectTranslator.ignorePaths`                 | 와일드카드를 사용한 무시할 경로 패턴 목록, 이 파일들은 복사되지 않음                          |
+| `projectTranslator.ignoreTranslationExtensions` | 번역이 필요 없는 텍스트 파일 확장자 목록, 이 파일들은 직접 복사됨                              |
+| `projectTranslator.ignorePaths`                 | 와일드카드를 사용한 무시할 경로 패턴 목록, 이 파일들은 복사되지 않음                           |
 | `projectTranslator.currentVendor`               | 현재 사용 중인 API 공급업체                                                                   |
 | `projectTranslator.vendors`                     | API 공급업체 설정 목록                                                                        |
-| `projectTranslator.systemPrompts`               | 번역 과정을 안내하는 시스템 프롬프트 배열                                                     |
-| `projectTranslator.userPrompts`                 | 사용자 정의 프롬프트 배열, 번역 중 시스템 프롬프트 이후에 추가됨                               |
-| `projectTranslator.segmentationMarkers`         | 파일 유형별로 구성된 분할 마커, 정규 표현식을 지원                                            |
+| `projectTranslator.systemPrompts`               | 번역 과정을 안내하는 시스템 프롬프트 배열                                                      |
+| `projectTranslator.userPrompts`                 | 사용자 정의 프롬프트 배열, 번역 중 시스템 프롬프트 이후에 추가됨                                |
+| `projectTranslator.segmentationMarkers`         | 파일 유형별로 구성된 분할 마커, 정규 표현식을 지원                                             |
 
 ## 사용 방법
 
-1. 명령 팔레트를 엽니다 (Ctrl+Shift+P / Cmd+Shift+P)
-2. "프로젝트 번역"을 입력하고 명령을 선택합니다
-3. 소스 폴더가 구성되지 않은 경우 폴더 선택 대화 상자가 나타납니다
-4. 번역이 완료될 때까지 기다립니다
+1. 명령 팔레트 열기 (Ctrl+Shift+P / Cmd+Shift+P)
+2. "프로젝트 번역" 입력 후 명령 선택
+3. 소스 폴더가 설정되지 않은 경우 폴더 선택 대화 상자가 나타남
+4. 번역이 완료될 때까지 기다리기
 
 번역 중:
 
-- 상태 표시줄 버튼을 통해 번역을 일시 중지/재개할 수 있습니다
-- 언제든지 번역 과정을 중지할 수 있습니다
-- 번역 진행 상황은 알림 영역에 표시됩니다
-- 자세한 로그는 출력 패널에 표시됩니다
+- 상태 표시줄 버튼을 통해 번역 일시 중지/재개 가능
+- 언제든지 번역 프로세스 중지 가능
+- 번역 진행 상황은 알림 영역에 표시됨
+- 상세 로그는 출력 패널에 표시됨
 
 ## 참고 사항
 
-- 충분한 API 사용 할당량을 확보하십시오
-- 먼저 작은 프로젝트로 테스트하는 것이 좋습니다
-- 전용 API 키를 사용하고 완료 후 제거하십시오
+- 충분한 API 사용 할당량 확보
+- 작은 프로젝트로 먼저 테스트 권장
+- 전용 API 키 사용 후 완료 후 제거
 
 ## 라이선스
 

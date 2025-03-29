@@ -23,13 +23,13 @@
 
 | 项目                                                   | 语言                                                                                                                                                 |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) 由 @google 提供<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) 由 @jqknono 翻译 |
+| [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) 原始由 @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) 翻译由 @jqknono |
 
 ## 请求项目翻译
 
 如果您想贡献翻译或需要翻译一个项目：
 
-1. 使用以下模板创建一个 issue：
+1. 使用以下模板创建一个问题：
 
 ```md
 **项目**: [project_url]
@@ -41,12 +41,12 @@
 
 ```mermaid
 sequenceDiagram
-  贡献者->>项目翻译器: 创建翻译 issue
-  项目翻译器->>社区: 审查 issue
-  社区-->>贡献者: 批准/评论
-  贡献者->>新项目: 开始翻译
-  贡献者->>新项目: 提交到新项目
-  贡献者->>项目翻译器: 创建拉取请求，修改 README.样例
+  Contributor->>项目翻译器: 创建翻译问题
+  项目翻译器->>社区: 审查问题
+  社区-->>Contributor: 批准/评论
+  Contributor->>新项目: 开始翻译
+  Contributor->>新项目: 提交到新项目
+  Contributor->>项目翻译器: 创建拉取请求，修改 README.样例
   项目翻译器-->>项目翻译器: 审查与合并
 ```
 
@@ -168,8 +168,8 @@ sequenceDiagram
 
 - 确保有足够的API使用配额
 - 建议先用小项目进行测试
-- 使用专用API密钥并在完成后移除
+- 使用专用API密钥并在完成后移除它们
 
-## 许可
+## 许可证
 
-[许可](LICENSE)
+[许可证](LICENSE)

@@ -41,13 +41,13 @@ Se você deseja contribuir com uma tradução ou precisa que um projeto seja tra
 
 ```mermaid
 sequenceDiagram
-  Contributor->>Project Translator: Criar issue de tradução
-  Project Translator->>Community: Revisar issue
-  Community-->>Contributor: Aprovar/Comentar
-  Contributor->>New Project: Iniciar tradução
-  Contributor->>New Project: Enviar para Novo Projeto
-  Contributor->>Project Translator: Criar Pull Request, modificar README.Samples
-  Project Translator-->>Project Translator: Revisar & Mesclar
+  Contribuinte->>Tradutor de Projeto: Criar issue de tradução
+  Tradutor de Projeto->>Comunidade: Revisar issue
+  Comunidade-->>Contribuinte: Aprovar/Comentar
+  Contribuinte->>Novo Projeto: Iniciar tradução
+  Contribuinte->>Novo Projeto: Enviar para Novo Projeto
+  Contribuinte->>Tradutor de Projeto: Criar Pull Request, modificar README.Amostras
+  Tradutor de Projeto-->>Tradutor de Projeto: Revisar & Mesclar
 ```
 
 3. Após a PR ser mesclada, a tradução será adicionada à seção de Amostras.
@@ -166,7 +166,7 @@ Durante a tradução:
 
 ## Notas
 
-- Garanta cota de uso de API suficiente
+- Certifique-se de ter cota de uso de API suficiente
 - Recomendado testar com projetos pequenos primeiro
 - Use chaves de API dedicadas e remova-as após a conclusão
 

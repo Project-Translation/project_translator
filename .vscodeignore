@@ -20,3 +20,4 @@ sample-dist/**
 .prettierignore
 .prettierrc
 .copilot-codeGeneration-instructions.md
+package-lock.json

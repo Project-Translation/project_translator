@@ -7,7 +7,8 @@ export { SupportedLanguage };
 export interface VendorConfig {
     name: string;
     apiEndpoint: string;
-    apiKey: string;
+    apiKey?: string;
+    apiKeyEnvVarName?: string;
     model: string;
     rpm?: number;
     maxTokensPerSegment?: number;

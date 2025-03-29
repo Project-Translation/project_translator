@@ -1,6 +1,5 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import * as sqlite3 from 'sqlite3';
 import * as vscode from 'vscode';
 import { SpecifiedFolder } from './types/types';
 
@@ -18,29 +17,38 @@ export function isValidLanguage(lang: string): boolean {
     return typeof lang === 'string' && lang.length > 0 && lang.length < 10;
 }
 
+interface TranslationRecord {
+    [sourcePath: string]: number; // lastTranslationTime
+}
+
 export class TranslationDatabase {
-    private db: sqlite3.Database;
+    private translationCacheDir: string;
     private workspaceRoot: string;
     private sourceRoot: string | null = null;
     private targetRoots: Map<string, SupportedLanguage> = new Map();
+    private translationCache: Map<string, TranslationRecord> = new Map();
 
     constructor(workspaceRoot: string) {
         this.workspaceRoot = workspaceRoot;
-        this.db = new sqlite3.Database(path.join(workspaceRoot, '.translation-cache.db'));
-        // Initialize database asynchronously
-        this.initDatabase().catch(err => {
-            vscode.window.showErrorMessage(`Failed to initialize database: ${err}`);
+        this.translationCacheDir = path.join(workspaceRoot, '.translation-cache');
+        
+        // Initialize cache directory and load data
+        this.initCache().catch(err => {
+            vscode.window.showErrorMessage(`Failed to initialize translation cache: ${err}`);
         });
     }
 
-    private async initDatabase() {
+    private async initCache() {
+        // Create the cache directory if it doesn't exist
+        if (!fs.existsSync(this.translationCacheDir)) {
+            fs.mkdirSync(this.translationCacheDir, { recursive: true });
+        }
+
         // Get configuration
         const config = vscode.workspace.getConfiguration('projectTranslator');
-        // Import SpecifiedFolder from types
-        
         const specifiedFolders = config.get<Array<SpecifiedFolder>>('specifiedFolders') || [];
         
-        // Only create tables for languages specified in the configuration
+        // Only create caches for languages specified in the configuration
         const configuredLanguages = new Set<SupportedLanguage>();
         
         if (specifiedFolders.length > 0) {
@@ -53,46 +61,61 @@ export class TranslationDatabase {
             });
         }
 
-        // Create tables for configured languages
+        // Load translation caches for configured languages
         if (configuredLanguages.size > 0) {
-            const createTablePromises = Array.from(configuredLanguages).map(lang => 
-                this.createTableForLanguage(lang).catch(err => {
-                    vscode.window.showErrorMessage(`Failed to create table for language ${lang}: ${err}`);
+            const loadCachePromises = Array.from(configuredLanguages).map(lang => 
+                this.loadCacheForLanguage(lang).catch(err => {
+                    vscode.window.showErrorMessage(`Failed to load cache for language ${lang}: ${err}`);
                 })
             );
-            await Promise.all(createTablePromises);
+            await Promise.all(loadCachePromises);
         } else {
             vscode.window.showWarningMessage('No valid target languages found in configuration');
         }
     }
 
-    // Helper method to create a translation table for a specific language
-    private createTableForLanguage(lang: SupportedLanguage): Promise<void> {
-        return new Promise((resolve) => {
-            if (!isValidLanguage(lang)) {
-                vscode.window.showWarningMessage(`Cannot create table for invalid language code "${lang}"`);
-                resolve();
-                return;
+    // Helper method to load or initialize a translation cache for a specific language
+    private async loadCacheForLanguage(lang: SupportedLanguage): Promise<void> {
+        if (!isValidLanguage(lang)) {
+            vscode.window.showWarningMessage(`Cannot create cache for invalid language code "${lang}"`);
+            return;
+        }
+        
+        // Sanitize the language code to create a valid file name
+        const cacheFileName = `translations_${lang.replace(/[^a-zA-Z0-9_]/g, '_')}.json`;
+        const cacheFilePath = path.join(this.translationCacheDir, cacheFileName);
+        
+        try {
+            if (fs.existsSync(cacheFilePath)) {
+                const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
+                this.translationCache.set(lang, JSON.parse(cacheContent));
+            } else {
+                // Initialize with empty record if file doesn't exist
+                this.translationCache.set(lang, {});
+                await this.saveCacheForLanguage(lang);
             }
-            
-            // Sanitize the language code to create a valid table name
-            const tableName = `translations_${lang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
-            this.db.run(`
-                CREATE TABLE IF NOT EXISTS ${tableName} (
-                    source_path TEXT PRIMARY KEY,
-                    lastTranslationTime INTEGER
-                )
-            `, (err) => {
-                if (err) {
-                    vscode.window.showErrorMessage(`Error creating table for language ${lang}: ${err}`);
-                    // No need to call reject since we're always resolving
-                    resolve();
-                } else {
-                    // Log success
-                    resolve();
-                }
-            });
-        });
+        } catch (error) {
+            // If there's an error reading or parsing the file, start with an empty cache
+            this.translationCache.set(lang, {});
+            vscode.window.showWarningMessage(`Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`);
+        }
+    }
+
+    // Helper method to save the cache for a specific language
+    private async saveCacheForLanguage(lang: SupportedLanguage): Promise<void> {
+        if (!isValidLanguage(lang)) {
+            return;
+        }
+        
+        const cacheFileName = `translations_${lang.replace(/[^a-zA-Z0-9_]/g, '_')}.json`;
+        const cacheFilePath = path.join(this.translationCacheDir, cacheFileName);
+        
+        try {
+            const cacheContent = JSON.stringify(this.translationCache.get(lang) || {}, null, 2);
+            fs.writeFileSync(cacheFilePath, cacheContent, 'utf8');
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to save translation cache for ${lang}: ${error}`);
+        }
     }
 
     private initTargetRootsFromConfig(destFolders: Array<{ path: string; lang: SupportedLanguage }>) {
@@ -167,53 +190,46 @@ export class TranslationDatabase {
     public async updateTranslationTime(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<void> {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
         
-        // Ensure table exists for this language
-        await this.createTableForLanguage(targetLang);
+        // Ensure cache exists for this language
+        if (!this.translationCache.has(targetLang)) {
+            await this.loadCacheForLanguage(targetLang);
+        }
         
-        // Sanitize language code for table name
-        const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
-
-        return new Promise<void>((resolve, reject) => {
-            this.db.run(
-                `INSERT OR REPLACE INTO ${tableName} (source_path, lastTranslationTime) VALUES (?, ?)`,
-                [relativeSourcePath, Date.now()],
-                (err: Error | null) => {
-                    if (err) {
-                        vscode.window.showErrorMessage(`Error updating translation time: ${err}`);
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                }
-            );
-        });
+        // Get the translation record for this language
+        const translationRecord = this.translationCache.get(targetLang) || {};
+        
+        // Update the record
+        translationRecord[relativeSourcePath] = Date.now();
+        
+        // Save back to the cache
+        this.translationCache.set(targetLang, translationRecord);
+        
+        // Save to file
+        await this.saveCacheForLanguage(targetLang);
     }
 
     public async setOldestTranslationTime(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<void> {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
         
-        // Ensure table exists for this language
-        await this.createTableForLanguage(targetLang);
+        // Ensure cache exists for this language
+        if (!this.translationCache.has(targetLang)) {
+            await this.loadCacheForLanguage(targetLang);
+        }
         
-        // Sanitize language code for table name
-        const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+        // Get the translation record for this language
+        const translationRecord = this.translationCache.get(targetLang) || {};
+        
         // Use Unix epoch start time (1970-01-01) as the oldest time
         const oldestTimestamp = 0;
-
-        return new Promise<void>((resolve, reject) => {
-            this.db.run(
-                `INSERT OR REPLACE INTO ${tableName} (source_path, lastTranslationTime) VALUES (?, ?)`,
-                [relativeSourcePath, oldestTimestamp],
-                (err: Error | null) => {
-                    if (err) {
-                        vscode.window.showErrorMessage(`Error setting oldest translation time: ${err}`);
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                }
-            );
-        });
+        
+        // Update the record
+        translationRecord[relativeSourcePath] = oldestTimestamp;
+        
+        // Save back to the cache
+        this.translationCache.set(targetLang, translationRecord);
+        
+        // Save to file
+        await this.saveCacheForLanguage(targetLang);
     }
 
     public async shouldTranslate(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
@@ -225,34 +241,26 @@ export class TranslationDatabase {
         const relativeSourcePath = this.getRelativePath(sourcePath, true);
         
         try {
-            // Ensure table exists for this language
-            await this.createTableForLanguage(targetLang);
+            // Ensure cache exists for this language
+            if (!this.translationCache.has(targetLang)) {
+                await this.loadCacheForLanguage(targetLang);
+            }
             
-            // Sanitize language code for table name
-            const tableName = `translations_${targetLang.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+            // Get the translation record for this language
+            const translationRecord = this.translationCache.get(targetLang) || {};
+            
+            // Get the interval in days from configuration
             const intervalDays = vscode.workspace.getConfiguration('projectTranslator').get<number>('translationIntervalDays') || 7;
-
-            return new Promise((resolve) => {
-                this.db.get(
-                    `SELECT lastTranslationTime FROM ${tableName} WHERE source_path = ?`,
-                    [relativeSourcePath],
-                    (err: Error | null, result: { lastTranslationTime: number } | undefined) => {
-                        if (err) {
-                            vscode.window.showErrorMessage(`Error checking translation status: ${err}`);
-                            resolve(true);
-                            return;
-                        }
-
-                        if (!result) {
-                            resolve(true);
-                            return;
-                        }
-
-                        const daysSinceLastTranslation = (Date.now() - result.lastTranslationTime) / (1000 * 60 * 60 * 24);
-                        resolve(daysSinceLastTranslation >= intervalDays);
-                    }
-                );
-            });
+            
+            // If the source file has no record or is older than the interval, it should be translated
+            if (!translationRecord[relativeSourcePath]) {
+                return true;
+            }
+            
+            const lastTranslationTime = translationRecord[relativeSourcePath];
+            const daysSinceLastTranslation = (Date.now() - lastTranslationTime) / (1000 * 60 * 60 * 24);
+            
+            return daysSinceLastTranslation >= intervalDays;
         } catch (error) {
             vscode.window.showErrorMessage(`Error in shouldTranslate: ${error}`);
             return true; // If there's an error, proceed with translation
@@ -260,15 +268,14 @@ export class TranslationDatabase {
     }
 
     public close(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.db.close((err) => {
-                if (err) {
-                    vscode.window.showErrorMessage(`Error closing database: ${err}`);
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
+        // Save all caches before closing
+        const savePromises = Array.from(this.translationCache.keys()).map(lang => 
+            this.saveCacheForLanguage(lang)
+        );
+        
+        return Promise.all(savePromises).then(() => {
+            // Clear the cache to free up memory
+            this.translationCache.clear();
         });
     }
 }

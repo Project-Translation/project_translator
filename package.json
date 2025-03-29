@@ -5,7 +5,6 @@
   "version": "0.6.0",
   "publisher": "techfetch-dev",
   "icon": "resources/project-translator.png",
-  "type": "module",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -55,41 +54,47 @@
             "properties": {
               "name": {
                 "type": "string",
-                "description": "%config.vendors.description%"
+                "description": "%config.vendor.name.description%",
+                "default": "grok"
               },
               "apiEndpoint": {
                 "type": "string",
-                "description": "%config.vendors.description%",
+                "description": "%config.vendor.apiEndpoint.description%",
                 "default": "https://api.x.ai/v1"
               },
               "apiKey": {
                 "type": "string",
-                "description": "%config.vendors.description%",
+                "description": "%config.vendor.apiKey.description%",
+                "default": ""
+              },
+              "apiKeyEnvVarName": {
+                "type": "string",
+                "description": "%config.vendor.apiKeyEnvVarName.description%",
                 "default": ""
               },
               "model": {
                 "type": "string",
-                "description": "%config.vendors.description%",
+                "description": "%config.vendor.model.description%",
                 "default": "grok-2"
               },
               "rpm": {
                 "type": "number",
-                "description": "%config.vendors.description%",
+                "description": "%config.vendor.rpm.description%",
                 "default": 20
               },
               "maxTokensPerSegment": {
                 "type": "number",
-                "description": "%config.vendors.description%",
+                "description": "%config.vendor.maxTokensPerSegment.description%",
                 "default": 1500
               },
               "timeout": {
                 "type": "number",
-                "description": "%config.vendors.description%",
+                "description": "%config.vendor.timeout.description%",
                 "default": 30
               },
               "temperature": {
                 "type": "number",
-                "description": "%config.vendors.description%",
+                "description": "%config.vendor.temperature.description%",
                 "minimum": 0,
                 "maximum": 2,
                 "default": 0
@@ -98,7 +103,6 @@
             "required": [
               "name",
               "apiEndpoint",
-              "apiKey",
               "model"
             ]
           },
@@ -107,6 +111,7 @@
               "name": "grok",
               "apiEndpoint": "https://api.x.ai/v1",
               "apiKey": "",
+              "apiKeyEnvVarName": "",
               "model": "grok-2",
               "rpm": 20,
               "maxTokensPerSegment": 1500,
@@ -368,7 +373,7 @@
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "publish:minor": "@vscode/vsce publish minor",
-    "package": "npm run compile && @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
+    "package": "npm run compile && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
@@ -377,12 +382,12 @@
     "@types/minimatch": "^5.1.2",
     "@types/node": "^14.18.63",
     "@types/sinon": "^17.0.4",
-    "@types/sqlite3": "^3.1.11",
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
     "@vscode/vsce": "^3.2.2",
     "chai": "^5.2.0",
+    "esbuild": "^0.25.1",
     "eslint": "^9.23.0",
     "glob": "^11.0.1",
     "ts-loader": "^9.5.2",
@@ -394,8 +399,7 @@
     "bindings": "^1.5.0",
     "isbinaryfile": "^5.0.0",
     "minimatch": "^10.0.1",
-    "openai": "^4.85.3",
-    "sqlite3": "^5.1.7"
+    "openai": "^4.85.3"
   },
   "capabilities": {
     "virtualWorkspaces": true
