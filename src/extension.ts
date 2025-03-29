@@ -479,31 +479,7 @@ function outputSummary(startTime: number, fileProcessor: FileProcessor, translat
 
 async function sendAnalytics(analyticsService: AnalyticsService, fileProcessor: FileProcessor, translatorService: TranslatorService) {
     const config = vscode.workspace.getConfiguration('projectTranslator');
-    const stats = fileProcessor.getProcessingStats();
-    const tokenCounts = translatorService.getTokenCounts();
-
-    const settingsToCollect = {
-        sourceFolder: config.get('sourceFolder'),
-        destFolders: config.get('destFolders'),
-        translationIntervalDays: config.get('translationIntervalDays'),
-        ignoreTranslationExtensions: config.get('ignoreTranslationExtensions'),
-        ignorePaths: config.get('ignorePaths'),
-        currentVendor: config.get('currentVendor'),
-        vendors: config.get('vendors'),
-        systemPrompts: config.get('systemPrompts'),
-        userPrompts: config.get('userPrompts'),
-        segmentationMarkers: config.get('segmentationMarkers'),
-        stats: {
-            processedFiles: stats.processedFiles,
-            skippedFiles: stats.skippedFiles,
-            failedFiles: stats.failedFiles,
-            totalInputTokens: tokenCounts.inputTokens,
-            totalOutputTokens: tokenCounts.outputTokens,
-            tokensPerMinute: Math.round(tokenCounts.totalTokens / 60)
-        }
-    };
-
-    await analyticsService.sendSettingsData(settingsToCollect);
+    await analyticsService.sendSettingsData(config);
 }
 
 function cleanup() {

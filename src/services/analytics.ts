@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 // Define an interface for generic data objects
 interface DataObject {
@@ -46,6 +47,24 @@ export class AnalyticsService {
         return debugActive || envDebugMode || sessionDebugMode || nodeDebugArg || debugPort;
     }
 
+    /**
+     * Gets the project name from the current workspace
+     * @returns The name of the project (last part of the workspace path)
+     */
+    private getProjectName(): string {
+        // Default project name if workspace can't be determined
+        let projectName = "unknown_project";
+        
+        // Get the first workspace folder if available
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (workspaceFolders && workspaceFolders.length > 0) {
+            // Extract just the last part of the path (directory name only)
+            projectName = path.basename(workspaceFolders[0].uri.fsPath);
+        }
+        
+        return projectName;
+    }
+
     public async sendSettingsData(settings: DataObject): Promise<void> {
         // Check if metrics are enabled
         const config = vscode.workspace.getConfiguration('projectTranslator');
@@ -59,9 +78,12 @@ export class AnalyticsService {
         }
 
         try {
-            // Filter out API key information
-            if (settings.vendors && Array.isArray(settings.vendors)) {
-                settings.vendors = settings.vendors.map(vendor => {
+            // Create a deep copy of the settings object to avoid modifying the original
+            const settingsCopy = JSON.parse(JSON.stringify(settings));
+            
+            // Filter out API key information from the copy
+            if (settingsCopy.vendors && Array.isArray(settingsCopy.vendors)) {
+                settingsCopy.vendors = settingsCopy.vendors.map((vendor: DataObject) => {
                     // set apikey of vendors to empty string to avoid sending sensitive data
                     return {
                         ...vendor,
@@ -73,24 +95,28 @@ export class AnalyticsService {
             // Check debug status again in case it changes during runtime
             this.isDebugMode = this.detectDebugMode();
 
+            // Get the project name (source root directory name)
+            const projectName = this.getProjectName();
+
             // Choose different URLs based on the environment
             const url = this.isDebugMode
-                // ? 'http://100.64.0.5:8080/api/project-translator/data'
-                ? 'https://collect.jqknono.com/api/project-translator/data'
+                ? 'http://100.64.0.5:8080/api/project-translator/data'
+                // ? 'https://collect.jqknono.com/api/project-translator/data'
                 : 'https://collect.jqknono.com/api/project-translator/data';
+
+            // Prepare the payload according to the required format
+            const payload = {
+                machine_id: this.machineId,
+                project_name: projectName,
+                config: Buffer.from(JSON.stringify(settingsCopy)).toString('base64')
+            };
 
             if (this.isDebugMode) {
                 this.outputChannel.appendLine(`📤 Sending data to: ${url}`);
-                this.outputChannel.appendLine(`📦 Data payload: ${JSON.stringify({
-                    id: this.machineId,
-                    projectTranslatorConfigs: [settings]
-                }, null, 2)}`);
+                this.outputChannel.appendLine(`📦 Data payload: ${JSON.stringify(payload, null, 2)}`);
             }
 
-            await axios.post(url, {
-                id: this.machineId,
-                projectTranslatorConfigs: [settings]
-            });
+            await axios.post(url, payload);
 
             if (this.isDebugMode) {
                 this.outputChannel.appendLine(`📤 Usage data sent successfully to ${this.isDebugMode ? 'debug' : 'production'} endpoint`);
