@@ -6,7 +6,7 @@ import { isBinaryFile } from "isbinaryfile";
 import { minimatch } from "minimatch";
 import { TranslationDatabase } from "../translationDatabase";
 import { DestFolder, SupportedLanguage } from "../types/types";
-import { TranslatorService } from "./translatorService";
+import { TranslatorService, AI_RETURN_CODE } from "./translatorService";
 import { estimateTokenCount, segmentText, combineSegments } from "../segmentationUtils";
 import { getConfiguration } from "../config/config";
 
@@ -278,21 +278,27 @@ export class FileProcessor {
             const { maxTokensPerSegment = 4096 } = config;
             const estimatedTokens = estimateTokenCount(content);
 
+            let returnCode: string;
             let translatedContent: string;
+            
             if (estimatedTokens > maxTokensPerSegment) {
-                translatedContent = await this.handleLargeFile(content, sourcePath, targetPath, sourceLang, targetLang);
+                [returnCode, translatedContent] = await this.handleLargeFile(content, sourcePath, targetPath, sourceLang, targetLang);
             } else {
                 this.checkCancellation();
-                translatedContent = await this.translatorService.translateContent(
+                [returnCode, translatedContent] = await this.translatorService.translateContent(
                     content, 
                     sourceLang,
                     targetLang, 
                     sourcePath, 
                     this.cancellationToken
                 );
-                this.checkCancellation();
-                fs.writeFileSync(targetPath, translatedContent);
-                this.outputChannel.appendLine("💾 Translation result written");
+
+                // Check if the response indicates no translation is needed
+                if (returnCode === AI_RETURN_CODE.OK) {
+                    this.checkCancellation();
+                    fs.writeFileSync(targetPath, translatedContent);
+                    this.outputChannel.appendLine("💾 Translation result written");
+                }
             }
 
             const endTime = Date.now();
@@ -313,7 +319,7 @@ export class FileProcessor {
         }
     }
 
-    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<string> {
+    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<[string, string]> {
         const config = getConfiguration();
         const { maxTokensPerSegment } = config;
         const segments = segmentText(content, sourcePath, maxTokensPerSegment);
@@ -321,17 +327,55 @@ export class FileProcessor {
 
         this.outputChannel.appendLine(`📑 File too large, split into ${segments.length} segments`);
 
-        for (let i = 0; i < segments.length; i++) {
-            this.checkCancellation();
+        // First, translate just the first segment to check if translation is needed
+        this.checkCancellation();
+        const firstSegment = segments[0];
+        const firstSegmentTokens = estimateTokenCount(firstSegment);
+        this.outputChannel.appendLine(
+            `🔄 Translating first segment (approximately ${firstSegmentTokens} tokens)...`
+        );
 
-            const segment = segments[i];
-            const segmentTokens = estimateTokenCount(segment);
-            this.outputChannel.appendLine(
-                `🔄 Translating segment ${i + 1}/${segments.length} (approximately ${segmentTokens} tokens)...`
+        try {
+            const [firstSegmentCode, firstTranslatedSegment] = await this.translatorService.translateContent(
+                firstSegment,
+                sourceLang,
+                targetLang,
+                sourcePath,
+                this.cancellationToken
             );
 
-            try {
-                const translatedSegment = await this.translatorService.translateContent(
+            // If first segment indicates no translation needed, skip the entire file
+            if (firstSegmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                this.outputChannel.appendLine(`🔄 AI indicated no translation needed for this file, skipping entire file translation`);
+                fs.writeFileSync(targetPath, content);
+                this.outputChannel.appendLine(`💾 Written original content to target file`);
+                
+                // Update translation time to prevent future unnecessary translation attempts
+                await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+                this.outputChannel.appendLine("✅ Translation timestamp updated");
+                this.processedFilesCount++;
+                
+                return [firstSegmentCode, content];
+            }
+
+            // If translation is needed, add first segment and continue with the rest
+            translatedSegments.push(firstTranslatedSegment);
+
+            // Write progress to file
+            fs.writeFileSync(targetPath, firstTranslatedSegment);
+            this.outputChannel.appendLine(`💾 Written translation result for segment 1/${segments.length}`);
+
+            // Process remaining segments
+            for (let i = 1; i < segments.length; i++) {
+                this.checkCancellation();
+
+                const segment = segments[i];
+                const segmentTokens = estimateTokenCount(segment);
+                this.outputChannel.appendLine(
+                    `🔄 Translating segment ${i + 1}/${segments.length} (approximately ${segmentTokens} tokens)...`
+                );
+
+                const [segmentCode, translatedSegment] = await this.translatorService.translateContent(
                     segment,
                     sourceLang,
                     targetLang,
@@ -342,19 +386,20 @@ export class FileProcessor {
                 translatedSegments.push(translatedSegment);
 
                 // Write progress to file
-                const currentContent = combineSegments(translatedSegments);
+                const currentContent: string = combineSegments(translatedSegments);
                 fs.writeFileSync(targetPath, currentContent);
                 this.outputChannel.appendLine(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
-            } catch (error) {
-                if (error instanceof vscode.CancellationError) {
-                    throw error;
-                }
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                this.outputChannel.appendLine(`❌ Failed to translate segment ${i + 1}: ${errorMessage}`);
+            }
+
+            const finalContent = combineSegments(translatedSegments);
+            return [AI_RETURN_CODE.OK, finalContent];
+        } catch (error) {
+            if (error instanceof vscode.CancellationError) {
                 throw error;
             }
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            this.outputChannel.appendLine(`❌ Failed to translate: ${errorMessage}`);
+            throw error;
         }
-
-        return combineSegments(translatedSegments);
     }
 }

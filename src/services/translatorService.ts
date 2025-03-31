@@ -7,6 +7,12 @@ import * as path from 'path';
 // Store the last request timestamp for each vendor
 const vendorLastRequest: Map<string, number> = new Map();
 
+// AI return code.
+export const AI_RETURN_CODE = {
+    OK: "OK",
+    NO_NEED_TRANSLATE: "727d2eb8-8683-42bd-a1d0-f604fcd82163"
+};
+
 export class TranslatorService {
     private openaiClient: OpenAI | null = null;
     private outputChannel: vscode.OutputChannel;
@@ -39,7 +45,7 @@ export class TranslatorService {
         targetLang: SupportedLanguage,
         sourcePath: string,
         cancellationToken?: vscode.CancellationToken
-    ): Promise<string> {
+    ): Promise<[string, string]> {
         if (!this.openaiClient) {
             const error = "OpenAI client not initialized";
             this.outputChannel.appendLine(`❌ ${error}`);
@@ -89,6 +95,7 @@ export class TranslatorService {
                 temperature: temperature
             });
 
+            // Update the timestamp regardless of translation status
             vendorLastRequest.set(currentVendorName, Date.now());
 
             const inputTokens = response.usage?.prompt_tokens || 0;
@@ -100,7 +107,15 @@ export class TranslatorService {
             this.projectTotalInputTokens += inputTokens;
             this.projectTotalOutputTokens += outputTokens;
 
-            return response.choices[0]?.message?.content || content;
+            const translatedContent = response.choices[0]?.message?.content || content;
+            
+            // Check if the response contains the NO_NEED_TRANSLATE return code
+            if (translatedContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE)) {
+                this.outputChannel.appendLine(`🔄 AI indicated no translation needed for this file, skipping translation`);
+                return [AI_RETURN_CODE.NO_NEED_TRANSLATE, content]; // Return the original content unchanged
+            }
+
+            return [AI_RETURN_CODE.OK, translatedContent];
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             this.outputChannel.appendLine(`❌ Translation failed: ${errorMessage}`);

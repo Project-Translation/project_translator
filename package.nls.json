@@ -15,7 +15,7 @@
     "config.vendor.name.description": "Name of the API vendor",
     "config.vendor.apiEndpoint.description": "API endpoint URL for the vendor",
     "config.vendor.apiKey.description": "API key for authentication with the vendor",
-    "config.vendor.apiKeyEnvVarName.description": "Environment variable name that contains the API key",
+    "config.vendor.apiKeyEnvVarName.description": "Environment variable name that contains the API key, if not set, the API key will be used directly. Using env variables is recommended for security.",
     "config.vendor.model.description": "Model name to use for translation",
     "config.vendor.rpm.description": "Maximum requests per minute limit",
     "config.vendor.maxTokensPerSegment.description": "Maximum number of tokens per translation segment",
