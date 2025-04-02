@@ -33,15 +33,20 @@
             "detail": "Watch TypeScript files for changes"
         },
         {
-            "label": "package",
+            "label": "publish patch",
             "type": "shell",
-            "command": "vsce",
-            "args": [
-                "package",
-            ],
+            "command": "npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
             "group": "build",
             "problemMatcher": [],
-            "detail": "Package VS Code extension"
+            "detail": "Publish Patch VS Code extension"
+        },
+        {
+            "label": "publish minor",
+            "type": "shell",
+            "command": "npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Publish Minor VS Code extension"
         }
     ]
 }
