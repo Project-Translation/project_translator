@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as crypto from 'crypto';
 import * as vscode from 'vscode';
 import { SpecifiedFolder } from './types/types';
 
@@ -18,7 +19,10 @@ export function isValidLanguage(lang: string): boolean {
 }
 
 interface TranslationRecord {
-    [sourcePath: string]: number; // lastTranslationTime
+    [sourcePath: string]: {
+        timestamp: number;
+        hash: string;
+    };
 }
 
 export class TranslationDatabase {
@@ -198,8 +202,11 @@ export class TranslationDatabase {
         // Get the translation record for this language
         const translationRecord = this.translationCache.get(targetLang) || {};
         
+        // Get current file info
+        const fileInfo = await this.getCurrentFileInfo(sourcePath);
+        
         // Update the record
-        translationRecord[relativeSourcePath] = Date.now();
+        translationRecord[relativeSourcePath] = fileInfo;
         
         // Save back to the cache
         this.translationCache.set(targetLang, translationRecord);
@@ -219,11 +226,15 @@ export class TranslationDatabase {
         // Get the translation record for this language
         const translationRecord = this.translationCache.get(targetLang) || {};
         
-        // Use Unix epoch start time (1970-01-01) as the oldest time
-        const oldestTimestamp = 0;
+        // Calculate current hash but use oldest timestamp
+        const hash = this.calculateFileHash(sourcePath);
+        const oldestTimestamp = 0; // Unix epoch start time (1970-01-01)
         
-        // Update the record
-        translationRecord[relativeSourcePath] = oldestTimestamp;
+        // Update the record with current hash but oldest timestamp
+        translationRecord[relativeSourcePath] = {
+            timestamp: oldestTimestamp,
+            hash: hash
+        };
         
         // Save back to the cache
         this.translationCache.set(targetLang, translationRecord);
@@ -252,15 +263,21 @@ export class TranslationDatabase {
             // Get the interval in days from configuration
             const intervalDays = vscode.workspace.getConfiguration('projectTranslator').get<number>('translationIntervalDays') || 7;
             
-            // If the source file has no record or is older than the interval, it should be translated
+            // If the source file has no record, it should be translated
             if (!translationRecord[relativeSourcePath]) {
                 return true;
             }
             
-            const lastTranslationTime = translationRecord[relativeSourcePath];
-            const daysSinceLastTranslation = (Date.now() - lastTranslationTime) / (1000 * 60 * 60 * 24);
+            // Get current file info to compare
+            const currentFileInfo = await this.getCurrentFileInfo(sourcePath);
+            const cachedFileInfo = translationRecord[relativeSourcePath];
+            // Check if both conditions are met: hash changed and past interval
+            const hashChanged = currentFileInfo.hash !== cachedFileInfo.hash;
+            const daysSinceLastTranslation = (Date.now() - cachedFileInfo.timestamp) / (1000 * 60 * 60 * 24);
+            const isPastInterval = daysSinceLastTranslation >= intervalDays;
             
-            return daysSinceLastTranslation >= intervalDays;
+            return hashChanged && isPastInterval;
+            
         } catch (error) {
             vscode.window.showErrorMessage(`Error in shouldTranslate: ${error}`);
             return true; // If there's an error, proceed with translation
@@ -277,5 +294,16 @@ export class TranslationDatabase {
             // Clear the cache to free up memory
             this.translationCache.clear();
         });
+    }
+
+    private calculateFileHash(filePath: string): string {
+        const fileContent = fs.readFileSync(filePath);
+        return crypto.createHash('md5').update(fileContent).digest('hex');
+    }
+
+    private async getCurrentFileInfo(sourcePath: string): Promise<{ timestamp: number; hash: string }> {
+        const timestamp = Date.now();
+        const hash = this.calculateFileHash(sourcePath);
+        return { timestamp, hash };
     }
 }

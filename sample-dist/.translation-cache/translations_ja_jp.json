@@ -3,6 +3,9 @@
   "../test/code/project_translator/l10n/bundle.l10n.json": 1743163795094,
   "test/code/project_translator/package.nls.json": 1743163869549,
   "test/code/project_translator/README.md": 1743164081887,
-  "../code/project_translator/sample-dist/md/should_skip.md": 1743580560157,
+  "../code/project_translator/sample-dist/md/should_skip.md": {
+    "timestamp": 1743586683386,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
   "../code/project_translator/sample-dist/md/should_translate.md": 1743393661511
 }
