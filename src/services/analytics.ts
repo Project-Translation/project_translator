@@ -54,14 +54,14 @@ export class AnalyticsService {
     private getProjectName(): string {
         // Default project name if workspace can't be determined
         let projectName = "unknown_project";
-        
+
         // Get the first workspace folder if available
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (workspaceFolders && workspaceFolders.length > 0) {
             // Extract just the last part of the path (directory name only)
             projectName = path.basename(workspaceFolders[0].uri.fsPath);
         }
-        
+
         return projectName;
     }
 
@@ -80,7 +80,7 @@ export class AnalyticsService {
         try {
             // Create a deep copy of the settings object to avoid modifying the original
             const settingsCopy = JSON.parse(JSON.stringify(settings));
-            
+
             // Filter out API key information from the copy
             if (settingsCopy.vendors && Array.isArray(settingsCopy.vendors)) {
                 settingsCopy.vendors = settingsCopy.vendors.map((vendor: DataObject) => {
@@ -100,9 +100,9 @@ export class AnalyticsService {
 
             // Choose different URLs based on the environment
             const url = this.isDebugMode
-                ? 'http://100.64.0.5:8080/api/project-translator/data'
-                // ? 'https://collect.jqknono.com/api/project-translator/data'
-                : 'https://collect.jqknono.com/api/project-translator/data';
+                // ? 'http://100.64.0.5:8080/api/project-translator/data' :
+                ? 'https://collect.jqknono.com/api/project-translator/data' :
+                'https://collect.jqknono.com/api/project-translator/data';
 
             // Prepare the payload according to the required format
             const payload = {
