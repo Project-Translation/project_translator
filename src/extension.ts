@@ -417,18 +417,25 @@ async function handleTranslateProject() {
 }
 
 function createStatusBarButtons() {
-    pauseResumeButton = vscode.window.createStatusBarItem(
-        vscode.StatusBarAlignment.Right,
-        1
-    );
-    stopButton = vscode.window.createStatusBarItem(
-        vscode.StatusBarAlignment.Right,
-        0
-    );
+    // Only create pause/resume button if it doesn't exist
+    if (!pauseResumeButton) {
+        pauseResumeButton = vscode.window.createStatusBarItem(
+            vscode.StatusBarAlignment.Right,
+            1
+        );
+    }
+
+    // Only create stop button if it doesn't exist
+    if (!stopButton) {
+        stopButton = vscode.window.createStatusBarItem(
+            vscode.StatusBarAlignment.Right,
+            0
+        );
+        stopButton.text = "$(debug-stop) Stop Translation";
+        stopButton.command = "extension.stopTranslation";
+    }
 
     updatePauseResumeButton();
-    stopButton.text = "$(debug-stop) Stop Translation";
-    stopButton.command = "extension.stopTranslation";
     stopButton.show();
 }
 
@@ -442,6 +449,11 @@ function updatePauseResumeButton() {
         }
         pauseResumeButton.show();
     }
+}
+
+function hideTranslationButtons() {
+    pauseResumeButton?.hide();
+    stopButton?.hide();
 }
 
 function outputSummary(startTime: number, fileProcessor: FileProcessor, translatorService: TranslatorService) {
@@ -488,6 +500,9 @@ function cleanup() {
     });
     translationDb = null;
 
+    // Hide buttons before disposing
+    hideTranslationButtons();
+    
     pauseResumeButton?.dispose();
     pauseResumeButton = undefined;
     stopButton?.dispose();
