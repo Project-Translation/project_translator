@@ -29,5 +29,13 @@
   "embeded/embeded.md": {
     "timestamp": 1744012171985,
     "hash": "3895a56fb82dae2ae4011a96ca85fd2d"
+  },
+  "embeded/level1/level1.txt": {
+    "timestamp": 1744019286179,
+    "hash": "e491a9ef5e091462dbf0d2a0fa1099e8"
+  },
+  "embeded/level1/level2/level2.txt": {
+    "timestamp": 1744019295127,
+    "hash": "11f6222b845de45389eded677617a91b"
   }
 }

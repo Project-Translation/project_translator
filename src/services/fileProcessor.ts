@@ -103,7 +103,7 @@ export class FileProcessor {
                     for (const target of targetPaths) {
                         // Resolve target path
                         const resolvedTargetPath = this.resolvePath(target.path);
-                        const relativeToSourcePath = path.relative(sourcePath, fullPath);
+                        const relativeToSourcePath = path.relative(sourceRoot, fullPath);
                         const targetFilePath = path.join(resolvedTargetPath, relativeToSourcePath);
                         await this.processFile(fullPath, targetFilePath, sourceLang, target.lang);
                     }

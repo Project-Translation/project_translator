@@ -145,7 +145,7 @@ Key configuration details:
 | `projectTranslator.specifiedFiles`              | Multiple source files with their corresponding destination files for translation               |
 | `projectTranslator.translationIntervalDays`     | Translation interval in days (default 7 days)                                                  |
 | `projectTranslator.ignoreTranslationExtensions` | List of text file extensions that don't need translation, these files will be copied directly  |
-| `projectTranslator.ignorePaths`                 | List of ignored path patterns using wildcards, these files won't be copied                     |
+| `projectTranslator.ignorePaths`                 | List of ignored path patterns using glob syntax, these files won't be copied                     |
 | `projectTranslator.currentVendor`               | Current API vendor in use                                                                      |
 | `projectTranslator.vendors`                     | API vendor configuration list                                                                  |
 | `projectTranslator.systemPrompts`               | System prompt array for guiding the translation process                                        |
