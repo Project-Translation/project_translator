@@ -1,5 +1,5 @@
 {
-    "projectTranslator.currentVendor": "aliyun",
+    "projectTranslator.currentVendor": "grok",
     "projectTranslator.vendors": [
         {
             "name": "gemini",
@@ -51,15 +51,30 @@
         "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
         "2. './readmes/' in the sentences should replace with './'",
     ],
+    "projectTranslator.ignorePaths": [
+        "embeded/zh-cn/**"
+    ],
     "projectTranslator.specifiedFolders": [
+        // {
+        //     "sourceFolder": {
+        //         "path": "docs",
+        //         "lang": "en-us"
+        //     },
+        //     "destFolders": [
+        //         {
+        //             "path": "i18n/docs/zh-cn",
+        //             "lang": "zh-cn"
+        //         }
+        //     ]
+        // },
         {
             "sourceFolder": {
-                "path": "docs",
+                "path": "embeded",
                 "lang": "en-us"
             },
             "destFolders": [
                 {
-                    "path": "i18n/docs/zh-cn",
+                    "path": "embeded/zh-cn",
                     "lang": "zh-cn"
                 }
             ]

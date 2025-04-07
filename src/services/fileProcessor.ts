@@ -75,12 +75,13 @@ export class FileProcessor {
             this.checkCancellation();
 
             const ignorePaths = vscode.workspace.getConfiguration("projectTranslator").get<string[]>("ignorePaths") || [];
+            const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
             const sourceRoot = this.translationDb.getSourceRoot() || resolvedSourcePath;
-            const relativePath = path.relative(sourceRoot, resolvedSourcePath).replace(/\\/g, "/");
+            const relativeToWorkspacePath = path.relative(workspaceRoot, resolvedSourcePath).replace(/\\/g, "/");
 
             // Check if directory should be ignored
             for (const pattern of ignorePaths) {
-                if (minimatch(relativePath, pattern) || minimatch(`${relativePath}/`, pattern)) {
+                if (minimatch(relativeToWorkspacePath, pattern) || minimatch(`${relativeToWorkspacePath}/`, pattern)) {
                     this.outputChannel.appendLine(`⏭️ Skipping ignored directory: ${resolvedSourcePath} (matched pattern: ${pattern})`);
                     return;
                 }
@@ -102,8 +103,8 @@ export class FileProcessor {
                     for (const target of targetPaths) {
                         // Resolve target path
                         const resolvedTargetPath = this.resolvePath(target.path);
-                        const relativePath = path.relative(sourceRoot, fullPath);
-                        const targetFilePath = path.join(resolvedTargetPath, relativePath);
+                        const relativeToSourcePath = path.relative(sourcePath, fullPath);
+                        const targetFilePath = path.join(resolvedTargetPath, relativeToSourcePath);
                         await this.processFile(fullPath, targetFilePath, sourceLang, target.lang);
                     }
                 }
@@ -123,11 +124,12 @@ export class FileProcessor {
     }
 
     private async processSubDirectory(fullPath: string, targetPaths: DestFolder[], sourceRoot: string, ignorePaths: string[], sourceLang: SupportedLanguage) {
-        const relativeSubPath = path.relative(sourceRoot, fullPath).replace(/\\/g, "/");
+        const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
+        const relativeToWorkspacePath = path.relative(workspaceRoot, fullPath).replace(/\\/g, "/");
         let shouldSkip = false;
 
         for (const pattern of ignorePaths) {
-            if (minimatch(relativeSubPath, pattern) || minimatch(`${relativeSubPath}/`, pattern)) {
+            if (minimatch(relativeToWorkspacePath, pattern) || minimatch(`${relativeToWorkspacePath}/`, pattern)) {
                 this.outputChannel.appendLine(`⏭️ Skipping ignored subdirectory: ${fullPath} (matched pattern: ${pattern})`);
                 shouldSkip = true;
                 break;
@@ -144,14 +146,12 @@ export class FileProcessor {
         for (const target of targetPaths) {
             // Resolve target path
             const resolvedTargetPath = this.resolvePath(target.path);
-            const relativePath = path.relative(sourceRoot, fullPath);
-            const targetDirPath = path.join(resolvedTargetPath, relativePath);
-            if (!fs.existsSync(targetDirPath)) {
-                this.outputChannel.appendLine(`Creating target directory: ${targetDirPath}`);
+            if (!fs.existsSync(resolvedTargetPath)) {
+                this.outputChannel.appendLine(`Creating target directory: ${resolvedTargetPath}`);
                 try {
-                    fs.mkdirSync(targetDirPath, { recursive: true });
+                    fs.mkdirSync(resolvedTargetPath, { recursive: true });
                 } catch (error) {
-                    this.outputChannel.appendLine(`❌ Failed to create directory: ${targetDirPath}`);
+                    this.outputChannel.appendLine(`❌ Failed to create directory: ${resolvedTargetPath}`);
                     this.outputChannel.appendLine(`❌ Error details: ${error instanceof Error ? error.message : String(error)}`);
                     throw error;
                 }
@@ -210,12 +210,12 @@ export class FileProcessor {
 
     private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
         const ignorePaths = vscode.workspace.getConfiguration("projectTranslator").get<string[]>("ignorePaths") || [];
-        const sourceRoot = this.resolvePath(this.translationDb.getSourceRoot() || path.dirname(sourcePath));
-        const relativePath = path.relative(sourceRoot, sourcePath).replace(/\\/g, "/");
+        const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
+        const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");
 
         // Check ignore patterns
         for (const pattern of ignorePaths) {
-            if (minimatch(relativePath, pattern)) {
+            if (minimatch(relativeToWorkspacePath, pattern)) {
                 this.outputChannel.appendLine(`⏭️ Skipping ignored file: ${sourcePath} (matched pattern: ${pattern})`);
                 return true;
             }
@@ -258,7 +258,7 @@ export class FileProcessor {
 
     private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
         // Set oldest translation time before starting
-        await this.translationDb.setOldestTranslationTime(sourcePath, targetPath, targetLang);
+        await this.translationDb.setOldestTranslationTime(sourcePath, targetLang);
         this.outputChannel.appendLine("🕒 Translation timestamp reset");
 
         // Handle pause state
@@ -283,7 +283,7 @@ export class FileProcessor {
 
             if (estimatedTokens > maxTokensPerSegment) {
                 [returnCode, translatedContent] = await this.handleLargeFile(content, sourcePath, targetPath, sourceLang, targetLang);
-                
+
                 // No need to write the file here - either it's already been written during processing
                 // or we directly copied the file when NO_NEED_TRANSLATE was detected
                 if (returnCode === AI_RETURN_CODE.OK) {
@@ -296,7 +296,7 @@ export class FileProcessor {
                     // For streaming mode, we'll collect content but only write to file if NO_NEED_TRANSLATE is not detected
                     let streamedContent = '';
                     let noTranslateDetected = false;
-                    
+
                     // Define progress callback for streaming
                     const progressCallback = (chunk: string) => {
                         // Only collect content, don't write to file yet
@@ -304,7 +304,7 @@ export class FileProcessor {
                             streamedContent += chunk;
                         }
                     };
-                    
+
                     this.outputChannel.appendLine("🔄 Using stream mode for translation...");
                     [returnCode, translatedContent] = await this.translatorService.translateContent(
                         content,
@@ -314,7 +314,7 @@ export class FileProcessor {
                         this.cancellationToken,
                         progressCallback
                     );
-                    
+
                     // If NO_NEED_TRANSLATE was detected, copy the original file
                     if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                         this.outputChannel.appendLine("🔄 No translation needed, copying file directly");
@@ -390,7 +390,7 @@ export class FileProcessor {
                 const progressCallback = (chunk: string) => {
                     firstSegmentContent += chunk;
                 };
-                
+
                 [firstSegmentCode, firstTranslatedSegment] = await this.translatorService.translateContent(
                     firstSegment,
                     sourceLang,
@@ -442,15 +442,15 @@ export class FileProcessor {
 
                 let segmentCode: string;
                 let translatedSegment: string;
-                
+
                 if (streamMode) {
                     // Define a variable to collect the segments as they come in
                     let currentSegmentContent = '';
                     let segmentNoTranslateNeeded = false;
-                    
+
                     // Extract the first part of the UUID to detect partial occurrences
                     const uuidFirstPart = AI_RETURN_CODE.NO_NEED_TRANSLATE.substring(0, 20);
-                    
+
                     // For streaming mode, we'll use a progress callback that updates the file in real-time
                     const progressCallback = (chunk: string) => {
                         // If we received a signal that no translation is needed, 
@@ -458,23 +458,23 @@ export class FileProcessor {
                         if (segmentNoTranslateNeeded) {
                             return; // Skip any further processing
                         }
-                        
+
                         // Check if the chunk or current content contains the special code or its fragments
-                        if (chunk.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) || 
+                        if (chunk.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
                             chunk.includes(uuidFirstPart) ||
                             currentSegmentContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
                             currentSegmentContent.includes(uuidFirstPart)) {
                             segmentNoTranslateNeeded = true;
                             // For this segment, use the original segment content instead
                             const originalSegment = segments[i];
-                            
+
                             // Update the file with original content for this segment
                             const currentContent = combineSegments([...translatedSegments, originalSegment]);
                             fs.writeFileSync(targetPath, currentContent);
                             this.outputChannel.appendLine(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
                             return;
                         }
-                        
+
                         // Make sure we don't write the special code or its fragments to the file
                         let cleanedChunk = chunk;
                         if (chunk.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) || chunk.includes(uuidFirstPart)) {
@@ -489,14 +489,14 @@ export class FileProcessor {
                                     cleanedChunk = chunk.substring(0, partialCodeIndex);
                                 }
                             }
-                            
+
                             // If we found a UUID fragment, that's a signal we should use the original content
                             if (cleanedChunk !== chunk) {
                                 // Only add any content that appeared before the UUID fragment
                                 if (cleanedChunk.length > 0) {
                                     currentSegmentContent += cleanedChunk;
                                 }
-                                
+
                                 segmentNoTranslateNeeded = true;
                                 const originalSegment = segments[i];
                                 const currentContent = combineSegments([...translatedSegments, originalSegment]);
@@ -505,15 +505,15 @@ export class FileProcessor {
                                 return;
                             }
                         }
-                        
+
                         // If no UUID fragments were found, add the chunk to current segment content
                         currentSegmentContent += cleanedChunk;
-                        
+
                         // Update the file with what we have so far
                         const currentContent = combineSegments([...translatedSegments, currentSegmentContent]);
                         fs.writeFileSync(targetPath, currentContent);
                     };
-                    
+
                     this.outputChannel.appendLine(`🔄 Using stream mode for segment ${i + 1}/${segments.length}...`);
                     [segmentCode, translatedSegment] = await this.translatorService.translateContent(
                         segment,
@@ -523,7 +523,7 @@ export class FileProcessor {
                         this.cancellationToken,
                         progressCallback
                     );
-                    
+
                     // If the segment translation indicates no translation needed,
                     // use the original segment content
                     if (segmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
@@ -546,9 +546,9 @@ export class FileProcessor {
                     fs.writeFileSync(targetPath, currentContent);
                     this.outputChannel.appendLine(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
                 }
-                
+
                 translatedSegments.push(translatedSegment);
-                
+
                 // In non-streaming mode, this was already done, but in streaming mode,
                 // we should ensure the final combined content is written
                 if (streamMode) {

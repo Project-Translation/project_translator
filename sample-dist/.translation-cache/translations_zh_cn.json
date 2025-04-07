@@ -21,5 +21,13 @@
   "test/code/project_translator/package.nls.json": {
     "timestamp": 1744002583508,
     "hash": "41636e41ccbb792e07a7b223919a4746"
+  },
+  "docs/guides/cloud_basics.md": {
+    "timestamp": 1744009582035,
+    "hash": "6708b43cc86e96f3adad43ae366ba79d"
+  },
+  "embeded/embeded.md": {
+    "timestamp": 1744012171985,
+    "hash": "3895a56fb82dae2ae4011a96ca85fd2d"
   }
 }
