@@ -123,7 +123,9 @@ export class AnalyticsService {
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            this.outputChannel.appendLine(`⚠️ Failed to send usage data: ${errorMessage}`);
+            if (this.isDebugMode) {
+                this.outputChannel.appendLine(`⚠️ Failed to send usage data: ${errorMessage}`);
+            }
         }
     }
 
