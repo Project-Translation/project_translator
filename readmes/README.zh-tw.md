@@ -1,102 +1,103 @@
 # 專案翻譯器
 
-一個 VSCode 擴充功能：一個用於專案多語言本地化的易用工具。
+一個 VSCode 擴充功能：專案多語言本地化的輕鬆使用工具。
 
-## 可用的翻譯
+## 可用翻譯
 
-該擴充功能支援翻譯成以下語言：
+此擴充功能支援以下語言的翻譯：
 
-- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
-- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
-- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
-- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
-- [Français (fr-fr)](./readmes/README.fr-fr.md)
-- [Deutsch (de-de)](./readmes/README.de-de.md)
-- [Español (es-es)](./readmes/README.es-es.md)
-- [Português (pt-br)](./readmes/README.pt-br.md)
-- [Русский (ru-ru)](./readmes/README.ru-ru.md)
-- [العربية (ar-sa)](./readmes/README.ar-sa.md)
-- [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+- [簡體中文 (zh-cn)](./README.zh-cn.md)
+- [繁體中文 (zh-tw)](./README.zh-tw.md)
+- [日本語 (ja-jp)](./README.ja-jp.md)
+- [한국어 (ko-kr)](./README.ko-kr.md)
+- [Français (fr-fr)](./README.fr-fr.md)
+- [Deutsch (de-de)](./README.de-de.md)
+- [Español (es-es)](./README.es-es.md)
+- [Português (pt-br)](./README.pt-br.md)
+- [Русский (ru-ru)](./README.ru-ru.md)
+- [العربية (ar-sa)](./README.ar-sa.md)
+- [العربية (ar-ae)](./README.ar-ae.md)
+- [العربية (ar-eg)](./README.ar-eg.md)
 
 ## 範例
 
-| 專案                                                   | 語言                                                                                                                                                 |
+| 專案                                                       | 語言                                                                                                                                                 |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) 原始由 @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) 翻譯由 @jqknono |
+| [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) 來源於 @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) 翻譯於 @jqknono |
 
-## 請求專案翻譯
+## 要求專案翻譯
 
-如果您想貢獻翻譯或需要翻譯一個專案：
+如需貢獻翻譯或需要翻譯特定專案：
 
-1. 使用以下模板創建一個議題：
+1. 使用以下範本建立 issue：
 
 ```md
-**專案**: [project_url]
-**目標語言**: [target_lang]
-**描述**: 簡要描述為何此翻譯會有價值
+**Project**: [project_url]
+**Target Language**: [target_lang]
+**Description**: 簡要說明此翻譯的價值
 ```
 
 2. 工作流程：
 
 ```mermaid
 sequenceDiagram
-  Contributor->>Project Translator: 創建翻譯議題
-  Project Translator->>Community: 審查議題
-  Community-->>Contributor: 批准/評論
-  Contributor->>New Project: 開始翻譯
-  Contributor->>New Project: 提交到新專案
-  Contributor->>Project Translator: 創建拉取請求，修改 README.範例
-  Project Translator-->>Project Translator: 審查與合併
+  貢獻者->>Project Translator: 建立翻譯 issue
+  Project Translator->>社區: 審核 issue
+  社區-->>貢獻者: 審核/評論
+  貢獻者->>新專案: 開始翻譯
+  貢獻者->>新專案: 提交至新專案
+  貢獻者->>Project Translator: 建立 Pull Request，修改 README.Samples
+  Project Translator-->>Project Translator: 審核 & 合併
 ```
 
-3. PR 合併後，翻譯將被添加到範例部分。
+3. PR 合併後，翻譯將被加入範例區塊。
 
-目前進行中的翻譯：[查看議題](https://github.com/Project-Translation/project_translator/issues)
+目前進行中的翻譯：[查看 Issues](https://github.com/Project-Translation/project_translator/issues)
 
 ## 功能
-- 📁 資料夾層級翻譯支援
-  - 將整個專案資料夾翻譯成多種語言
-  - 維持原始資料夾結構和層級
+
+- 📁 資料夾級別翻譯支援
+  - 將整個專案資料夾翻譯為多語言
+  - 保留原始資料夾結構與層級
   - 支援子資料夾的遞迴翻譯
   - 自動偵測可翻譯內容
-  - 批次處理以有效進行大規模翻譯
-- 📄 檔案層級翻譯支援
-  - 將個別檔案翻譯成多種語言
-  - 保留原始檔案結構和格式
-  - 支援資料夾和檔案翻譯模式
-- 💡 智能翻譯與AI
-  - 自動維持程式碼結構完整性
-  - 僅翻譯程式碼註解，保留程式碼邏輯
-  - 維持JSON/XML等資料結構格式
+  - 批次處理實現大量翻譯效率
+- 📄 檔案級別翻譯支援
+  - 單獨翻譯個別檔案為多語言
+  - 保留原始檔案結構與格式
+  - 支援資料夾與檔案雙翻譯模式
+- 💡 智慧 AI 翻譯
+  - 自動維護程式碼結構完整性
+  - 僅翻譯程式碼註解，保留邏輯
+  - 維護 JSON/XML 等資料結構格式
   - 專業技術文件翻譯品質
-- ⚙️ 靈活配置
-  - 配置來源資料夾和多個目標資料夾
+- ⚙️ 灵活配置
+  - 設定原始資料夾與多目標資料夾
   - 支援自定義檔案翻譯間隔
-  - 設定特定檔案類型忽略
-  - 支援多種AI模型選項
-- 🚀 使用者友好操作
-  - 實時顯示翻譯進度
+  - 設定需忽略的特定檔案類型
+  - 支援多種 AI 模型選項
+- 🚀 使用者友善操作
+  - 實時翻譯進度顯示
   - 支援暫停/恢復/停止翻譯
   - 自動維護目標資料夾結構
-  - 增量翻譯以避免重複工作
+  - 增量翻譯避免重複工作
 
 ## 安裝
 
-1. 在VS Code擴充功能市場中搜尋"[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)"
+1. 在 VS Code 擴充市場搜尋 "[專案翻譯器](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)"
 2. 點擊安裝
 
-## 配置
+## 設定
 
-該擴充功能支援以下配置選項：
+此擴充功能支援以下設定選項：
 
 ```json
 {
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "來源資料夾路徑",
-        "lang": "來源語言代碼"
+        "path": "原始資料夾路徑",
+        "lang": "原始語言代碼"
       },
       "destFolders": [
         {
@@ -109,8 +110,8 @@ sequenceDiagram
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "來源檔案路徑",
-        "lang": "來源語言代碼"
+        "path": "原始檔案路徑",
+        "lang": "原始語言代碼"
       },
       "destFiles": [
         {
@@ -124,10 +125,10 @@ sequenceDiagram
   "projectTranslator.vendors": [
     {
       "name": "openai",
-      "apiEndpoint": "API端點URL",
-      "apiKey": "API認證密鑰",
-      "model": "使用模型名稱",
-      "rpm": "每分鐘最大請求數",
+      "apiEndpoint": "API 端點 URL",
+      "apiKey": "API 認證金鑰",
+      "model": "要使用的模型名稱",
+      "rpm": "每分鐘最大請求次數",
       "maxTokensPerSegment": 4096,
       "timeout": 30,
       "temperature": 0.0
@@ -136,40 +137,41 @@ sequenceDiagram
 }
 ```
 
-關鍵配置詳情：
-| 配置選項                                        | 描述                                                                                          |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`            | 多個來源資料夾及其對應的目標資料夾用於翻譯                                                     |
-| `projectTranslator.specifiedFiles`              | 多個來源檔案及其對應的目標檔案用於翻譯                                                         |
-| `projectTranslator.translationIntervalDays`     | 翻譯間隔天數（預設7天）                                                                        |
-| `projectTranslator.ignoreTranslationExtensions` | 不需要翻譯的文本檔案擴展名清單，這些檔案將直接複製                                              |
-| `projectTranslator.ignorePaths`                 | 使用通配符的忽略路徑模式清單，這些檔案不會被複製                                               |
-| `projectTranslator.currentVendor`               | 目前使用的API供應商                                                                            |
-| `projectTranslator.vendors`                     | API供應商配置清單                                                                              |
-| `projectTranslator.systemPrompts`               | 用於指導翻譯過程的系統提示陣列                                                                  |
-| `projectTranslator.userPrompts`                 | 使用者定義的提示陣列，這些提示將在翻譯過程中添加在系統提示之後                                  |
-| `projectTranslator.segmentationMarkers`         | 按檔案類型配置的分割標記，支援正則表達式                                                        |
+關鍵設定說明：
+
+| 設定選項                              | 說明                                                                                          |
+| ------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`  | 多個需翻譯的原始資料夾及其對應目標資料夾清單                                               |
+| `projectTranslator.specifiedFiles`    | 多個需翻譯的原始檔案及其對應目標檔案清單                                                     |
+| `projectTranslator.translationIntervalDays` | 翻譯間隔天數（預設 7 天）                                                                   |
+| `projectTranslator.ignoreTranslationExtensions` | 無需翻譯的文本檔案擴展名列表，這些檔案將直接複製                                         |
+| `projectTranslator.ignorePaths`       | 使用萬用字元的忽略路徑模式清單，這些檔案不會被複製                                           |
+| `projectTranslator.currentVendor`     | 目前使用的 API 提供商                                                                       |
+| `projectTranslator.vendors`           | API 提供商配置清單                                                                          |
+| `projectTranslator.systemPrompts`     | 引導翻譯流程的系統提示詞清單                                                               |
+| `projectTranslator.userPrompts`       | 使用者自定義提示詞清單，這些提示詞將在翻譯時接在系統提示詞後                                |
+| `projectTranslator.segmentationMarkers` | 按檔案類型配置的分段標記，支援正則表達式                                                   |
 
 ## 使用方法
 
-1. 開啟命令選擇面板 (Ctrl+Shift+P / Cmd+Shift+P)
-2. 輸入「翻譯專案」並選擇該命令
-3. 如果未配置來源資料夾，將會出現資料夾選擇對話框
+1. 開啟指令面板（Ctrl+Shift+P / Cmd+Shift+P）
+2. 輸入 "Translate Project" 並選擇指令
+3. 若未配置原始資料夾，將出現資料夾選擇對話框
 4. 等待翻譯完成
 
-在翻譯期間：
+翻譯期間：
 
-- 可透過狀態欄按鈕暫停/繼續翻譯
-- 可隨時停止翻譯過程
+- 可通過狀態列按鈕暫停/恢復翻譯
+- 可隨時停止翻譯流程
 - 翻譯進度顯示在通知區域
 - 詳細日誌顯示在輸出面板
 
 ## 注意事項
 
-- 確保有足夠的API使用配額
-- 建議先用小型專案進行測試
-- 使用專用的API金鑰並在完成後移除
+- 確保有足夠的 API 使用配額
+- 建議先測試小型專案
+- 使用專用 API 金鑰並在完成後移除
 
 ## 授權
 
-[授權](LICENSE)
+[授權條款](LICENSE)

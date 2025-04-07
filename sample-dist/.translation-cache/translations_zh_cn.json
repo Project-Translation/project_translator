@@ -1,12 +1,25 @@
 {
   "guides/cloud_basics.md": 1743242226435,
-  "../code/project_translator/sample-dist/md/style.md": 1743163635169,
-  "../test/code/project_translator/l10n/bundle.l10n.json": 1743163785763,
-  "test/code/project_translator/package.nls.json": 1743163842465,
+  "../code/project_translator/sample-dist/md/style.md": {
+    "timestamp": 1743931903608,
+    "hash": "17e113c3f3fe570eddd52cd8f0574f9b"
+  },
+  "../test/code/project_translator/l10n/bundle.l10n.json": {
+    "timestamp": 1743993211666,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
   "test/code/project_translator/README.md": 1743164006740,
   "../code/project_translator/sample-dist/md/should_skip.md": {
-    "timestamp": 1743667675396,
+    "timestamp": 1743931569253,
     "hash": "824184cde709ab724cb1cbfab53491c4"
   },
-  "../code/project_translator/sample-dist/md/should_translate.md": 1743393657574
+  "../code/project_translator/sample-dist/md/should_translate.md": 1743393657574,
+  "../../test/code/project_translator/sample/md/style.md": {
+    "timestamp": 1743992056031,
+    "hash": "4cdafa2c726a109eaa7471996e77e6fa"
+  },
+  "test/code/project_translator/package.nls.json": {
+    "timestamp": 1744002583508,
+    "hash": "41636e41ccbb792e07a7b223919a4746"
+  }
 }

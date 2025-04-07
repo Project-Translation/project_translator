@@ -1,5 +1,8 @@
 {
   "../test/code/project_translator/l10n/bundle.l10n.json": 1743163830980,
-  "test/code/project_translator/package.nls.json": 1743168739662,
-  "test/code/project_translator/README.md": 1743168793023
+  "test/code/project_translator/README.md": 1743168793023,
+  "test/code/project_translator/package.nls.json": {
+    "timestamp": 1744000567151,
+    "hash": "41636e41ccbb792e07a7b223919a4746"
+  }
 }

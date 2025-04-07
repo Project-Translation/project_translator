@@ -1,106 +1,107 @@
-# プロジェクト翻訳者
+# Project Translator
 
-VSCodeの拡張機能：プロジェクトの多言語ローカライゼーションのための使いやすいツール。
+VSCode拡張機能：プロジェクトの多言語ローカライゼーションを簡単に行うためのツール。
 
-## 利用可能な翻訳
+## 用意されている翻訳
 
-この拡張機能は以下の言語への翻訳をサポートしています：
+この拡張機能では以下の言語への翻訳をサポートしています：
 
-- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
-- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
-- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
-- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
-- [Français (fr-fr)](./readmes/README.fr-fr.md)
-- [Deutsch (de-de)](./readmes/README.de-de.md)
-- [Español (es-es)](./readmes/README.es-es.md)
-- [Português (pt-br)](./readmes/README.pt-br.md)
-- [Русский (ru-ru)](./readmes/README.ru-ru.md)
-- [العربية (ar-sa)](./readmes/README.ar-sa.md)
-- [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+- [简体中文 (zh-cn)](./README.zh-cn.md)
+- [繁體中文 (zh-tw)](./README.zh-tw.md)
+- [日本語 (ja-jp)](./README.ja-jp.md)
+- [한국어 (ko-kr)](./README.ko-kr.md)
+- [Français (fr-fr)](./README.fr-fr.md)
+- [Deutsch (de-de)](./README.de-de.md)
+- [Español (es-es)](./README.es-es.md)
+- [Português (pt-br)](./README.pt-br.md)
+- [Русский (ru-ru)](./README.ru-ru.md)
+- [العربية (ar-sa)](./README.ar-sa.md)
+- [العربية (ar-ae)](./README.ar-ae.md)
+- [العربية (ar-eg)](./README.ar-eg.md)
 
 ## サンプル
 
 | プロジェクト                                                   | 言語                                                                                                                                                 |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) オリジナル by @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) 翻訳 by @jqknono |
+| [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) 提供元 @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) 翻訳者 @jqknono |
 
-## プロジェクト翻訳のリクエスト
+## プロジェクト翻訳のリクエスト方法
 
-翻訳に貢献したい場合や、プロジェクトの翻訳が必要な場合：
+翻訳の寄与またはプロジェクト翻訳が必要な場合：
 
-1. 以下のテンプレートを使用してイシューを作成してください：
+1. 次のテンプレートを使用してissueを作成：
 
 ```md
-**プロジェクト**: [project_url]
-**対象言語**: [target_lang]
-**説明**: この翻訳がなぜ価値があるかについての簡単な説明
+**Project**: [プロジェクトURL]
+**Target Language**: [対象言語]
+**Description**: この翻訳が有益な理由の簡潔な説明
 ```
 
 2. ワークフロー：
 
 ```mermaid
 sequenceDiagram
-  Contributor->>Project Translator: 翻訳イシューを作成
-  Project Translator->>Community: イシューをレビュー
-  Community-->>Contributor: 承認/コメント
-  Contributor->>New Project: 翻訳を開始
-  Contributor->>New Project: 新しいプロジェクトに提出
-  Contributor->>Project Translator: プルリクエストを作成、README.Samplesを変更
-  Project Translator-->>Project Translator: レビュー & マージ
+  コントリビューター->>Project Translator: 翻訳issueを作成
+  Project Translator->>コミュニティ: issueを審査
+  コミュニティ-->>コントリビューター: 承認/コメント
+  コントリビューター->>新規プロジェクト: 翻訳を開始
+  コントリビューター->>新規プロジェクト: 結果を提出
+  コントリビューター->>Project Translator: Pull Requestを作成、README.Samplesを編集
+  Project Translator-->>Project Translator: 审査とマージ
 ```
 
-3. PRがマージされた後、翻訳はサンプルセクションに追加されます。
+3. PRがマージされると、翻訳がサンプルセクションに追加されます。
 
-進行中の翻訳：[イシューを表示](https://github.com/Project-Translation/project_translator/issues)
+現在進行中の翻訳：[Issue一覧](https://github.com/Project-Translation/project_translator/issues)
 
 ## 機能
-- 📁 フォルダーレベルの翻訳サポート
-  - 複数の言語にプロジェクト全体のフォルダーを翻訳
-  - オリジナルのフォルダー構造と階層を維持
-  - サブフォルダーの再帰的な翻訳をサポート
-  - 翻訳可能なコンテンツの自動検出
-  - 大規模な翻訳のためのバッチ処理
-- 📄 ファイルレベルの翻訳サポート
-  - 個々のファイルを複数の言語に翻訳
-  - オリジナルのファイル構造とフォーマットを保持
-  - フォルダーとファイルの両方の翻訳モードをサポート
+
+- 📁 フォルダレベル翻訳対応
+  - 全プロジェクトフォルダを複数言語へ翻訳
+  - 元のフォルダ構造と階層を維持
+  - サブフォルダの再帰的翻訳対応
+  - 翻訳対象コンテンツの自動検出
+  - 大規模翻訳を効率化するバッチ処理
+- 📄 ファイルレベル翻訳対応
+  - 個別のファイルを複数言語へ翻訳
+  - 元ファイル構造とフォーマットを保持
+  - フォルダ/ファイル両方の翻訳モード対応
 - 💡 AIによるスマート翻訳
-  - コード構造の整合性を自動的に維持
-  - コードのコメントのみを翻訳し、コードのロジックを保持
-  - JSON/XMLなどのデータ構造フォーマットを維持
-  - プロフェッショナルな技術文書の翻訳品質
+  - コード構造の整合性を自動維持
+  - コードコメントのみを翻訳、ロジックを保持
+  - JSON/XML等のデータ構造フォーマットを維持
+  - 専門的な技術文書品質の翻訳
 - ⚙️ 柔軟な設定
-  - ソースフォルダーと複数のターゲットフォルダーを設定
-  - カスタムファイル翻訳間隔のサポート
-  - 無視する特定のファイルタイプを設定
-  - 複数のAIモデルオプションのサポート
-- 🚀 ユーザーフレンドリーな操作
-  - リアルタイムの翻訳進行状況表示
-  - 翻訳の一時停止/再開/停止のサポート
-  - ターゲットフォルダー構造の自動維持
-  - 重複作業を避けるためのインクリメンタル翻訳
+  - ソースフォルダと複数のターゲットフォルダの設定
+  - カスタムファイル翻訳区間の指定
+  - 無視するファイル種類の設定
+  - 複数AIモデル選択対応
+- 🚀 利用者フレンドリーな操作
+  - 翻訳進行状況のリアルタイム表示
+  - 一時停止/再開/停止のサポート
+  - ターゲットフォルダ構造の自動維持
+  - 重複作業を回避するインクリメンタル翻訳
 
 ## インストール
 
-1. VS Code拡張機能マーケットプレイスで"[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)"を検索
+1. VS Code拡張機能マーケットプレイスで「[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)」を検索
 2. インストールをクリック
 
 ## 設定
 
-この拡張機能は以下の設定オプションをサポートしています：
+拡張機能では以下の設定オプションをサポート：
 
 ```json
 {
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "ソースフォルダーのパス",
+        "path": "ソースフォルダパス",
         "lang": "ソース言語コード"
       },
       "destFolders": [
         {
-          "path": "ターゲットフォルダーのパス",
+          "path": "ターゲットフォルダパス",
           "lang": "ターゲット言語コード"
         }
       ]
@@ -109,12 +110,12 @@ sequenceDiagram
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "ソースファイルのパス",
+        "path": "ソースファイルパス",
         "lang": "ソース言語コード"
       },
       "destFiles": [
         {
-          "path": "ターゲットファイルのパス",
+          "path": "ターゲットファイルパス",
           "lang": "ターゲット言語コード"
         }
       ]
@@ -127,7 +128,7 @@ sequenceDiagram
       "apiEndpoint": "APIエンドポイントURL",
       "apiKey": "API認証キー",
       "model": "使用するモデル名",
-      "rpm": "1分あたりの最大リクエスト数",
+      "rpm": "分間最大リクエスト数",
       "maxTokensPerSegment": 4096,
       "timeout": 30,
       "temperature": 0.0
@@ -136,40 +137,41 @@ sequenceDiagram
 }
 ```
 
-主要な設定の詳細：
-| 設定オプション                                    | 説明                                                                                          |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`              | 翻訳のための複数のソースフォルダと対応するデスティネーションフォルダ                           |
-| `projectTranslator.specifiedFiles`                | 翻訳のための複数のソースファイルと対応するデスティネーションファイル                           |
-| `projectTranslator.translationIntervalDays`       | 翻訳の間隔（日単位、デフォルトは7日）                                                          |
-| `projectTranslator.ignoreTranslationExtensions`   | 翻訳不要のテキストファイル拡張子のリスト、これらのファイルは直接コピーされます                |
-| `projectTranslator.ignorePaths`                   | ワイルドカードを使用した無視するパスパターンのリスト、これらのファイルはコピーされません       |
-| `projectTranslator.currentVendor`                 | 現在使用中のAPIベンダー                                                                        |
-| `projectTranslator.vendors`                       | APIベンダーの設定リスト                                                                        |
-| `projectTranslator.systemPrompts`                 | 翻訳プロセスをガイドするためのシステムプロンプトの配列                                          |
-| `projectTranslator.userPrompts`                   | ユーザー定義のプロンプトの配列、これらのプロンプトは翻訳中にシステムプロンプトの後に追加されます |
-| `projectTranslator.segmentationMarkers`           | ファイルタイプごとに設定されたセグメンテーションマーカー、正規表現をサポート                    |
+主要設定オプション：
 
-## 使用方法
+| 設定オプション                            | 説明                                                                                    |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`            | 翻訳対象の複数ソースフォルダと対応するターゲットフォルダ                                  |
+| `projectTranslator.specifiedFiles`              | 翻訳対象の複数ソースファイルと対応するターゲットファイル                                  |
+| `projectTranslator.translationIntervalDays`     | 翻訳間隔（日単位、デフォルト7日）                                                  |
+| `projectTranslator.ignoreTranslationExtensions` | 翻訳不要なテキスト拡張子リスト、これらのファイルは直接コピーされる                      |
+| `projectTranslator.ignorePaths`                 |ワイルドカードで指定した無視パスパターン、これらのファイルはコピーされない              |
+| `projectTranslator.currentVendor`               | 現在使用中のAPIベンダー名                                                                      |
+| `projectTranslator.vendors`                     | APIベンダーの設定リスト                                                                  |
+| `projectTranslator.systemPrompts`               | 翻訳プロセスをガイドするシステムプロンプト配列                                        |
+| `projectTranslator.userPrompts`                 | ユーザ定義プロンプト配列、翻訳時にシステムプロンプトの後に追加される                 |
+| `projectTranslator.segmentationMarkers`         | ファイルタイプに応じた区切りマークの設定、正規表現対応                                |
+
+## 利用方法
 
 1. コマンドパレットを開く（Ctrl+Shift+P / Cmd+Shift+P）
-2. "Translate Project" と入力し、コマンドを選択
+2. "Translate Project"と入力しコマンドを選択
 3. ソースフォルダが設定されていない場合、フォルダ選択ダイアログが表示されます
-4. 翻訳が完了するまで待つ
+4. 翻訳完了まで待ちます
 
-翻訳中:
+翻訳中：
 
-- ステータスバーのボタンで翻訳を一時停止/再開できます
-- いつでも翻訳プロセスを停止できます
-- 翻訳の進捗は通知エリアに表示されます
-- 詳細なログは出力パネルに表示されます
+- ステータスバーのボタンで翻訳の一時停止/再開が可能
+- 任意のタイミングで翻訳プロセスを停止可能
+- 通知領域に進行状況が表示
+- 出力パネルに詳細ログが表示
 
 ## 注意事項
 
-- 十分なAPI使用クォータを確保してください
-- まずは小規模なプロジェクトでテストすることをお勧めします
-- 専用のAPIキーを使用し、完了後に削除してください
+- API使用クォータを確保してください
+- 小規模プロジェクトでテストを推奨
+- 専用APIキーを使用し、使用後は削除してください
 
 ## ライセンス
 
-[ライセンス](LICENSE)
+[LICENSE](LICENSE)

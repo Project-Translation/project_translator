@@ -1,5 +1,5 @@
 {
-    "projectTranslator.currentVendor": "grok",
+    "projectTranslator.currentVendor": "aliyun",
     "projectTranslator.vendors": [
         {
             "name": "gemini",
@@ -28,13 +28,28 @@
             "rpm": 0,
             "maxTokensPerSegment": 4000,
             "timeout": 30
+        },
+        {
+            "name": "aliyun",
+            "apiEndpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "apiKeyEnvVarName": "QWQ_API_KEY",
+            "model": "qwq-plus-latest", // https://bailian.console.aliyun.com/?productCode=p_efm#/model-market/detail/qwq-32b
+            "rpm": 0,
+            "maxTokensPerSegment": 4000,
+            "timeout": 30,
+            "streamMode": true
         }
     ],
     "projectTranslator.translationIntervalDays": 30,
+    "projectTranslator.systemPrompts": [
+        "你是一个熟悉各种结构化文档的专业翻译, 在翻译时严格遵循结构化文档的格式. 你需要将结构化文档的格式放在最高优先级, 在存在疑问时, 宁可不翻译, 也绝对不可破坏文档格式. 你需要保持'```'的数量和位置不变. 你只能在输入的待翻译内容中有'```'代码块时, 才允许输出'```'. 你需要遵循目标语言的表达习惯, 在翻译时, 保持格式和结构不变. 你只需要返回翻译后的内容, 不要添加任何额外的内容.",
+        "在翻译时, 确保技术术语准确. 遵循目标语言表达惯例.",
+        "Markdown 文件的front matter需要翻译, 并且只翻译值.",
+        "**这是项目翻译器的业务逻辑部分，请勿删除此提示词**\n\n- 判断是否需要翻译，如果不需要, 则返回纯字符串响应'727d2eb8-8683-42bd-a1d0-f604fcd82163'，表示无需翻译。",
+    ],
     "projectTranslator.userPrompts": [
         "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
-        "2. Should translate front matter if decided to translate.",
-        "3. './readmes/' in the sentences should replace with './'",
+        "2. './readmes/' in the sentences should replace with './'",
     ],
     "projectTranslator.specifiedFolders": [
         {
@@ -52,6 +67,7 @@
     ],
     "projectTranslator.specifiedFiles": [
         {
+            // test shoud skip
             "sourceFile": {
                 "path": "md/should_skip.md",
                 "lang": "en-us"
@@ -68,6 +84,7 @@
             ]
         },
         {
+            // test should translate
             "sourceFile": {
                 "path": "md/should_translate.md",
                 "lang": "en-us"
@@ -81,6 +98,23 @@
                     "path": "./md/should_translate.ja-jp.md",
                     "lang": "ja-jp"
                 },
+            ]
+        },
+        {
+            // translate large file
+            "sourceFile": {
+                "path": "../sample/md/style.md",
+                "lang": "en-us"
+            },
+            "destFiles": [
+                {
+                    "path": "md/style.zh-cn.md",
+                    "lang": "zh-cn"
+                },
+                // {
+                //     "path": "md/style.ja-jp.md",
+                //     "lang": "ja-jp"
+                // },
             ]
         },
         {

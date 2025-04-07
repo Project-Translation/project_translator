@@ -14,6 +14,7 @@ export interface VendorConfig {
     maxTokensPerSegment?: number;
     timeout?: number;
     temperature?: number;
+    streamMode?: boolean;
 }
 
 // Specified folder group for folder-level translation

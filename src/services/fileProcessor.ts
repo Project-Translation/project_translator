@@ -39,12 +39,12 @@ export class FileProcessor {
         if (!filePath) {
             return filePath;
         }
-        
+
         // If the path is already absolute, return it as is
         if (path.isAbsolute(filePath)) {
             return filePath;
         }
-        
+
         // Otherwise, resolve it relative to workspace root
         const resolvedPath = path.resolve(this.workspaceRoot, filePath);
         return resolvedPath;
@@ -67,7 +67,7 @@ export class FileProcessor {
     public async processDirectory(sourcePath: string, targetPaths: DestFolder[], sourceLang: SupportedLanguage) {
         // Resolve paths
         const resolvedSourcePath = this.resolvePath(sourcePath);
-        
+
         this.outputChannel.appendLine("\n[Directory Processing] ----------------------------------------");
         this.outputChannel.appendLine(`📂 Starting to process directory: ${sourcePath}`);
 
@@ -166,9 +166,9 @@ export class FileProcessor {
             // Resolve paths
             const resolvedSourcePath = this.resolvePath(sourcePath);
             const resolvedTargetPath = this.resolvePath(targetPath);
-            
+
             this.outputChannel.appendLine(`\nTranslating file: ${path.basename(sourcePath)} from ${sourceLang} to ${targetLang}`);
-            
+
             // Validate paths
             if (!fs.existsSync(resolvedSourcePath)) {
                 throw new Error(`Source file not found: ${sourcePath}`);
@@ -275,29 +275,73 @@ export class FileProcessor {
 
         try {
             const config = getConfiguration();
-            const { maxTokensPerSegment = 4096 } = config;
+            const { maxTokensPerSegment = 4096, streamMode } = config;
             const estimatedTokens = estimateTokenCount(content);
 
             let returnCode: string;
             let translatedContent: string;
-            
+
             if (estimatedTokens > maxTokensPerSegment) {
                 [returnCode, translatedContent] = await this.handleLargeFile(content, sourcePath, targetPath, sourceLang, targetLang);
-            } else {
-                this.checkCancellation();
-                [returnCode, translatedContent] = await this.translatorService.translateContent(
-                    content, 
-                    sourceLang,
-                    targetLang, 
-                    sourcePath, 
-                    this.cancellationToken
-                );
-
-                // Check if the response indicates no translation is needed
+                
+                // No need to write the file here - either it's already been written during processing
+                // or we directly copied the file when NO_NEED_TRANSLATE was detected
                 if (returnCode === AI_RETURN_CODE.OK) {
                     this.checkCancellation();
-                    fs.writeFileSync(targetPath, translatedContent);
                     this.outputChannel.appendLine("💾 Translation result written");
+                }
+            } else {
+                this.checkCancellation();
+                if (streamMode) {
+                    // For streaming mode, we'll collect content but only write to file if NO_NEED_TRANSLATE is not detected
+                    let streamedContent = '';
+                    let noTranslateDetected = false;
+                    
+                    // Define progress callback for streaming
+                    const progressCallback = (chunk: string) => {
+                        // Only collect content, don't write to file yet
+                        if (!noTranslateDetected) {
+                            streamedContent += chunk;
+                        }
+                    };
+                    
+                    this.outputChannel.appendLine("🔄 Using stream mode for translation...");
+                    [returnCode, translatedContent] = await this.translatorService.translateContent(
+                        content,
+                        sourceLang,
+                        targetLang,
+                        sourcePath,
+                        this.cancellationToken,
+                        progressCallback
+                    );
+                    
+                    // If NO_NEED_TRANSLATE was detected, copy the original file
+                    if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                        this.outputChannel.appendLine("🔄 No translation needed, copying file directly");
+                        fs.writeFileSync(targetPath, content);
+                    } else {
+                        // Otherwise write the collected content
+                        fs.writeFileSync(targetPath, translatedContent);
+                        this.outputChannel.appendLine("💾 Translation result written");
+                    }
+                } else {
+                    [returnCode, translatedContent] = await this.translatorService.translateContent(
+                        content,
+                        sourceLang,
+                        targetLang,
+                        sourcePath,
+                        this.cancellationToken
+                    );
+
+                    if (returnCode === AI_RETURN_CODE.OK) {
+                        this.checkCancellation();
+                        fs.writeFileSync(targetPath, translatedContent);
+                        this.outputChannel.appendLine("💾 Translation result written");
+                    } else if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                        // Copy the file directly for NO_NEED_TRANSLATE
+                        fs.writeFileSync(targetPath, content);
+                        this.outputChannel.appendLine("🔄 No translation needed, copying file directly");
+                    }
                 }
             }
 
@@ -321,7 +365,7 @@ export class FileProcessor {
 
     private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<[string, string]> {
         const config = getConfiguration();
-        const { maxTokensPerSegment } = config;
+        const { maxTokensPerSegment, streamMode } = config;
         const segments = segmentText(content, sourcePath, maxTokensPerSegment);
         const translatedSegments: string[] = [];
 
@@ -336,26 +380,47 @@ export class FileProcessor {
         );
 
         try {
-            const [firstSegmentCode, firstTranslatedSegment] = await this.translatorService.translateContent(
-                firstSegment,
-                sourceLang,
-                targetLang,
-                sourcePath,
-                this.cancellationToken
-            );
+            // For the first segment, we'll use streaming if enabled but won't write to file yet
+            // since we need to check if translation is needed
+            let firstSegmentCode: string;
+            let firstTranslatedSegment: string;
+            let firstSegmentContent = '';
+
+            if (streamMode) {
+                const progressCallback = (chunk: string) => {
+                    firstSegmentContent += chunk;
+                };
+                
+                [firstSegmentCode, firstTranslatedSegment] = await this.translatorService.translateContent(
+                    firstSegment,
+                    sourceLang,
+                    targetLang,
+                    sourcePath,
+                    this.cancellationToken,
+                    progressCallback
+                );
+            } else {
+                [firstSegmentCode, firstTranslatedSegment] = await this.translatorService.translateContent(
+                    firstSegment,
+                    sourceLang,
+                    targetLang,
+                    sourcePath,
+                    this.cancellationToken
+                );
+            }
 
             // If first segment indicates no translation needed, skip the entire file
             if (firstSegmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                 this.outputChannel.appendLine(`🔄 AI indicated no translation needed for this file, skipping entire file translation`);
                 fs.writeFileSync(targetPath, content);
                 this.outputChannel.appendLine(`💾 Written original content to target file`);
-                
+
                 // Update translation time to prevent future unnecessary translation attempts
                 await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
                 this.outputChannel.appendLine("✅ Translation timestamp updated");
                 this.processedFilesCount++;
-                
-                return [firstSegmentCode, content];
+
+                return [AI_RETURN_CODE.NO_NEED_TRANSLATE, content];
             }
 
             // If translation is needed, add first segment and continue with the rest
@@ -375,20 +440,120 @@ export class FileProcessor {
                     `🔄 Translating segment ${i + 1}/${segments.length} (approximately ${segmentTokens} tokens)...`
                 );
 
-                const [segmentCode, translatedSegment] = await this.translatorService.translateContent(
-                    segment,
-                    sourceLang,
-                    targetLang,
-                    sourcePath,
-                    this.cancellationToken
-                );
-                this.checkCancellation();
-                translatedSegments.push(translatedSegment);
+                let segmentCode: string;
+                let translatedSegment: string;
+                
+                if (streamMode) {
+                    // Define a variable to collect the segments as they come in
+                    let currentSegmentContent = '';
+                    let segmentNoTranslateNeeded = false;
+                    
+                    // Extract the first part of the UUID to detect partial occurrences
+                    const uuidFirstPart = AI_RETURN_CODE.NO_NEED_TRANSLATE.substring(0, 20);
+                    
+                    // For streaming mode, we'll use a progress callback that updates the file in real-time
+                    const progressCallback = (chunk: string) => {
+                        // If we received a signal that no translation is needed, 
+                        // we might get the original content back in one chunk
+                        if (segmentNoTranslateNeeded) {
+                            return; // Skip any further processing
+                        }
+                        
+                        // Check if the chunk or current content contains the special code or its fragments
+                        if (chunk.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) || 
+                            chunk.includes(uuidFirstPart) ||
+                            currentSegmentContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
+                            currentSegmentContent.includes(uuidFirstPart)) {
+                            segmentNoTranslateNeeded = true;
+                            // For this segment, use the original segment content instead
+                            const originalSegment = segments[i];
+                            
+                            // Update the file with original content for this segment
+                            const currentContent = combineSegments([...translatedSegments, originalSegment]);
+                            fs.writeFileSync(targetPath, currentContent);
+                            this.outputChannel.appendLine(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
+                            return;
+                        }
+                        
+                        // Make sure we don't write the special code or its fragments to the file
+                        let cleanedChunk = chunk;
+                        if (chunk.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) || chunk.includes(uuidFirstPart)) {
+                            // Check for the full UUID first
+                            const fullCodeIndex = chunk.indexOf(AI_RETURN_CODE.NO_NEED_TRANSLATE);
+                            if (fullCodeIndex >= 0) {
+                                cleanedChunk = chunk.substring(0, fullCodeIndex);
+                            } else {
+                                // Check for partial UUID fragments
+                                const partialCodeIndex = chunk.indexOf(uuidFirstPart);
+                                if (partialCodeIndex >= 0) {
+                                    cleanedChunk = chunk.substring(0, partialCodeIndex);
+                                }
+                            }
+                            
+                            // If we found a UUID fragment, that's a signal we should use the original content
+                            if (cleanedChunk !== chunk) {
+                                // Only add any content that appeared before the UUID fragment
+                                if (cleanedChunk.length > 0) {
+                                    currentSegmentContent += cleanedChunk;
+                                }
+                                
+                                segmentNoTranslateNeeded = true;
+                                const originalSegment = segments[i];
+                                const currentContent = combineSegments([...translatedSegments, originalSegment]);
+                                fs.writeFileSync(targetPath, currentContent);
+                                this.outputChannel.appendLine(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
+                                return;
+                            }
+                        }
+                        
+                        // If no UUID fragments were found, add the chunk to current segment content
+                        currentSegmentContent += cleanedChunk;
+                        
+                        // Update the file with what we have so far
+                        const currentContent = combineSegments([...translatedSegments, currentSegmentContent]);
+                        fs.writeFileSync(targetPath, currentContent);
+                    };
+                    
+                    this.outputChannel.appendLine(`🔄 Using stream mode for segment ${i + 1}/${segments.length}...`);
+                    [segmentCode, translatedSegment] = await this.translatorService.translateContent(
+                        segment,
+                        sourceLang,
+                        targetLang,
+                        sourcePath,
+                        this.cancellationToken,
+                        progressCallback
+                    );
+                    
+                    // If the segment translation indicates no translation needed,
+                    // use the original segment content
+                    if (segmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                        translatedSegment = segment;
+                    }
+                } else {
+                    [segmentCode, translatedSegment] = await this.translatorService.translateContent(
+                        segment,
+                        sourceLang,
+                        targetLang,
+                        sourcePath,
+                        this.cancellationToken
+                    );
 
-                // Write progress to file
-                const currentContent: string = combineSegments(translatedSegments);
-                fs.writeFileSync(targetPath, currentContent);
-                this.outputChannel.appendLine(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
+                    this.checkCancellation();
+                    translatedSegments.push(translatedSegment);
+
+                    // Write progress to file
+                    const currentContent: string = combineSegments(translatedSegments);
+                    fs.writeFileSync(targetPath, currentContent);
+                    this.outputChannel.appendLine(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
+                }
+                
+                translatedSegments.push(translatedSegment);
+                
+                // In non-streaming mode, this was already done, but in streaming mode,
+                // we should ensure the final combined content is written
+                if (streamMode) {
+                    this.outputChannel.appendLine(`✅ Completed segment ${i + 1}/${segments.length}`);
+                }
             }
 
             const finalContent = combineSegments(translatedSegments);
