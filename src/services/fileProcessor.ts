@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Buffer } from 'buffer';
 import { isBinaryFile } from "isbinaryfile";
-import { minimatch } from "minimatch";
+import * as glob from 'glob';
 import { TranslationDatabase } from "../translationDatabase";
 import { DestFolder, SupportedLanguage } from "../types/types";
 import { TranslatorService, AI_RETURN_CODE } from "./translatorService";
@@ -79,9 +79,9 @@ export class FileProcessor {
             const sourceRoot = this.translationDb.getSourceRoot() || resolvedSourcePath;
             const relativeToWorkspacePath = path.relative(workspaceRoot, resolvedSourcePath).replace(/\\/g, "/");
 
-            // Check if directory should be ignored
+            // Check if directory should be ignored using glob
             for (const pattern of ignorePaths) {
-                if (minimatch(relativeToWorkspacePath, pattern) || minimatch(`${relativeToWorkspacePath}/`, pattern)) {
+                if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
                     this.outputChannel.appendLine(`⏭️ Skipping ignored directory: ${resolvedSourcePath} (matched pattern: ${pattern})`);
                     return;
                 }
@@ -129,7 +129,7 @@ export class FileProcessor {
         let shouldSkip = false;
 
         for (const pattern of ignorePaths) {
-            if (minimatch(relativeToWorkspacePath, pattern) || minimatch(`${relativeToWorkspacePath}/`, pattern)) {
+            if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
                 this.outputChannel.appendLine(`⏭️ Skipping ignored subdirectory: ${fullPath} (matched pattern: ${pattern})`);
                 shouldSkip = true;
                 break;
@@ -215,7 +215,7 @@ export class FileProcessor {
 
         // Check ignore patterns
         for (const pattern of ignorePaths) {
-            if (minimatch(relativeToWorkspacePath, pattern)) {
+            if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
                 this.outputChannel.appendLine(`⏭️ Skipping ignored file: ${sourcePath} (matched pattern: ${pattern})`);
                 return true;
             }

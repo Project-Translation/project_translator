@@ -22,6 +22,22 @@ export interface Config {
 }
 
 export function getConfiguration() {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders && workspaceFolders.length > 0) {
+        const workspaceRoot = workspaceFolders[0].uri.fsPath;
+        const configFilePath = path.join(workspaceRoot, 'project_translation.json');
+
+        if (fs.existsSync(configFilePath)) {
+            try {
+                const fileContent = fs.readFileSync(configFilePath, 'utf-8');
+                return JSON.parse(fileContent);
+            } catch (error) {
+                vscode.window.showErrorMessage(`Failed to parse project_translation.json: ${(error as Error).message}`);
+            }
+        }
+    }
+
+    // Fallback to VS Code settings
     const config = vscode.workspace.getConfiguration("projectTranslator");
     const ignoreTranslationExtensions = config.get<string[]>("ignoreTranslationExtensions") || [];
     const currentVendorName = config.get<string>("currentVendor") || "openai";
@@ -47,16 +63,17 @@ export function getConfiguration() {
 
     // Validate that we have an API key either from settings or environment variable
     if (!currentVendor.apiKey) {
-        throw new Error(translations["error.invalidApiSettings"] || 
+        throw new Error(translations["error.invalidApiSettings"] ||
             `Please provide valid API key in the vendor configuration or set the environment variable ${currentVendor.apiKeyEnvVarName || 'specified in apiKeyEnvVarName'}`);
     }
 
     return {
-        ...currentVendor,
         ignoreTranslationExtensions,
         currentVendorName,
+        vendors,
         specifiedFiles,
         specifiedFolders,
+        currentVendor
     };
 }
 
@@ -64,7 +81,7 @@ export function getTranslationPrompts() {
     const projectConfig = vscode.workspace.getConfiguration("projectTranslator");
     const systemPrompts = projectConfig.get<string[]>("systemPrompts") || [];
     const userPrompts = projectConfig.get<string[]>("userPrompts") || [];
-    
+
     return {
         systemPrompts,
         userPrompts
