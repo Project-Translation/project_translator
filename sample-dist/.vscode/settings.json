@@ -55,18 +55,18 @@
         "embeded/zh-cn/**"
     ],
     "projectTranslator.specifiedFolders": [
-        // {
-        //     "sourceFolder": {
-        //         "path": "docs",
-        //         "lang": "en-us"
-        //     },
-        //     "destFolders": [
-        //         {
-        //             "path": "i18n/docs/zh-cn",
-        //             "lang": "zh-cn"
-        //         }
-        //     ]
-        // },
+        {
+            "sourceFolder": {
+                "path": "docs",
+                "lang": "en-us"
+            },
+            "destFolders": [
+                {
+                    "path": "i18n/zh-cn/docs",
+                    "lang": "zh-cn"
+                }
+            ]
+        },
         {
             "sourceFolder": {
                 "path": "embeded",
@@ -78,11 +78,22 @@
                     "lang": "zh-cn"
                 }
             ]
-        }
+        },
+        {
+            "sourceFolder": {
+                "path": "json",
+                "lang": "en-us"
+            },
+            "destFolders": [
+                {
+                    "path": "i18n/zh-cn/json",
+                    "lang": "zh-cn"
+                }
+            ]
+        },
     ],
     "projectTranslator.specifiedFiles": [
         {
-            // test shoud skip
             "sourceFile": {
                 "path": "md/should_skip.md",
                 "lang": "en-us"
@@ -95,11 +106,10 @@
                 {
                     "path": "./md/should_skip.ja-jp.md",
                     "lang": "ja-jp"
-                },
+                }
             ]
         },
         {
-            // test should translate
             "sourceFile": {
                 "path": "md/should_translate.md",
                 "lang": "en-us"
@@ -112,11 +122,10 @@
                 {
                     "path": "./md/should_translate.ja-jp.md",
                     "lang": "ja-jp"
-                },
+                }
             ]
         },
         {
-            // translate large file
             "sourceFile": {
                 "path": "../sample/md/style.md",
                 "lang": "en-us"
@@ -125,11 +134,7 @@
                 {
                     "path": "md/style.zh-cn.md",
                     "lang": "zh-cn"
-                },
-                // {
-                //     "path": "md/style.ja-jp.md",
-                //     "lang": "ja-jp"
-                // },
+                }
             ]
         },
         {
@@ -273,6 +278,18 @@
                 {
                     "path": "../readmes/README.ar-sa.md",
                     "lang": "ar-sa"
+                }
+            ]
+        },
+        {
+            "sourceFile": {
+                "path": "docs/guides/cloud_basics.md",
+                "lang": "en-us"
+            },
+            "destFiles": [
+                {
+                    "path": "i18n/zh-cn/docs/guides/cloud_basics.md",
+                    "lang": "zh-cn"
                 }
             ]
         }

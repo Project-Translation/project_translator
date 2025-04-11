@@ -36,8 +36,30 @@
       {
         "command": "extension.stopTranslation",
         "title": "Stop Translation"
+      },
+      {
+        "command": "extension.addFileToTranslationSettings",
+        "title": "Add to Project Translation"
+      },
+      {
+        "command": "extension.addFolderToTranslationSettings",
+        "title": "Add to Project Translation"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "extension.addFileToTranslationSettings",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "projectTranslator@1"
+        },
+        {
+          "command": "extension.addFolderToTranslationSettings",
+          "when": "resourceScheme == file && explorerResourceIsFolder",
+          "group": "projectTranslator@1"
+        }
+      ]
+    },
     "configuration": {
       "title": "Project Translator",
       "properties": {

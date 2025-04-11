@@ -79,13 +79,27 @@ function registerCommands(): vscode.Disposable[] {
         handleTranslateFiles
     );
 
+    // Add file to translation settings command
+    const addFileCommand = vscode.commands.registerCommand(
+        "extension.addFileToTranslationSettings",
+        handleAddFileToSettings
+    );
+
+    // Add folder to translation settings command
+    const addFolderCommand = vscode.commands.registerCommand(
+        "extension.addFolderToTranslationSettings",
+        handleAddFolderToSettings
+    );
+
     return [
         translateProjectCommand,
         translateFoldersCommand,
         translateFilesCommand,
         pauseCommand,
         resumeCommand,
-        stopCommand
+        stopCommand,
+        addFileCommand,
+        addFolderCommand
     ];
 }
 
@@ -413,6 +427,156 @@ async function handleTranslateProject() {
         outputChannel.appendLine(`❌ Error: ${errorMessage}`);
     } finally {
         cleanup();
+    }
+}
+
+async function handleAddFileToSettings(fileUri: vscode.Uri) {
+    try {
+        // Get the workspace folder
+        const workspace = vscode.workspace.workspaceFolders?.[0];
+        if (!workspace) {
+            throw new Error("Please open a workspace first");
+        }
+
+        // Get the file path relative to the workspace
+        let relativePath = path.relative(workspace.uri.fsPath, fileUri.fsPath);
+        if (path.isAbsolute(relativePath)) {
+            // If it's still absolute, it means the file is not inside the workspace
+            throw new Error("File must be inside the workspace");
+        }
+
+        // Verify the file exists
+        if (!fs.existsSync(fileUri.fsPath)) {
+            throw new Error(`File does not exist: ${relativePath}`);
+        }
+
+        // Detect the source language (default to en-us)
+        const sourceLang = "en-us";
+        
+        // Default target language
+        const targetLang = "zh-tw";
+
+        // Generate target path using the pattern i18n/{target_lang}/{relativePath}
+        const targetDir = path.join("i18n", targetLang);
+        const targetPath = path.join(targetDir, relativePath);
+
+        // Get existing configuration
+        const config = vscode.workspace.getConfiguration("projectTranslator");
+        let specifiedFiles = config.get<Array<any>>("specifiedFiles") || [];
+
+        // Check if the file is already in the configuration
+        const existingEntry = specifiedFiles.find(entry => 
+            entry.sourceFile && 
+            entry.sourceFile.path === relativePath);
+
+        if (existingEntry) {
+            outputChannel.appendLine(`File already exists in translation settings: ${relativePath}`);
+            vscode.window.showInformationMessage(`File already exists in translation settings: ${relativePath}`);
+            return;
+        }
+
+        // Create new file entry
+        const newFileEntry = {
+            sourceFile: {
+                path: relativePath,
+                lang: sourceLang
+            },
+            destFiles: [
+                {
+                    path: targetPath,
+                    lang: targetLang
+                }
+            ]
+        };
+
+        // Add to the configuration
+        specifiedFiles.push(newFileEntry);
+
+        // Update configuration
+        await config.update("specifiedFiles", specifiedFiles, vscode.ConfigurationTarget.Workspace);
+
+        // Show success message
+        outputChannel.appendLine(`Added file to translation settings: ${relativePath} → ${targetPath}`);
+        vscode.window.showInformationMessage(`Added file to translation settings: ${relativePath} → ${targetPath}`);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        vscode.window.showErrorMessage(`Failed to add file to translation settings: ${errorMessage}`);
+        outputChannel.appendLine(`❌ Error: ${errorMessage}`);
+    }
+}
+
+async function handleAddFolderToSettings(folderUri: vscode.Uri) {
+    try {
+        // Get the workspace folder
+        const workspace = vscode.workspace.workspaceFolders?.[0];
+        if (!workspace) {
+            throw new Error("Please open a workspace first");
+        }
+
+        // Get the folder path relative to the workspace
+        let relativePath = path.relative(workspace.uri.fsPath, folderUri.fsPath);
+        if (path.isAbsolute(relativePath)) {
+            // If it's still absolute, it means the folder is not inside the workspace
+            throw new Error("Folder must be inside the workspace");
+        }
+
+        // Verify the folder exists
+        if (!fs.existsSync(folderUri.fsPath) || !fs.statSync(folderUri.fsPath).isDirectory()) {
+            throw new Error(`Folder does not exist: ${relativePath}`);
+        }
+
+        // Detect the source language (default to en-us)
+        const sourceLang = "en-us";
+        
+        // Default target language
+        const targetLang = "zh-tw";
+
+        // Generate target path using the pattern i18n/{target_lang}/{relativePath}
+        const targetDir = path.join("i18n", targetLang);
+        const targetPath = path.join(targetDir, relativePath);
+
+        // Get existing configuration
+        const config = vscode.workspace.getConfiguration("projectTranslator");
+        let specifiedFolders = config.get<Array<any>>("specifiedFolders") || [];
+
+        // Check if the folder is already in the configuration
+        const existingEntry = specifiedFolders.find(entry => 
+            entry.sourceFolder && 
+            entry.sourceFolder.path === relativePath);
+
+        if (existingEntry) {
+            outputChannel.appendLine(`Folder already exists in translation settings: ${relativePath}`);
+            vscode.window.showInformationMessage(`Folder already exists in translation settings: ${relativePath}`);
+            return;
+        }
+
+        // Create new folder entry
+        const newFolderEntry = {
+            sourceFolder: {
+                path: relativePath,
+                lang: sourceLang
+            },
+            destFolders: [
+                {
+                    path: targetPath,
+                    lang: targetLang
+                }
+            ]
+        };
+
+        // Add to the configuration
+        specifiedFolders.push(newFolderEntry);
+
+        // Update configuration
+        await config.update("specifiedFolders", specifiedFolders, vscode.ConfigurationTarget.Workspace);
+
+        // Show success message
+        outputChannel.appendLine(`Added folder to translation settings: ${relativePath} → ${targetPath}`);
+        vscode.window.showInformationMessage(`Added folder to translation settings: ${relativePath} → ${targetPath}`);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        vscode.window.showErrorMessage(`Failed to add folder to translation settings: ${errorMessage}`);
+        outputChannel.appendLine(`❌ Error: ${errorMessage}`);
     }
 }
 
