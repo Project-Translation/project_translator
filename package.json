@@ -541,7 +541,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Project-Translation/project_translator"
+    "url": "https://github.com/Project-Translation/index"
   },
   "scripts": {
     "compile": "tsc -p ./",
