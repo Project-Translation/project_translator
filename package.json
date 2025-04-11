@@ -180,7 +180,17 @@
                       "pl-pl",
                       "tr-tr",
                       "ar-sa",
-                      "hi-in"
+                      "hi-in",
+                      "sv-se",
+                      "no-no",
+                      "da-dk",
+                      "fi-fi",
+                      "cs-cz",
+                      "hu-hu",
+                      "el-gr",
+                      "he-il",
+                      "th-th",
+                      "vi-vn"
                     ],
                     "enumDescriptions": [
                       "English (United States)",
@@ -198,7 +208,17 @@
                       "Polish (Poland)",
                       "Turkish (Turkey)",
                       "Arabic (Saudi Arabia)",
-                      "Hindi (India)"
+                      "Hindi (India)",
+                      "Swedish (Sweden)",
+                      "Norwegian (Norway)",
+                      "Danish (Denmark)",
+                      "Finnish (Finland)",
+                      "Czech (Czech Republic)",
+                      "Hungarian (Hungary)",
+                      "Greek (Greece)",
+                      "Hebrew (Israel)",
+                      "Thai (Thailand)",
+                      "Vietnamese (Vietnam)"
                     ],
                     "default": "en-us",
                     "description": "%config.language.description%"
@@ -236,7 +256,17 @@
                         "pl-pl",
                         "tr-tr",
                         "ar-sa",
-                        "hi-in"
+                        "hi-in",
+                        "sv-se",
+                        "no-no",
+                        "da-dk",
+                        "fi-fi",
+                        "cs-cz",
+                        "hu-hu",
+                        "el-gr",
+                        "he-il",
+                        "th-th",
+                        "vi-vn"
                       ],
                       "enumDescriptions": [
                         "English (United States)",
@@ -254,7 +284,17 @@
                         "Polish (Poland)",
                         "Turkish (Turkey)",
                         "Arabic (Saudi Arabia)",
-                        "Hindi (India)"
+                        "Hindi (India)",
+                        "Swedish (Sweden)",
+                        "Norwegian (Norway)",
+                        "Danish (Denmark)",
+                        "Finnish (Finland)",
+                        "Czech (Czech Republic)",
+                        "Hungarian (Hungary)",
+                        "Greek (Greece)",
+                        "Hebrew (Israel)",
+                        "Thai (Thailand)",
+                        "Vietnamese (Vietnam)"
                       ],
                       "description": "%config.targetLanguage.description%"
                     }
@@ -305,7 +345,17 @@
                       "pl-pl",
                       "tr-tr",
                       "ar-sa",
-                      "hi-in"
+                      "hi-in",
+                      "sv-se",
+                      "no-no",
+                      "da-dk",
+                      "fi-fi",
+                      "cs-cz",
+                      "hu-hu",
+                      "el-gr",
+                      "he-il",
+                      "th-th",
+                      "vi-vn"
                     ],
                     "enumDescriptions": [
                       "English (United States)",
@@ -323,7 +373,17 @@
                       "Polish (Poland)",
                       "Turkish (Turkey)",
                       "Arabic (Saudi Arabia)",
-                      "Hindi (India)"
+                      "Hindi (India)",
+                      "Swedish (Sweden)",
+                      "Norwegian (Norway)",
+                      "Danish (Denmark)",
+                      "Finnish (Finland)",
+                      "Czech (Czech Republic)",
+                      "Hungarian (Hungary)",
+                      "Greek (Greece)",
+                      "Hebrew (Israel)",
+                      "Thai (Thailand)",
+                      "Vietnamese (Vietnam)"
                     ],
                     "default": "en-us",
                     "description": "%config.language.description%"
@@ -361,7 +421,17 @@
                         "pl-pl",
                         "tr-tr",
                         "ar-sa",
-                        "hi-in"
+                        "hi-in",
+                        "sv-se",
+                        "no-no",
+                        "da-dk",
+                        "fi-fi",
+                        "cs-cz",
+                        "hu-hu",
+                        "el-gr",
+                        "he-il",
+                        "th-th",
+                        "vi-vn"
                       ],
                       "enumDescriptions": [
                         "English (United States)",
@@ -379,7 +449,17 @@
                         "Polish (Poland)",
                         "Turkish (Turkey)",
                         "Arabic (Saudi Arabia)",
-                        "Hindi (India)"
+                        "Hindi (India)",
+                        "Swedish (Sweden)",
+                        "Norwegian (Norway)",
+                        "Danish (Denmark)",
+                        "Finnish (Finland)",
+                        "Czech (Czech Republic)",
+                        "Hungarian (Hungary)",
+                        "Greek (Greece)",
+                        "Hebrew (Israel)",
+                        "Thai (Thailand)",
+                        "Vietnamese (Vietnam)"
                       ],
                       "description": "%config.targetLanguage.description%"
                     }

@@ -2,6 +2,7 @@
 
 A VSCode extension: An easy-to-use tool for multi-language localization of projects.
 
+<!--
 ## Available Translations
 
 The extension supports translation to these languages:
@@ -17,7 +18,7 @@ The extension supports translation to these languages:
 - [Русский (ru-ru)](./readmes/README.ru-ru.md)
 - [العربية (ar-sa)](./readmes/README.ar-sa.md)
 - [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+- [العربية (ar-eg)](./readmes/README.ar-eg.md) -->
 
 ## Samples
 
