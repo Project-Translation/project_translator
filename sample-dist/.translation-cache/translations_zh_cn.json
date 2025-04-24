@@ -23,7 +23,7 @@
     "hash": "41636e41ccbb792e07a7b223919a4746"
   },
   "docs/guides/cloud_basics.md": {
-    "timestamp": 1744009582035,
+    "timestamp": 1745489848326,
     "hash": "6708b43cc86e96f3adad43ae366ba79d"
   },
   "embeded/embeded.md": {
@@ -37,5 +37,41 @@
   "embeded/level1/level2/level2.txt": {
     "timestamp": 1744019295127,
     "hash": "11f6222b845de45389eded677617a91b"
+  },
+  "md/should_skip.md": {
+    "timestamp": 0,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
+  "md/should_translate.md": {
+    "timestamp": 0,
+    "hash": "7d7246af9876796f9c53502a42ab1c90"
+  },
+  "../sample/md/style.md": {
+    "timestamp": 0,
+    "hash": "4cdafa2c726a109eaa7471996e77e6fa"
+  },
+  "../l10n/bundle.l10n.json": {
+    "timestamp": 1745489768658,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "json/ja-jp/various.json": {
+    "timestamp": 1745489865541,
+    "hash": "31e77460c2ae901c297b8ff0daddd450"
+  },
+  "json/zh-cn/various.json": {
+    "timestamp": 1745489876813,
+    "hash": "dc216264e741706ff1edfc1a2e9546e0"
+  },
+  "json/zh-tw/various.json": {
+    "timestamp": 1745489891658,
+    "hash": "76e3effedf5dae73197b1a98a28dbd35"
+  },
+  "../package.nls.json": {
+    "timestamp": 1745490011359,
+    "hash": "91bf3e559c2b11ad3ee196d28c720cfc"
+  },
+  "../README.md": {
+    "timestamp": 1745490229478,
+    "hash": "a4bda368e84b82171d1c8bba7a30b6e6"
   }
 }

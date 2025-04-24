@@ -1,89 +1,99 @@
-# Tradutor de Projeto
+# Tradutor de Projetos
 
-Uma extensão do VSCode: Uma ferramenta fácil de usar para a localização multilíngue de projetos.
+Uma extensão do VSCode: Uma ferramenta fácil de usar para localização multilíngua de projetos.
 
+<!--
 ## Traduções Disponíveis
 
-A extensão suporta tradução para os seguintes idiomas:
+A extensão suporta tradução para esses idiomas:
 
-- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
-- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
-- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
-- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
-- [Français (fr-fr)](./readmes/README.fr-fr.md)
-- [Deutsch (de-de)](./readmes/README.de-de.md)
-- [Español (es-es)](./readmes/README.es-es.md)
-- [Português (pt-br)](./readmes/README.pt-br.md)
-- [Русский (ru-ru)](./readmes/README.ru-ru.md)
-- [العربية (ar-sa)](./readmes/README.ar-sa.md)
-- [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+- [简体中文 (zh-cn)](./README.zh-cn.md)
+- [繁體中文 (zh-tw)](./README.zh-tw.md)
+- [日本語 (ja-jp)](./README.ja-jp.md)
+- [한국어 (ko-kr)](./README.ko-kr.md)
+- [Français (fr-fr)](./README.fr-fr.md)
+- [Deutsch (de-de)](./README.de-de.md)
+- [Español (es-es)](./README.es-es.md)
+- [Português (pt-br)](./README.pt-br.md)
+- [Русский (ru-ru)](./README.ru-ru.md)
+- [العربية (ar-sa)](./README.ar-sa.md)
+- [العربية (ar-ae)](./README.ar-ae.md)
+- [العربية (ar-eg)](./README.ar-eg.md) -->
 
-## Amostras
+## Exemplos
 
-| Projeto                                                   | Idiomas                                                                                                                                                 |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [google/styleguide](https://github.com/google/styleguide) | [en-us](https://github.com/google/styleguide) original por @google<br>[zh-cn](https://github.com/Project-Translation/styleguide-zh-cn) traduzido por @jqknono |
+| Projeto                                                                             | Repositório Original                                                                                       | Descrição                                                                                                                                                               | Estrelas | Tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:Plataforma Online Interativa que Visualiza Algoritmos a Partir do Código                                                                                       | 47301   | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:Visualizações de Algoritmos                                                                                                                                 | 401     | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | Agente de Codificação Autônomo Diretamente no Seu IDE, Capaz de Criar/Editar Arquivos, Executar Comandos, Usar o Navegador e Mais, com Sua Permissão a Cada Passo.         | 39572   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Documentação de Código Aberto do Cursor                                                                                                                                  | 309     | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go by Example                                                                                                                                                             | 7523    | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [espelho] Página Inicial dos Sites go.dev e golang.org                                                                                                                   | 402     | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ Compartilhar Folha de Consulta Rápida de Referência para Desenvolvedores.                                                                                              | 7808    | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
+| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | Guias de Estilo para Projetos de Código Aberto Originados do Google                                                                                                       | 38055   | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | Documentação Pública para Visual Studio Code                                                                                                                             | 5914    | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ## Solicitando Tradução de Projeto
 
-Se você deseja contribuir com uma tradução ou precisa que um projeto seja traduzido:
+Se você quiser contribuir com uma tradução ou precisar que um projeto seja traduzido:
 
 1. Crie uma issue usando o seguinte modelo:
 
 ```md
-**Projeto**: [project_url]
-**Idioma Alvo**: [target_lang]
-**Descrição**: Breve descrição do porquê essa tradução seria valiosa
+**Project**: [project_url]
+**Target Language**: [target_lang]
+**Description**: Brief description of why this translation would be valuable
 ```
 
 2. Fluxo de Trabalho:
 
 ```mermaid
 sequenceDiagram
-  Contribuinte->>Tradutor de Projeto: Criar issue de tradução
-  Tradutor de Projeto->>Comunidade: Revisar issue
-  Comunidade-->>Contribuinte: Aprovar/Comentar
-  Contribuinte->>Novo Projeto: Iniciar tradução
-  Contribuinte->>Novo Projeto: Enviar para Novo Projeto
-  Contribuinte->>Tradutor de Projeto: Criar Pull Request, modificar README.Amostras
-  Tradutor de Projeto-->>Tradutor de Projeto: Revisar & Mesclar
+  Contributor->>Project Translator: Create translation issue
+  Project Translator->>Community: Review issue
+  Community-->>Contributor: Approve/Comment
+  Contributor->>New Project: Start translation
+  Contributor->>New Project: Submit to New Project
+  Contributor->>Project Translator: Create Pull Request, modify README.Samples
+  Project Translator-->>Project Translator: Review & Merge
 ```
 
-3. Após a PR ser mesclada, a tradução será adicionada à seção de Amostras.
+3. Após o PR ser mesclado, a tradução será adicionada à seção de Exemplos.
 
 Traduções em andamento: [Ver Issues](https://github.com/Project-Translation/project_translator/issues)
 
 ## Recursos
-- 📁 Suporte à Tradução em Nível de Pasta
-  - Traduza pastas inteiras do projeto para vários idiomas
-  - Mantenha a estrutura e a hierarquia original da pasta
+
+- 📁 Suporte a Tradução em Nível de Pasta
+  - Traduza pastas inteiras de projetos para vários idiomas
+  - Mantenha a estrutura e hierarquia original da pasta
   - Suporte para tradução recursiva de subpastas
   - Detecção automática de conteúdo traduzível
   - Processamento em lote para traduções em grande escala eficientes
-- 📄 Suporte à Tradução em Nível de Arquivo
+- 📄 Suporte a Tradução em Nível de Arquivo
   - Traduza arquivos individuais para vários idiomas
-  - Preserve a estrutura e a formatação original do arquivo
+  - Preserve a estrutura e formatação original do arquivo
   - Suporte para modos de tradução de pasta e arquivo
 - 💡 Tradução Inteligente com IA
   - Mantém automaticamente a integridade da estrutura do código
   - Traduz apenas comentários de código, preserva a lógica do código
-  - Mantém formatos de estrutura de dados JSON/XML e outros
-  - Qualidade de tradução de documentação técnica profissional
+  - Mantém formatos de estruturas de dados como JSON/XML
+  - Qualidade profissional de tradução de documentação técnica
 - ⚙️ Configuração Flexível
-  - Configure a pasta de origem e várias pastas de destino
+  - Configure pasta de origem e várias pastas de destino
   - Suporte para intervalos de tradução de arquivos personalizados
   - Defina tipos de arquivos específicos para ignorar
-  - Suporte para várias opções de modelo de IA
+  - Suporte para várias opções de modelos de IA
 - 🚀 Operações Amigáveis ao Usuário
-  - Exibição em tempo real do progresso da tradução
+  - Exibição de progresso de tradução em tempo real
   - Suporte para pausar/retomar/parar a tradução
   - Manutenção automática da estrutura da pasta de destino
   - Tradução incremental para evitar trabalho duplicado
 
 ## Instalação
 
-1. Pesquise por "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" no marketplace de extensões do VS Code
+1. Pesquise por "[Tradutor de Projetos](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" no marketplace de extensões do VS Code
 2. Clique em instalar
 
 ## Configuração
@@ -95,13 +105,13 @@ A extensão suporta as seguintes opções de configuração:
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "Caminho da pasta de origem",
-        "lang": "Código do idioma de origem"
+        "path": "Source folder path",
+        "lang": "Source language code"
       },
       "destFolders": [
         {
-          "path": "Caminho da pasta de destino",
-          "lang": "Código do idioma de destino"
+          "path": "Target folder path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -109,13 +119,13 @@ A extensão suporta as seguintes opções de configuração:
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "Caminho do arquivo de origem",
-        "lang": "Código do idioma de origem"
+        "path": "Source file path",
+        "lang": "Source language code"
       },
       "destFiles": [
         {
-          "path": "Caminho do arquivo de destino",
-          "lang": "Código do idioma de destino"
+          "path": "Target file path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -124,10 +134,10 @@ A extensão suporta as seguintes opções de configuração:
   "projectTranslator.vendors": [
     {
       "name": "openai",
-      "apiEndpoint": "URL do endpoint da API",
-      "apiKey": "Chave de autenticação da API",
-      "model": "Nome do modelo a ser usado",
-      "rpm": "Máximo de solicitações por minuto",
+      "apiEndpoint": "API endpoint URL",
+      "apiKey": "API authentication key",
+      "model": "Model name to use",
+      "rpm": "Maximum requests per minute",
       "maxTokensPerSegment": 4096,
       "timeout": 30,
       "temperature": 0.0
@@ -136,38 +146,39 @@ A extensão suporta as seguintes opções de configuração:
 }
 ```
 
-Detalhes-chave da configuração:
+Detalhes chave de configuração:
+
 | Opção de Configuração                            | Descrição                                                                                    |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`             | Várias pastas de origem com suas pastas de destino correspondentes para tradução             |
-| `projectTranslator.specifiedFiles`               | Vários arquivos de origem com seus arquivos de destino correspondentes para tradução         |
-| `projectTranslator.translationIntervalDays`      | Intervalo de tradução em dias (padrão 7 dias)                                                |
-| `projectTranslator.ignoreTranslationExtensions`  | Lista de extensões de arquivos de texto que não precisam de tradução, esses arquivos serão copiados diretamente  |
-| `projectTranslator.ignorePaths`                  | Lista de padrões de caminho ignorados usando curingas, esses arquivos não serão copiados     |
-| `projectTranslator.currentVendor`                | Fornecedor de API atual em uso                                                               |
-| `projectTranslator.vendors`                      | Lista de configuração de fornecedores de API                                                 |
-| `projectTranslator.systemPrompts`                | Array de prompts do sistema para guiar o processo de tradução                                |
-| `projectTranslator.userPrompts`                  | Array de prompts definidos pelo usuário, esses prompts serão adicionados após os prompts do sistema durante a tradução |
-| `projectTranslator.segmentationMarkers`          | Marcadores de segmentação configurados por tipo de arquivo, suporta expressões regulares     |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`            | Várias pastas de origem com suas pastas de destino correspondentes para tradução               |
+| `projectTranslator.specifiedFiles`              | Vários arquivos de origem com seus arquivos de destino correspondentes para tradução           |
+| `projectTranslator.translationIntervalDays`     | Intervalo de tradução em dias (padrão 7 dias)                                                  |
+| `projectTranslator.ignoreTranslationExtensions` | Lista de extensões de arquivos de texto que não precisam de tradução, esses arquivos serão copiados diretamente |
+| `projectTranslator.ignorePaths`                 | Lista de padrões de caminhos ignorados usando sintaxe glob, esses arquivos não serão copiados  |
+| `projectTranslator.currentVendor`               | Fornecedor de API atual em uso                                                                      |
+| `projectTranslator.vendors`                     | Lista de configurações de fornecedores de API                                                  |
+| `projectTranslator.systemPrompts`               | Array de prompts do sistema para guiar o processo de tradução                                  |
+| `projectTranslator.userPrompts`                 | Array de prompts definidos pelo usuário, esses prompts serão adicionados após os prompts do sistema durante a tradução |
+| `projectTranslator.segmentationMarkers`         | Marcadores de segmentação configurados por tipo de arquivo, suporta expressões regulares       |
 
 ## Uso
 
-1. Abra a paleta de comandos (Ctrl+Shift+P / Cmd+Shift+P)
+1. Abra o palette de comandos (Ctrl+Shift+P / Cmd+Shift+P)
 2. Digite "Traduzir Projeto" e selecione o comando
-3. Se a pasta de origem não estiver configurada, um diálogo de seleção de pasta aparecerá
+3. Se a pasta de origem não estiver configurada, uma caixa de diálogo de seleção de pasta aparecerá
 4. Aguarde a conclusão da tradução
 
 Durante a tradução:
 
-- Pode pausar/retomar a tradução via botões na barra de status
+- Pode pausar/retomar a tradução por meio de botões na barra de status
 - Pode parar o processo de tradução a qualquer momento
-- O progresso da tradução é mostrado na área de notificação
+- O progresso da tradução é mostrado na área de notificações
 - Logs detalhados são exibidos no painel de saída
 
 ## Notas
 
-- Certifique-se de ter cota de uso de API suficiente
-- Recomendado testar com projetos pequenos primeiro
+- Garanta cota de uso de API suficiente
+- Recomenda-se testar com projetos pequenos primeiro
 - Use chaves de API dedicadas e remova-as após a conclusão
 
 ## Licença

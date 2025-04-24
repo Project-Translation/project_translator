@@ -10,5 +10,17 @@
   "test/code/project_translator/README.md": {
     "timestamp": 1744003149160,
     "hash": "7fa5e44a503b05add029671e6aa924ad"
+  },
+  "../l10n/bundle.l10n.json": {
+    "timestamp": 1745489779140,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "../package.nls.json": {
+    "timestamp": 1745490034993,
+    "hash": "91bf3e559c2b11ad3ee196d28c720cfc"
+  },
+  "../README.md": {
+    "timestamp": 1745490251464,
+    "hash": "a4bda368e84b82171d1c8bba7a30b6e6"
   }
 }
