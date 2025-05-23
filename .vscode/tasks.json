@@ -47,6 +47,14 @@
             "group": "build",
             "problemMatcher": [],
             "detail": "Publish Minor VS Code extension"
+        },
+        {
+            "label": "package vsix",
+            "type": "shell",
+            "command": "npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Build a VSIX package for local installation"
         }
     ]
 }
