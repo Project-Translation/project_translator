@@ -386,8 +386,7 @@ async function handleTranslateProject() {
         const translationTasks = [];
 
         // Add folder translation task if specifiedFolders is configured
-        const specifiedFolders = vscode.workspace.getConfiguration("projectTranslator").get<Array<SpecifiedFolder>>("specifiedFolders") || [];
-        if (specifiedFolders.length > 0) {
+        if (config.specifiedFolders && config.specifiedFolders.length > 0) {
             translationTasks.push(handletranslateFolders());
         }
 
@@ -454,7 +453,7 @@ async function handleAddFileToSettings(fileUri: vscode.Uri) {
         const sourceLang = "en-us";
         
         // Default target language
-        const targetLang = "zh-tw";
+        const targetLang = "zh-cn";
 
         // Generate target path using the pattern i18n/{target_lang}/{relativePath}
         const targetDir = path.join("i18n", targetLang);

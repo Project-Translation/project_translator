@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as vscode from 'vscode';
 import { SpecifiedFolder } from './types/types';
+import { getConfiguration } from './config/config';
 
 // Example language codes, but system now accepts any string with length < 10
 export const SUPPORTED_LANGUAGES = [
@@ -220,13 +221,12 @@ export class TranslationDatabase {
             // Ensure cache exists for this language
             if (!this.translationCache.has(targetLang)) {
                 await this.loadCacheForLanguage(targetLang);
-            }
-
-            // Get the translation record for this language
+            }            // Get the translation record for this language
             const translationRecord = this.translationCache.get(targetLang) || {};
 
             // Get the interval in days from configuration
-            const intervalDays = vscode.workspace.getConfiguration('projectTranslator').get<number>('translationIntervalDays') || 7;
+            const config = getConfiguration();
+            const intervalDays = config.translationIntervalDays;
 
             // If the source file has no record, it should be translated
             if (!translationRecord[relativeSourcePath]) {

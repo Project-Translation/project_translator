@@ -1,11 +1,11 @@
 # 專案翻譯器
 
-A VSCode 擴充功能：一個易於使用的工具，用於專案的多語言本地化。
+A VSCode extension: An easy-to-use tool for multi-language localization of projects.
 
 <!--
 ## 可用的翻譯
 
-擴充功能支援翻譯到這些語言：
+The extension supports translation to these languages:
 
 - [簡體中文 (zh-cn)](./README.zh-cn.md)
 - [繁體中文 (zh-tw)](./README.zh-tw.md)
@@ -18,15 +18,14 @@ A VSCode 擴充功能：一個易於使用的工具，用於專案的多語言�
 - [Русский (ru-ru)](./README.ru-ru.md)
 - [العربية (ar-sa)](./README.ar-sa.md)
 - [العربية (ar-ae)](./README.ar-ae.md)
-- [العربية (ar-eg)](./README.ar-eg.md) -->
+- [العربية (ar-eg)](./README.ar-eg.md) --> 
 
-## 範例
-
-| 專案                                                                             | 原倉庫                                                                                       | 描述                                                                                                                                                               | Stars | Tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:互動式線上平台，從程式碼視覺化演算法                                                                                               | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+## 樣本
+| 專案                                                                             | 原倉庫                                                                                       | 描述                                                                                                                                                               | 星標 | 標籤                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:從程式碼視覺化演算法的互動線上平台                                                                                               | 47301 | [`演算法`](https://github.com/topics/algorithm), [`動畫`](https://github.com/topics/animation), [`資料結構`](https://github.com/topics/data-structure), [`視覺化`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:演算法視覺化                                                                                                                                    | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | 自主編碼代理，直接在您的 IDE 中運作，能夠在您每一步許可下建立/編輯檔案、執行命令、使用瀏覽器等。 | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | 在您的 IDE 中，具備每一步都需要您的許可來建立/編輯檔案、執行命令、使用瀏覽器等功能的自主編碼代理程式。 | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Cursor 的開放原始碼文件                                                                                                                                        | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go by Example                                                                                                                                                             | 7523  | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [鏡像] go.dev 和 golang.org 網站的家                                                                                                                       | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -36,7 +35,7 @@ A VSCode 擴充功能：一個易於使用的工具，用於專案的多語言�
 
 ## 請求專案翻譯
 
-如果您想貢獻翻譯或需要翻譯某個專案：
+如果您想貢獻翻譯或需要翻譯一個專案：
 
 1. 使用以下範本建立一個議題：
 
@@ -47,7 +46,6 @@ A VSCode 擴充功能：一個易於使用的工具，用於專案的多語言�
 ```
 
 2. 工作流程：
-
 ```mermaid
 sequenceDiagram
   Contributor->>Project Translator: Create translation issue
@@ -59,27 +57,27 @@ sequenceDiagram
   Project Translator-->>Project Translator: Review & Merge
 ```
 
-3. PR 合併後，翻譯將被新增到範例區段。
+3. PR 合併後，翻譯將被新增至 Samples 區段。
 
-目前翻譯進行中：[查看議題](https://github.com/Project-Translation/project_translator/issues)
+目前翻譯進行中：[檢視 Issues](https://github.com/Project-Translation/project_translator/issues)
 
 ## 功能
 
 - 📁 資料夾層級翻譯支援
-  - 將整個專案資料夾翻譯到多種語言
+  - 將整個專案資料夾翻譯成多種語言
   - 維持原資料夾結構和層級
   - 支援遞迴翻譯子資料夾
   - 自動偵測可翻譯內容
   - 批次處理以有效處理大型翻譯
 - 📄 檔案層級翻譯支援
-  - 將個別檔案翻譯到多種語言
+  - 將個別檔案翻譯成多種語言
   - 保留原檔案結構和格式
   - 支援資料夾和檔案翻譯模式
 - 💡 智慧型 AI 翻譯
   - 自動維持程式碼結構完整性
   - 僅翻譯程式碼註解，保留程式邏輯
   - 維持 JSON/XML 等資料結構格式
-  - 專業的技術文件翻譯品質
+  - 專業技術文件翻譯品質
 - ⚙️ 靈活配置
   - 配置來源資料夾和多個目標資料夾
   - 支援自訂檔案翻譯間隔
@@ -148,39 +146,38 @@ sequenceDiagram
 
 關鍵配置細節：
 
-| 配置選項                            | 描述                                                                                    |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`            | 多個來源資料夾及其對應的目標資料夾用於翻譯           |
-| `projectTranslator.specifiedFiles`              | 多個來源檔案及其對應的目標檔案用於翻譯               |
-| `projectTranslator.translationIntervalDays`     | 翻譯間隔天數 (預設 7 天)                                                  |
-| `projectTranslator.ignoreTranslationExtensions` | 不需要翻譯的文字檔案副檔名列表，這些檔案將直接複製  |
-| `projectTranslator.ignorePaths`                 | 使用 glob 語法忽略的路徑模式列表，這些檔案不會被複製                   |
-| `projectTranslator.currentVendor`               | 目前使用的 API 供應商                                                                      |
-| `projectTranslator.vendors`                     | API 供應商配置列表                                                                  |
-| `projectTranslator.systemPrompts`               | 系統提示陣列，用於引導翻譯過程                                        |
-| `projectTranslator.userPrompts`                 | 使用者定義的提示陣列，在翻譯期間這些提示將新增在系統提示之後 |
-| `projectTranslator.segmentationMarkers`         | 依檔案類型配置的分段標記，支援正規表示式                     |
+| Configuration Option                        | Description                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`        | 多個來源資料夾及其對應的目標資料夾，用於翻譯                                                   |
+| `projectTranslator.specifiedFiles`          | 多個來源檔案及其對應的目標檔案，用於翻譯                                                      |
+| `projectTranslator.translationIntervalDays` | 翻譯間隔天數（預設 7 天）                                                                     |
+| `projectTranslator.copyOnly`                | 要複製但不翻譯的檔案（包含 `paths` 和 `extensions` 陣列）                                    |
+| `projectTranslator.ignore`                  | 要完全忽略的檔案（包含 `paths` 和 `extensions` 陣列）                                         |
+| `projectTranslator.currentVendor`           | 目前使用的 API 供應商                                                                         |
+| `projectTranslator.vendors`                 | API 供應商配置清單                                                                            |
+| `projectTranslator.systemPrompts`           | 系統提示陣列，用於引導翻譯過程                                                                |
+| `projectTranslator.userPrompts`             | 使用者定義的提示陣列，這些提示會在翻譯期間新增至系統提示之後                                  |
+| `projectTranslator.segmentationMarkers`     | 依檔案類型配置的分段標記，支援正規表示式                                                      |
 
 ## 使用方式
 
 1. 開啟命令選單 (Ctrl+Shift+P / Cmd+Shift+P)
 2. 輸入 "Translate Project" 並選取命令
-3. 如果來源資料夾未配置，將出現資料夾選取對話框
+3. 如果來源資料夾未配置，會出現資料夾選取對話框
 4. 等待翻譯完成
 
 翻譯期間：
 
-- 透過狀態列按鈕可以暫停/繼續翻譯
+- 可以通过狀態列按鈕暫停/繼續翻譯
 - 隨時可以停止翻譯過程
 - 翻譯進度顯示在通知區域
 - 詳細日誌顯示在輸出面板
 
 ## 注意事項
-
-- 確保有足夠的 API 使用配額
-- 建議先用小型專案測試
-- 使用專用 API 金鑰並在完成後移除
+- 確保足夠的 API 使用配額
+- 建議先使用小專案測試
+- 使用專用的 API 金鑰並在完成後移除它們
 
 ## 授權
 
-[License](LICENSE)
+[授權](LICENSE)

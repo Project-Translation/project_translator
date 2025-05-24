@@ -1,7 +1,7 @@
 {
   "name": "project-translator",
   "displayName": "Project Translator",
-  "description": "Project Translator",
+  "description": "%description.description%",
   "version": "0.9.4",
   "publisher": "techfetch-dev",
   "icon": "resources/project-translator.png",
@@ -17,35 +17,35 @@
     "commands": [
       {
         "command": "extension.translateProject",
-        "title": "Translate Project"
+        "title": "%command.translateProject%"
       },
       {
         "command": "extension.translateFolders",
-        "title": "Translate Folders"
+        "title": "%command.translateFolders%"
       },
       {
         "command": "extension.translateFiles",
-        "title": "Translate Files"
+        "title": "%command.translateFiles%"
       },
       {
         "command": "extension.pauseTranslation",
-        "title": "Pause Translation"
+        "title": "%command.pauseTranslation%"
       },
       {
         "command": "extension.resumeTranslation",
-        "title": "Resume Translation"
+        "title": "%command.resumeTranslation%"
       },
       {
         "command": "extension.stopTranslation",
-        "title": "Stop Translation"
+        "title": "%command.stopTranslation%"
       },
       {
         "command": "extension.addFileToTranslationSettings",
-        "title": "Add to Project Translation"
+        "title": "%command.addFileToTranslationSettings%"
       },
       {
         "command": "extension.addFolderToTranslationSettings",
-        "title": "Add to Project Translation"
+        "title": "%command.addFolderToTranslationSettings%"
       }
     ],
     "menus": {
@@ -63,7 +63,7 @@
       ]
     },
     "configuration": {
-      "title": "Project Translator",
+      "title": "%configuration.title%",
       "properties": {
         "projectTranslator.currentVendor": {
           "type": "string",
@@ -318,7 +318,7 @@
             ]
           },
           "default": [],
-          "description": "Multiple source files with their corresponding destination files for translation",
+          "description": "%config.specifiedFiles.description%",
           "order": 6
         },
         "projectTranslator.specifiedFolders": {
@@ -487,7 +487,7 @@
             ]
           },
           "default": [],
-          "description": "Multiple source folders with their corresponding destination folders for translation",
+          "description": "%config.specifiedFolders.description%",
           "order": 6
         },
         "projectTranslator.translationIntervalDays": {
@@ -496,31 +496,67 @@
           "description": "%config.translationIntervalDays.description%",
           "order": 7
         },
-        "projectTranslator.ignoreTranslationExtensions": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "projectTranslator.copyOnly": {
+          "type": "object",
+          "properties": {
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "%config.copyOnly.paths.description%"
+            },
+            "extensions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                ".svg"
+              ],
+              "description": "%config.copyOnly.extensions.description%"
+            }
           },
-          "default": [
-            ".svg"
-          ],
-          "description": "%config.ignoreTranslationExtensions.description%",
+          "default": {
+            "paths": [],
+            "extensions": [".svg"]
+          },
+          "description": "%config.copyOnly.description%",
           "order": 8
         },
-        "projectTranslator.ignorePaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "projectTranslator.ignore": {
+          "type": "object",
+          "properties": {
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "**/node_modules/**",
+                "**/.git/**",
+                "**/.github/**",
+                "**/.vscode/**",
+                "**/.nuxt/**",
+                "**/.next/**"
+              ],
+              "description": "%config.ignore.paths.description%"
+            },
+            "extensions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "%config.ignore.extensions.description%"
+            }
           },
-          "default": [
-            "**/node_modules/**",
-            "**/.git/**",
-            "**/.github/**",
-            "**/.vscode/**",
-            "**/.nuxt/**",
-            "**/.next/**"
-          ],
-          "description": "%config.ignorePaths.description%",
+          "default": {
+            "paths": ["**/node_modules/**", "**/.git/**", "**/.github/**", "**/.vscode/**", "**/.nuxt/**", "**/.next/**"],
+            "extensions": []
+          },
+          "description": "%config.ignore.description%",
           "order": 9
         },
         "projectTranslator.systemPrompts": {
@@ -634,6 +670,7 @@
     "url": "https://github.com/Project-Translation/index"
   },
   "scripts": {
+    "build": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",

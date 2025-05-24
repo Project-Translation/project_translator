@@ -1,0 +1,26 @@
+{
+  "../test/code/project_translator/l10n/bundle.l10n.json": {
+    "timestamp": 1744003072642,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "test/code/project_translator/package.nls.json": {
+    "timestamp": 1744003098114,
+    "hash": "41636e41ccbb792e07a7b223919a4746"
+  },
+  "test/code/project_translator/README.md": {
+    "timestamp": 1744003149160,
+    "hash": "7fa5e44a503b05add029671e6aa924ad"
+  },
+  "../l10n/bundle.l10n.json": {
+    "timestamp": 1745489779140,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "../package.nls.json": {
+    "timestamp": 1748074305334,
+    "hash": "589d76b4c40bfd08f6048469a199fe65"
+  },
+  "../README.md": {
+    "timestamp": 1748073104835,
+    "hash": "3318e74583bad7e8d92e0f78be9c2f17"
+  }
+}

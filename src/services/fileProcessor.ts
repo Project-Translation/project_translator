@@ -69,21 +69,19 @@ export class FileProcessor {
         const resolvedSourcePath = this.resolvePath(sourcePath);
 
         this.outputChannel.appendLine("\n[Directory Processing] ----------------------------------------");
-        this.outputChannel.appendLine(`📂 Starting to process directory: ${sourcePath}`);
-
-        try {
+        this.outputChannel.appendLine(`📂 Starting to process directory: ${sourcePath}`);        try {
             this.checkCancellation();
 
-            const ignorePaths = vscode.workspace.getConfiguration("projectTranslator").get<string[]>("ignorePaths") || [];
+            const config = getConfiguration();
             const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
             const sourceRoot = this.translationDb.getSourceRoot() || resolvedSourcePath;
-            const relativeToWorkspacePath = path.relative(workspaceRoot, resolvedSourcePath).replace(/\\/g, "/");
-
-            // Check if directory should be ignored using glob
-            for (const pattern of ignorePaths) {
-                if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
-                    this.outputChannel.appendLine(`⏭️ Skipping ignored directory: ${resolvedSourcePath} (matched pattern: ${pattern})`);
-                    return;
+            const relativeToWorkspacePath = path.relative(workspaceRoot, resolvedSourcePath).replace(/\\/g, "/");            // Check if directory should be ignored using glob
+            if (config.ignore?.paths) {
+                for (const pattern of config.ignore.paths) {
+                    if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
+                        this.outputChannel.appendLine(`⏭️ Skipping ignored directory: ${resolvedSourcePath} (matched pattern: ${pattern})`);
+                        return;
+                    }
                 }
             }
 
@@ -94,10 +92,8 @@ export class FileProcessor {
                 this.checkCancellation();
 
                 const fullPath = path.join(resolvedSourcePath, file);
-                const stat = fs.statSync(fullPath);
-
-                if (stat.isDirectory()) {
-                    await this.processSubDirectory(fullPath, targetPaths, sourceRoot, ignorePaths, sourceLang);
+                const stat = fs.statSync(fullPath);                if (stat.isDirectory()) {
+                    await this.processSubDirectory(fullPath, targetPaths, sourceRoot, config.ignore?.paths || [], sourceLang);
                 } else {
                     this.outputChannel.appendLine(`\n📄 File: ${file}`);
                     for (const target of targetPaths) {
@@ -116,8 +112,7 @@ export class FileProcessor {
         }
     }
 
-    private checkCancellation() {
-        if (this.cancellationToken?.isCancellationRequested) {
+    private checkCancellation() {        if (this.cancellationToken?.isCancellationRequested) {
             this.outputChannel.appendLine("⛔ Translation cancelled");
             throw new vscode.CancellationError();
         }
@@ -178,19 +173,24 @@ export class FileProcessor {
             const targetDir = path.dirname(resolvedTargetPath);
             if (!fs.existsSync(targetDir)) {
                 fs.mkdirSync(targetDir, { recursive: true });
-            }
-
-            // Skip if file should be ignored
+            }            // Skip if file should be ignored
             if (await this.shouldSkipFile(resolvedSourcePath, resolvedTargetPath, targetLang)) {
                 return;
             }
 
             // Handle different file types
             const ext = path.extname(resolvedSourcePath).toLowerCase();
-            const ignoreExtensions = getConfiguration().ignoreTranslationExtensions;
+            const config = getConfiguration();
 
-            if (ignoreExtensions.includes(ext)) {
-                await this.handleIgnoredFile(resolvedSourcePath, resolvedTargetPath);
+            // Check if file should be completely ignored
+            if (this.shouldIgnoreFile(resolvedSourcePath, ext, config)) {
+                this.outputChannel.appendLine(`⏭️ Skipping ignored file: ${resolvedSourcePath}`);
+                return;
+            }
+
+            // Check if file should be copied only (not translated)
+            if (this.shouldCopyOnly(resolvedSourcePath, ext, config)) {
+                await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
                 return;
             }
 
@@ -206,21 +206,7 @@ export class FileProcessor {
             this.failedFilePaths.push(sourcePath);
             throw error;
         }
-    }
-
-    private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
-        const ignorePaths = vscode.workspace.getConfiguration("projectTranslator").get<string[]>("ignorePaths") || [];
-        const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
-        const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");
-
-        // Check ignore patterns
-        for (const pattern of ignorePaths) {
-            if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
-                this.outputChannel.appendLine(`⏭️ Skipping ignored file: ${sourcePath} (matched pattern: ${pattern})`);
-                return true;
-            }
-        }
-
+    }    private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
         // Check translation interval
         const shouldTranslate = await this.translationDb.shouldTranslate(sourcePath, targetPath, targetLang);
         if (!shouldTranslate) {
@@ -231,7 +217,37 @@ export class FileProcessor {
         return false;
     }
 
-    private async handleIgnoredFile(sourcePath: string, targetPath: string) {
+    private shouldIgnoreFile(sourcePath: string, ext: string, config: any): boolean {
+        const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
+        const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");        // Check ignore paths
+        if (config.ignore?.paths) {
+            for (const pattern of config.ignore.paths) {
+                if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
+                    return true;
+                }
+            }
+        }
+
+        // Check ignore extensions
+        return config.ignore.extensions.includes(ext);
+    }
+
+    private shouldCopyOnly(sourcePath: string, ext: string, config: any): boolean {
+        const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
+        const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");
+
+        // Check copyOnly paths
+        for (const pattern of config.copyOnly.paths) {
+            if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
+                return true;
+            }
+        }
+
+        // Check copyOnly extensions
+        return config.copyOnly.extensions.includes(ext);
+    }
+
+    private async handleCopyOnlyFile(sourcePath: string, targetPath: string) {
         if (fs.existsSync(targetPath)) {
             const sourceContent = fs.readFileSync(sourcePath);
             const targetContent = fs.readFileSync(targetPath);
@@ -242,14 +258,12 @@ export class FileProcessor {
             }
         }
 
-        this.outputChannel.appendLine(`📦 Detected file type to ignore translation: ${path.extname(sourcePath)}`);
+        this.outputChannel.appendLine(`📦 Detected file type for copy-only: ${path.extname(sourcePath)}`);
         this.outputChannel.appendLine("🔄 Performing file copy");
         fs.copyFileSync(sourcePath, targetPath);
-        this.outputChannel.appendLine("✅ Ignored file copy completed");
+        this.outputChannel.appendLine("✅ Copy-only file copy completed");
         this.processedFilesCount++;
-    }
-
-    private async handleBinaryFile(sourcePath: string, targetPath: string) {
+    }    private async handleBinaryFile(sourcePath: string, targetPath: string) {
         this.outputChannel.appendLine("📦 Detected binary file, performing direct copy");
         fs.copyFileSync(sourcePath, targetPath);
         this.outputChannel.appendLine("✅ Binary file copy completed");
@@ -273,9 +287,8 @@ export class FileProcessor {
         const content = fs.readFileSync(sourcePath, "utf8");
         const startTime = Date.now();
 
-        try {
-            const config = getConfiguration();
-            const { maxTokensPerSegment = 4096, streamMode } = config;
+        try {            const config = getConfiguration();
+            const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
             const estimatedTokens = estimateTokenCount(content);
 
             let returnCode: string;
@@ -363,9 +376,8 @@ export class FileProcessor {
         }
     }
 
-    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<[string, string]> {
-        const config = getConfiguration();
-        const { maxTokensPerSegment, streamMode } = config;
+    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<[string, string]> {        const config = getConfiguration();
+        const { maxTokensPerSegment, streamMode } = config.currentVendor;
         const segments = segmentText(content, sourcePath, maxTokensPerSegment);
         const translatedSegments: string[] = [];
 

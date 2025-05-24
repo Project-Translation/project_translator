@@ -148,18 +148,18 @@ The extension supports the following configuration options:
 
 Key configuration details:
 
-| Configuration Option                            | Description                                                                                    |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`            | Multiple source folders with their corresponding destination folders for translation           |
-| `projectTranslator.specifiedFiles`              | Multiple source files with their corresponding destination files for translation               |
-| `projectTranslator.translationIntervalDays`     | Translation interval in days (default 7 days)                                                  |
-| `projectTranslator.ignoreTranslationExtensions` | List of text file extensions that don't need translation, these files will be copied directly  |
-| `projectTranslator.ignorePaths`                 | List of ignored path patterns using glob syntax, these files won't be copied                   |
-| `projectTranslator.currentVendor`               | Current API vendor in use                                                                      |
-| `projectTranslator.vendors`                     | API vendor configuration list                                                                  |
-| `projectTranslator.systemPrompts`               | System prompt array for guiding the translation process                                        |
-| `projectTranslator.userPrompts`                 | User-defined prompt array, these prompts will be added after system prompts during translation |
-| `projectTranslator.segmentationMarkers`         | Segmentation markers configured by file type, supports regular expressions                     |
+| Configuration Option                        | Description                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`        | Multiple source folders with their corresponding destination folders for translation           |
+| `projectTranslator.specifiedFiles`          | Multiple source files with their corresponding destination files for translation               |
+| `projectTranslator.translationIntervalDays` | Translation interval in days (default 7 days)                                                  |
+| `projectTranslator.copyOnly`                | Files to copy but not translate (with `paths` and `extensions` arrays)                         |
+| `projectTranslator.ignore`                  | Files to ignore completely (with `paths` and `extensions` arrays)                              |
+| `projectTranslator.currentVendor`           | Current API vendor in use                                                                      |
+| `projectTranslator.vendors`                 | API vendor configuration list                                                                  |
+| `projectTranslator.systemPrompts`           | System prompt array for guiding the translation process                                        |
+| `projectTranslator.userPrompts`             | User-defined prompt array, these prompts will be added after system prompts during translation |
+| `projectTranslator.segmentationMarkers`     | Segmentation markers configured by file type, supports regular expressions                     |
 
 ## Usage
 

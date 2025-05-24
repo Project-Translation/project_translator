@@ -52,3 +52,18 @@ export interface SpecifiedFile {
     };
     destFiles: DestFile[];
 }
+
+// Configuration interface for copy-only files
+// and folders, which should not be translated but copied as-is
+export interface CopyOnlyConfig {
+    paths: string[];
+    extensions: string[];
+}
+
+// Configuration interface for files and folders to ignore
+// during translation, which should not be copied or translated
+export interface IgnoreConfig {
+    paths: string[];
+    extensions: string[];
+}
+

@@ -1,0 +1,20 @@
+{
+  "../test/code/project_translator/l10n/bundle.l10n.json": 1743163800154,
+  "test/code/project_translator/README.md": 1743164121048,
+  "test/code/project_translator/package.nls.json": {
+    "timestamp": 0,
+    "hash": "41636e41ccbb792e07a7b223919a4746"
+  },
+  "../l10n/bundle.l10n.json": {
+    "timestamp": 1745489794502,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "../package.nls.json": {
+    "timestamp": 1748074335973,
+    "hash": "589d76b4c40bfd08f6048469a199fe65"
+  },
+  "../README.md": {
+    "timestamp": 1748073366662,
+    "hash": "3318e74583bad7e8d92e0f78be9c2f17"
+  }
+}

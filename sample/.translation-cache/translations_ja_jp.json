@@ -1,0 +1,50 @@
+{
+  "../code/project_translator/sample-dist/md/should_skip.md": {
+    "timestamp": 1744000343822,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
+  "../code/project_translator/sample-dist/md/should_translate.md": {
+    "timestamp": 1744000358711,
+    "hash": "7d7246af9876796f9c53502a42ab1c90"
+  },
+  "../test/code/project_translator/l10n/bundle.l10n.json": {
+    "timestamp": 1744000370503,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "test/code/project_translator/package.nls.json": {
+    "timestamp": 1744000440751,
+    "hash": "41636e41ccbb792e07a7b223919a4746"
+  },
+  "test/code/project_translator/README.md": {
+    "timestamp": 1744000595273,
+    "hash": "7fa5e44a503b05add029671e6aa924ad"
+  },
+  "md/should_skip.md": {
+    "timestamp": 0,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
+  "md/should_translate.md": {
+    "timestamp": 0,
+    "hash": "7d7246af9876796f9c53502a42ab1c90"
+  },
+  "../l10n/bundle.l10n.json": {
+    "timestamp": 1745489789044,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "../package.nls.json": {
+    "timestamp": 1748074321180,
+    "hash": "589d76b4c40bfd08f6048469a199fe65"
+  },
+  "../README.md": {
+    "timestamp": 1748073317718,
+    "hash": "3318e74583bad7e8d92e0f78be9c2f17"
+  },
+  "structure/md/should_skip.md": {
+    "timestamp": 1748068667973,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
+  "structure/md/should_translate.md": {
+    "timestamp": 1748069912639,
+    "hash": "7d7246af9876796f9c53502a42ab1c90"
+  }
+}

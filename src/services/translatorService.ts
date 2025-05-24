@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import OpenAI from 'openai';
-import { getConfiguration, getTranslationPrompts } from '../config/config';
+import { getConfiguration } from '../config/config';
 import { SupportedLanguage } from '../translationDatabase';
 import * as path from 'path';
 
@@ -70,7 +70,7 @@ export class TranslatorService {
             throw new Error(error);
         }
 
-        const { currentVendorName, currentVendor } = getConfiguration();
+        const { currentVendorName, currentVendor, systemPrompts, userPrompts } = getConfiguration();
         const { model, rpm, temperature, streamMode } = currentVendor;
 
         this.outputChannel.appendLine(`🤖 Using model: ${model}`);
@@ -79,24 +79,21 @@ export class TranslatorService {
 
         if (streamMode) {
             this.outputChannel.appendLine(`🔄 Stream mode enabled`);
-        }
-
-        // Wait for RPM limit if needed
+        }        // Wait for RPM limit if needed
         if (rpm && rpm > 0) {
             await this.handleRpmLimit(currentVendorName, rpm, cancellationToken);
         }
 
-        const { systemPrompts, userPrompts } = getTranslationPrompts();
         const messages = [
-            ...systemPrompts.map(prompt => ({
+            ...(systemPrompts || []).map((prompt: string) => ({
                 role: "system" as const,
                 content: prompt,
             })),
-            ...(systemPrompts.length === 0 ? [{
+            ...((systemPrompts || []).length === 0 ? [{
                 role: "system" as const,
                 content: "",
             }] : []),
-            ...userPrompts.map((prompt) => ({
+            ...(userPrompts || []).map((prompt: string) => ({
                 role: "user" as const,
                 content: prompt,
             })),

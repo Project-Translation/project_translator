@@ -1,0 +1,89 @@
+{
+  "guides/cloud_basics.md": 1743242226435,
+  "../code/project_translator/sample-dist/md/style.md": {
+    "timestamp": 1743931903608,
+    "hash": "17e113c3f3fe570eddd52cd8f0574f9b"
+  },
+  "../test/code/project_translator/l10n/bundle.l10n.json": {
+    "timestamp": 1743993211666,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "test/code/project_translator/README.md": 1743164006740,
+  "../code/project_translator/sample-dist/md/should_skip.md": {
+    "timestamp": 1743931569253,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
+  "../code/project_translator/sample-dist/md/should_translate.md": 1743393657574,
+  "../../test/code/project_translator/sample/md/style.md": {
+    "timestamp": 1743992056031,
+    "hash": "4cdafa2c726a109eaa7471996e77e6fa"
+  },
+  "test/code/project_translator/package.nls.json": {
+    "timestamp": 1744002583508,
+    "hash": "41636e41ccbb792e07a7b223919a4746"
+  },
+  "docs/guides/cloud_basics.md": {
+    "timestamp": 1745489848326,
+    "hash": "6708b43cc86e96f3adad43ae366ba79d"
+  },
+  "embeded/embeded.md": {
+    "timestamp": 1744012171985,
+    "hash": "3895a56fb82dae2ae4011a96ca85fd2d"
+  },
+  "embeded/level1/level1.txt": {
+    "timestamp": 1744019286179,
+    "hash": "e491a9ef5e091462dbf0d2a0fa1099e8"
+  },
+  "embeded/level1/level2/level2.txt": {
+    "timestamp": 1744019295127,
+    "hash": "11f6222b845de45389eded677617a91b"
+  },
+  "md/should_skip.md": {
+    "timestamp": 0,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
+  "md/should_translate.md": {
+    "timestamp": 0,
+    "hash": "7d7246af9876796f9c53502a42ab1c90"
+  },
+  "../sample/md/style.md": {
+    "timestamp": 0,
+    "hash": "4cdafa2c726a109eaa7471996e77e6fa"
+  },
+  "../l10n/bundle.l10n.json": {
+    "timestamp": 1745489768658,
+    "hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "json/ja-jp/various.json": {
+    "timestamp": 1745489865541,
+    "hash": "31e77460c2ae901c297b8ff0daddd450"
+  },
+  "json/zh-cn/various.json": {
+    "timestamp": 1745489876813,
+    "hash": "dc216264e741706ff1edfc1a2e9546e0"
+  },
+  "json/zh-tw/various.json": {
+    "timestamp": 1745489891658,
+    "hash": "76e3effedf5dae73197b1a98a28dbd35"
+  },
+  "../package.nls.json": {
+    "timestamp": 0,
+    "hash": "589d76b4c40bfd08f6048469a199fe65"
+  },
+  "../README.md": {
+    "timestamp": 1748073055411,
+    "hash": "3318e74583bad7e8d92e0f78be9c2f17"
+  },
+  "structure/json/various.json": {
+    "timestamp": 0,
+    "hash": "6465de9a6475e93e76d0089fec2edeb4"
+  },
+  "structure/md/should_skip.md": {
+    "timestamp": 1748068661391,
+    "hash": "824184cde709ab724cb1cbfab53491c4"
+  },
+  "structure/md/should_translate.md": {
+    "timestamp": 1748068892027,
+    "hash": "7d7246af9876796f9c53502a42ab1c90"
+  }
+}

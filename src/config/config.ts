@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { VendorConfig, SpecifiedFile, SpecifiedFolder } from '../types/types';
+import { VendorConfig, SpecifiedFile, SpecifiedFolder, CopyOnlyConfig, IgnoreConfig } from '../types/types';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as process from 'process';
@@ -19,9 +19,17 @@ export function loadTranslations(context: vscode.ExtensionContext) {
 export interface Config {
     specifiedFiles?: SpecifiedFile[]; // Configuration for specified files
     specifiedFolders?: SpecifiedFolder[]; // Configuration for specified folders
+    copyOnly?: CopyOnlyConfig; // Configuration for copy-only files and folders
+    ignore?: IgnoreConfig; // Configuration for files and folders to ignore during translation
+    currentVendorName: string; // Name of the current vendor
+    vendors: VendorConfig[]; // List of vendor configurations
+    translationIntervalDays: number; // Interval for translation in days
+    currentVendor: VendorConfig; // Current vendor configuration
+    systemPrompts?: string[]; // System prompts for translation
+    userPrompts?: string[]; // User prompts for translation
 }
 
-export function getConfiguration() {
+export function getConfiguration(): Config {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (workspaceFolders && workspaceFolders.length > 0) {
         const workspaceRoot = workspaceFolders[0].uri.fsPath;
@@ -30,7 +38,16 @@ export function getConfiguration() {
         if (fs.existsSync(configFilePath)) {
             try {
                 const fileContent = fs.readFileSync(configFilePath, 'utf-8');
-                return JSON.parse(fileContent);
+                const parsedConfig = JSON.parse(fileContent);
+                
+                // Ensure we include systemPrompts and userPrompts if not present in file config
+                if (!parsedConfig.systemPrompts || !parsedConfig.userPrompts) {
+                    const prompts = getTranslationPrompts();
+                    parsedConfig.systemPrompts = parsedConfig.systemPrompts || prompts.systemPrompts;
+                    parsedConfig.userPrompts = parsedConfig.userPrompts || prompts.userPrompts;
+                }
+                
+                return parsedConfig;
             } catch (error) {
                 vscode.window.showErrorMessage(`Failed to parse project_translation.json: ${(error as Error).message}`);
             }
@@ -39,11 +56,14 @@ export function getConfiguration() {
 
     // Fallback to VS Code settings
     const config = vscode.workspace.getConfiguration("projectTranslator");
-    const ignoreTranslationExtensions = config.get<string[]>("ignoreTranslationExtensions") || [];
+    
+    const copyOnly = config.get<CopyOnlyConfig>("copyOnly");
+    const ignore = config.get<IgnoreConfig>("ignore");
     const currentVendorName = config.get<string>("currentVendor") || "openai";
     const vendors = config.get<VendorConfig[]>("vendors") || [];
     const specifiedFiles = config.get<SpecifiedFile[]>("specifiedFiles");
     const specifiedFolders = config.get<SpecifiedFolder[]>("specifiedFolders");
+    const translationIntervalDays = config.get<number>("translationIntervalDays") || 1;
 
     // Find current vendor configuration
     const currentVendor = vendors.find(
@@ -67,13 +87,20 @@ export function getConfiguration() {
             `Please provide valid API key in the vendor configuration or set the environment variable ${currentVendor.apiKeyEnvVarName || 'specified in apiKeyEnvVarName'}`);
     }
 
+    // Get prompts to include in the configuration
+    const prompts = getTranslationPrompts();
+
     return {
-        ignoreTranslationExtensions,
+        copyOnly,
+        ignore,
         currentVendorName,
         vendors,
+        translationIntervalDays,
         specifiedFiles,
         specifiedFolders,
-        currentVendor
+        currentVendor,
+        systemPrompts: prompts.systemPrompts,
+        userPrompts: prompts.userPrompts
     };
 }
 
