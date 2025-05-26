@@ -55,6 +55,35 @@
             "group": "build",
             "problemMatcher": [],
             "detail": "Build a VSIX package for local installation"
+        },
+        {
+            "label": "test-compile",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "test-compile"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "detail": "Compile TypeScript files for testing"
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "test"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "dependsOn": "test-compile",
+            "problemMatcher": [],
+            "detail": "Run all tests"
         }
     ]
 }

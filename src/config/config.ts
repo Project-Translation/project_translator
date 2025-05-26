@@ -24,50 +24,175 @@ export interface Config {
     currentVendorName: string; // Name of the current vendor
     vendors: VendorConfig[]; // List of vendor configurations
     translationIntervalDays: number; // Interval for translation in days
-    currentVendor: VendorConfig; // Current vendor configuration
+    currentVendor: VendorConfig; // Current vendor configuration (derived from vendors array)
     systemPrompts?: string[]; // System prompts for translation
     userPrompts?: string[]; // User prompts for translation
+    segmentationMarkers?: Record<string, string[]>; // Segmentation markers configured by file type
+}
+
+/**
+ * Validate that the configuration structure is consistent
+ * This is useful for testing and debugging
+ */
+export function validateConfigStructure(config: Config): boolean {
+    const requiredFields = [
+        'currentVendorName',
+        'vendors',
+        'translationIntervalDays',
+        'currentVendor'
+    ];
+
+    for (const field of requiredFields) {
+        if (!(field in config)) {
+            console.error(`Missing required field: ${field}`);
+            return false;
+        }
+    }
+
+    // Validate currentVendor is properly set
+    if (!config.currentVendor || !config.currentVendor.name) {
+        console.error('currentVendor is not properly configured');
+        return false;
+    }
+
+    // Validate that currentVendor exists in vendors array
+    const vendorExists = config.vendors.some(v => v.name === config.currentVendorName);
+    if (!vendorExists) {
+        console.error(`Current vendor "${config.currentVendorName}" not found in vendors array`);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Export current effective VSCode settings to project.translation.json
+ */
+export async function exportSettingsToConfigFile(): Promise<void> {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        vscode.window.showErrorMessage('No workspace folder is open');
+        return;
+    }
+
+    const workspaceRoot = workspaceFolders[0].uri.fsPath;
+    const configFilePath = path.join(workspaceRoot, 'project.translation.json');
+
+    try {
+        // Get all projectTranslator settings from VSCode configuration
+        // This will get the effective configuration considering user, remote, and workspace settings with proper priority
+        // Priority order: workspace > remote > user
+        const config = vscode.workspace.getConfiguration("projectTranslator");
+          // Define all projectTranslator setting keys that should be exported
+        // Note: enableMetrics is intentionally excluded as it should remain hidden
+        const settingKeys = [
+            'currentVendor',
+            'vendors', 
+            'specifiedFiles',
+            'specifiedFolders',
+            'translationIntervalDays',
+            'copyOnly',
+            'ignore',
+            'systemPrompts',
+            'userPrompts', 
+            'segmentationMarkers'
+        ];
+
+        // Extract settings and remove the projectTranslator prefix
+        const settings: any = {};
+        for (const key of settingKeys) {
+            const value = config.get(key);
+            if (value !== undefined) {
+                settings[key] = value;
+            }
+        }
+
+        // Log what settings were found
+        console.log('Exporting projectTranslator settings:', Object.keys(settings));
+
+        // Write to project.translation.json with proper formatting
+        const jsonContent = JSON.stringify(settings, null, 2);
+        fs.writeFileSync(configFilePath, jsonContent, 'utf-8');
+
+        const settingsCount = Object.keys(settings).length;
+        vscode.window.showInformationMessage(
+            `Successfully exported ${settingsCount} settings to project.translation.json`
+        );
+        
+        // Optionally open the file in the editor
+        const uri = vscode.Uri.file(configFilePath);
+        await vscode.window.showTextDocument(uri);
+
+    } catch (error) {
+        console.error('Error exporting settings:', error);
+        vscode.window.showErrorMessage(
+            `Failed to export settings: ${(error as Error).message}`
+        );
+    }
 }
 
 export function getConfiguration(): Config {
+    let configData: any = {};
+    let configSource = 'vscode-settings';
+
+    // Try to read from project.translation.json first
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (workspaceFolders && workspaceFolders.length > 0) {
         const workspaceRoot = workspaceFolders[0].uri.fsPath;
-        const configFilePath = path.join(workspaceRoot, 'project_translation.json');
+        const configFilePath = path.join(workspaceRoot, 'project.translation.json');
 
         if (fs.existsSync(configFilePath)) {
             try {
                 const fileContent = fs.readFileSync(configFilePath, 'utf-8');
-                const parsedConfig = JSON.parse(fileContent);
-                
-                // Ensure we include systemPrompts and userPrompts if not present in file config
-                if (!parsedConfig.systemPrompts || !parsedConfig.userPrompts) {
-                    const prompts = getTranslationPrompts();
-                    parsedConfig.systemPrompts = parsedConfig.systemPrompts || prompts.systemPrompts;
-                    parsedConfig.userPrompts = parsedConfig.userPrompts || prompts.userPrompts;
-                }
-                
-                return parsedConfig;
+                configData = JSON.parse(fileContent);
+                configSource = 'project.translation.json';
             } catch (error) {
-                vscode.window.showErrorMessage(`Failed to parse project_translation.json: ${(error as Error).message}`);
+                vscode.window.showErrorMessage(`Failed to parse project.translation.json: ${(error as Error).message}`);
+                // Fall back to VSCode settings
+                configData = {};
             }
         }
     }
 
-    // Fallback to VS Code settings
-    const config = vscode.workspace.getConfiguration("projectTranslator");
-    
-    const copyOnly = config.get<CopyOnlyConfig>("copyOnly");
-    const ignore = config.get<IgnoreConfig>("ignore");
-    const currentVendorName = config.get<string>("currentVendor") || "openai";
-    const vendors = config.get<VendorConfig[]>("vendors") || [];
-    const specifiedFiles = config.get<SpecifiedFile[]>("specifiedFiles");
-    const specifiedFolders = config.get<SpecifiedFolder[]>("specifiedFolders");
-    const translationIntervalDays = config.get<number>("translationIntervalDays") || 1;
+    // If no valid config from file, use VSCode settings as fallback
+    if (Object.keys(configData).length === 0) {
+        const config = vscode.workspace.getConfiguration("projectTranslator");
+        configData = {
+            currentVendor: config.get("currentVendor"),
+            vendors: config.get("vendors"),
+            specifiedFiles: config.get("specifiedFiles"),
+            specifiedFolders: config.get("specifiedFolders"),
+            translationIntervalDays: config.get("translationIntervalDays"),
+            copyOnly: config.get("copyOnly"),
+            ignore: config.get("ignore"),
+            systemPrompts: config.get("systemPrompts"),
+            userPrompts: config.get("userPrompts"),
+            segmentationMarkers: config.get("segmentationMarkers")
+        };
+    }    // Extract and normalize configuration data
+    const copyOnly = configData.copyOnly;
+    const ignore = configData.ignore;
+    const currentVendorName = configData.currentVendor || "grok";
+    const vendors = configData.vendors || [];
+    const specifiedFiles = configData.specifiedFiles;
+    const specifiedFolders = configData.specifiedFolders;
+    const translationIntervalDays = configData.translationIntervalDays || 1;
+    const segmentationMarkers = configData.segmentationMarkers;
+
+    // Get prompts, fallback to defaults if not present
+    let systemPrompts = configData.systemPrompts;
+    let userPrompts = configData.userPrompts;
+
+    // If prompts are not available from the current source, get them from VSCode settings or defaults
+    if (!systemPrompts || !userPrompts) {
+        const prompts = getTranslationPrompts();
+        systemPrompts = systemPrompts || prompts.systemPrompts;
+        userPrompts = userPrompts || prompts.userPrompts;
+    }
 
     // Find current vendor configuration
     const currentVendor = vendors.find(
-        (vendor) => vendor.name === currentVendorName
+        (vendor: VendorConfig) => vendor.name === currentVendorName
     );
     if (!currentVendor) {
         throw new Error(translations["error.invalidApiSettings"] || "Please provide valid API settings in the vendor configuration");
@@ -85,11 +210,7 @@ export function getConfiguration(): Config {
     if (!currentVendor.apiKey) {
         throw new Error(translations["error.invalidApiSettings"] ||
             `Please provide valid API key in the vendor configuration or set the environment variable ${currentVendor.apiKeyEnvVarName || 'specified in apiKeyEnvVarName'}`);
-    }
-
-    // Get prompts to include in the configuration
-    const prompts = getTranslationPrompts();
-
+    }    // Return consistent Config structure regardless of source
     return {
         copyOnly,
         ignore,
@@ -99,8 +220,9 @@ export function getConfiguration(): Config {
         specifiedFiles,
         specifiedFolders,
         currentVendor,
-        systemPrompts: prompts.systemPrompts,
-        userPrompts: prompts.userPrompts
+        systemPrompts,
+        userPrompts,
+        segmentationMarkers
     };
 }
 

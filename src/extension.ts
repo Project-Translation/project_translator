@@ -4,7 +4,7 @@ import { TranslationDatabase } from "./translationDatabase";
 import { FileProcessor } from "./services/fileProcessor";
 import { TranslatorService } from "./services/translatorService";
 import { AnalyticsService } from "./services/analytics";
-import { getConfiguration } from "./config/config";
+import { getConfiguration, exportSettingsToConfigFile } from "./config/config";
 import { DestFolder, SpecifiedFolder } from "./types/types";
 import * as fs from "fs";
 
@@ -91,6 +91,12 @@ function registerCommands(): vscode.Disposable[] {
         handleAddFolderToSettings
     );
 
+    // Export settings to project.translation.json command
+    const exportSettingsCommand = vscode.commands.registerCommand(
+        "extension.exportSettingsToConfig",
+        exportSettingsToConfigFile
+    );
+
     return [
         translateProjectCommand,
         translateFoldersCommand,
@@ -99,7 +105,8 @@ function registerCommands(): vscode.Disposable[] {
         resumeCommand,
         stopCommand,
         addFileCommand,
-        addFolderCommand
+        addFolderCommand,
+        exportSettingsCommand
     ];
 }
 

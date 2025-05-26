@@ -46,6 +46,10 @@
       {
         "command": "extension.addFolderToTranslationSettings",
         "title": "%command.addFolderToTranslationSettings%"
+      },
+      {
+        "command": "extension.exportSettingsToConfig",
+        "title": "%command.exportSettingsToConfig%"
       }
     ],
     "menus": {
@@ -520,7 +524,9 @@
           },
           "default": {
             "paths": [],
-            "extensions": [".svg"]
+            "extensions": [
+              ".svg"
+            ]
           },
           "description": "%config.copyOnly.description%",
           "order": 8
@@ -553,7 +559,14 @@
             }
           },
           "default": {
-            "paths": ["**/node_modules/**", "**/.git/**", "**/.github/**", "**/.vscode/**", "**/.nuxt/**", "**/.next/**"],
+            "paths": [
+              "**/node_modules/**",
+              "**/.git/**",
+              "**/.github/**",
+              "**/.vscode/**",
+              "**/.nuxt/**",
+              "**/.next/**"
+            ],
             "extensions": []
           },
           "description": "%config.ignore.description%",
@@ -674,6 +687,9 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
+    "test": "npm run compile && node ./out/test/simpleRunner.js",
+    "test-compile": "tsc -p ./",
+    "pretest": "npm run test-compile",
     "publish:minor": "npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
     "publish:patch": "npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
     "package": "npm run compile && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
@@ -681,8 +697,7 @@
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@types/chai": "^5.0.1",
-    "@types/glob": "^8.1.0",
-    "@types/minimatch": "^5.1.2",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^14.18.63",
     "@types/sinon": "^17.0.4",
     "@types/vscode": "^1.74.0",
@@ -692,6 +707,8 @@
     "chai": "^5.2.0",
     "esbuild": "^0.25.1",
     "eslint": "^9.23.0",
+    "mocha": "^11.5.0",
+    "sinon": "^20.0.0",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "typescript": "^4.0.0"
