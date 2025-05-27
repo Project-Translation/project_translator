@@ -175,6 +175,42 @@ During translation:
 - Translation progress shown in notification area
 - Detailed logs displayed in output panel
 
+## Development
+
+### Build System
+
+This extension uses esbuild for fast bundling and development:
+
+#### Available Scripts
+
+- `npm run build` - Production build with minification
+- `npm run compile` - Development build 
+- `npm run watch` - Watch mode for development
+- `npm test` - Run tests
+
+#### Legacy TypeScript Scripts (Fallback)
+
+- `npm run compile-tsc` - TypeScript compilation only
+- `npm run watch-tsc` - TypeScript watch mode
+
+#### VS Code Tasks
+
+- **Build** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - Bundles extension for production
+- **Watch** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - Development mode with auto-rebuild
+
+### Development Setup
+
+1. Clone the repository
+2. Run `npm install` to install dependencies
+3. Press `F5` to start debugging or run the "watch" task for development
+
+The esbuild configuration:
+- Bundles all TypeScript files into a single `out/extension.js`
+- Excludes VS Code API (marked as external)
+- Generates source maps for development builds
+- Minifies code for production builds
+- Provides problem matcher integration for VS Code
+
 ## Notes
 
 - Ensure sufficient API usage quota

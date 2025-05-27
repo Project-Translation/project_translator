@@ -241,7 +241,7 @@ export class TranslationDatabase {
             const daysSinceLastTranslation = (Date.now() - cachedFileInfo.timestamp) / (1000 * 60 * 60 * 24);
             const isPastInterval = daysSinceLastTranslation >= intervalDays;
 
-            return hashChanged && isPastInterval;
+            return hashChanged || isPastInterval;
 
         } catch (error) {
             vscode.window.showErrorMessage(`Error in shouldTranslate: ${error}`);

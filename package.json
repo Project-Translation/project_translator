@@ -544,8 +544,8 @@
                 "**/.git/**",
                 "**/.github/**",
                 "**/.vscode/**",
-                "**/.nuxt/**",
-                "**/.next/**"
+                "**/.translation-cache/**",
+                "project.translation.json"
               ],
               "description": "%config.ignore.paths.description%"
             },
@@ -683,16 +683,19 @@
     "url": "https://github.com/Project-Translation/index"
   },
   "scripts": {
-    "build": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "build": "npm run esbuild-base -- --production",
+    "compile": "npm run esbuild-base",
+    "watch": "npm run esbuild-base -- --watch",
+    "esbuild-base": "node esbuild.config.js",
+    "compile-tsc": "tsc -p ./",
+    "watch-tsc": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
-    "test": "npm run compile && node ./out/test/simpleRunner.js",
+    "test": "npm run compile-tsc && node ./out/test/simpleRunner.js",
     "test-compile": "tsc -p ./",
     "pretest": "npm run test-compile",
-    "publish:minor": "npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
-    "publish:patch": "npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
-    "package": "npm run compile && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
+    "publish:minor": "npm run build && npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+    "publish:patch": "npm run build && npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+    "package": "npm run build && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",

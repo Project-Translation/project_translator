@@ -21,3 +21,8 @@ sample-dist/**
 .prettierrc
 .copilot-codeGeneration-instructions.md
 package-lock.json
+node_modules/**
+esbuild.config.js
+eslint.config.js
+test-config.js
+test-vscode-mock.js

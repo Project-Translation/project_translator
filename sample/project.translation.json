@@ -225,7 +225,7 @@
       ]
     }
   ],
-  "translationIntervalDays": 1,
+  "translationIntervalDays": 365,
   "copyOnly": {
     "paths": [],
     "extensions": [

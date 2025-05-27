@@ -7,16 +7,30 @@
             "command": "npm",
             "args": [
                 "run",
-                "compile"
+                "build"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "problemMatcher": [
-                "$tsc"
+                {
+                    "owner": "esbuild",
+                    "pattern": [
+                        {
+                            "regexp": "^✘ \\[ERROR\\] (.*)$",
+                            "message": 1
+                        },
+                        {
+                            "regexp": "^    (.*):(\\d+):(\\d+):$",
+                            "file": 1,
+                            "line": 2,
+                            "column": 3
+                        }
+                    ]
+                }
             ],
-            "detail": "Compile TypeScript files"
+            "detail": "Bundle extension with esbuild"
         },
         {
             "label": "watch",
@@ -27,10 +41,58 @@
                 "watch"
             ],
             "group": "build",
+            "isBackground": true,
+            "problemMatcher": [
+                {
+                    "owner": "esbuild",
+                    "pattern": [
+                        {
+                            "regexp": "^✘ \\[ERROR\\] (.*)$",
+                            "message": 1
+                        },
+                        {
+                            "regexp": "^    (.*):(\\d+):(\\d+):$",
+                            "file": 1,
+                            "line": 2,
+                            "column": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "^\\[watch\\] build started$",
+                        "endsPattern": "^\\[watch\\] build finished$"
+                    }
+                }
+            ],
+            "detail": "Watch and bundle extension with esbuild"
+        },
+        {
+            "label": "build-tsc",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "compile-tsc"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "detail": "Compile TypeScript files (fallback)"
+        },
+        {
+            "label": "watch-tsc",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "watch-tsc"
+            ],
+            "group": "build",
             "problemMatcher": [
                 "$tsc-watch"
             ],
-            "detail": "Watch TypeScript files for changes"
+            "detail": "Watch TypeScript files for changes (fallback)"
         },
         {
             "label": "publish patch",

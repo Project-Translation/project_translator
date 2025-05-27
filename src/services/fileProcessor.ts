@@ -69,7 +69,7 @@ export class FileProcessor {
         const resolvedSourcePath = this.resolvePath(sourcePath);
 
         this.outputChannel.appendLine("\n[Directory Processing] ----------------------------------------");
-        this.outputChannel.appendLine(`📂 Starting to process directory: ${sourcePath}`);        try {
+        this.outputChannel.appendLine(`📂 Starting to process directory: ${sourcePath}`); try {
             this.checkCancellation();
 
             const config = getConfiguration();
@@ -92,7 +92,7 @@ export class FileProcessor {
                 this.checkCancellation();
 
                 const fullPath = path.join(resolvedSourcePath, file);
-                const stat = fs.statSync(fullPath);                if (stat.isDirectory()) {
+                const stat = fs.statSync(fullPath); if (stat.isDirectory()) {
                     await this.processSubDirectory(fullPath, targetPaths, sourceRoot, config.ignore?.paths || [], sourceLang);
                 } else {
                     this.outputChannel.appendLine(`\n📄 File: ${file}`);
@@ -112,7 +112,8 @@ export class FileProcessor {
         }
     }
 
-    private checkCancellation() {        if (this.cancellationToken?.isCancellationRequested) {
+    private checkCancellation() {
+        if (this.cancellationToken?.isCancellationRequested) {
             this.outputChannel.appendLine("⛔ Translation cancelled");
             throw new vscode.CancellationError();
         }
@@ -206,11 +207,11 @@ export class FileProcessor {
             this.failedFilePaths.push(sourcePath);
             throw error;
         }
-    }    private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
+    } private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
         // Check translation interval
         const shouldTranslate = await this.translationDb.shouldTranslate(sourcePath, targetPath, targetLang);
         if (!shouldTranslate) {
-            this.outputChannel.appendLine("⏭️ File is within translation interval, skipping translation");
+            this.outputChannel.appendLine("⏭️ Skipping translation");
             return true;
         }
 
@@ -263,7 +264,7 @@ export class FileProcessor {
         fs.copyFileSync(sourcePath, targetPath);
         this.outputChannel.appendLine("✅ Copy-only file copy completed");
         this.processedFilesCount++;
-    }    private async handleBinaryFile(sourcePath: string, targetPath: string) {
+    } private async handleBinaryFile(sourcePath: string, targetPath: string) {
         this.outputChannel.appendLine("📦 Detected binary file, performing direct copy");
         fs.copyFileSync(sourcePath, targetPath);
         this.outputChannel.appendLine("✅ Binary file copy completed");
@@ -287,7 +288,8 @@ export class FileProcessor {
         const content = fs.readFileSync(sourcePath, "utf8");
         const startTime = Date.now();
 
-        try {            const config = getConfiguration();
+        try {
+            const config = getConfiguration();
             const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
             const estimatedTokens = estimateTokenCount(content);
 
@@ -376,7 +378,8 @@ export class FileProcessor {
         }
     }
 
-    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<[string, string]> {        const config = getConfiguration();
+    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<[string, string]> {
+        const config = getConfiguration();
         const { maxTokensPerSegment, streamMode } = config.currentVendor;
         const segments = segmentText(content, sourcePath, maxTokensPerSegment);
         const translatedSegments: string[] = [];
