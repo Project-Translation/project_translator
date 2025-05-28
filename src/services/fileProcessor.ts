@@ -163,7 +163,7 @@ export class FileProcessor {
             const resolvedSourcePath = this.resolvePath(sourcePath);
             const resolvedTargetPath = this.resolvePath(targetPath);
 
-            this.outputChannel.appendLine(`\nTranslating file: ${path.basename(sourcePath)} from ${sourceLang} to ${targetLang}`);
+            this.outputChannel.appendLine(`\n🔄 Translating file: ${path.basename(sourcePath)} from ${sourceLang} to ${targetLang}`);
 
             // Validate paths
             if (!fs.existsSync(resolvedSourcePath)) {
@@ -269,13 +269,7 @@ export class FileProcessor {
         fs.copyFileSync(sourcePath, targetPath);
         this.outputChannel.appendLine("✅ Binary file copy completed");
         this.processedFilesCount++;
-    }
-
-    private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
-        // Set oldest translation time before starting
-        await this.translationDb.setOldestTranslationTime(sourcePath, targetLang);
-        this.outputChannel.appendLine("🕒 Translation timestamp reset");
-
+    } private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
         // Handle pause state
         while (this.isPaused) {
             this.checkCancellation();

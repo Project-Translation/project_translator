@@ -1,0 +1,14 @@
+{
+  "structure/md/should_skip.md": {
+    "translate_datetime": "2025-05-28:16:24",
+    "src_hash": "824184cde709ab724cb1cbfab53491c4",
+    "src_commit_id": "107fe10e59cb889d9321fec338ea15b4ffc98bd9",
+    "src_commit_datetime": "2025-05-28:16:24"
+  },
+  "structure/md/should_translate.md": {
+    "translate_datetime": "2025-05-28:16:25",
+    "src_hash": "7d7246af9876796f9c53502a42ab1c90",
+    "src_commit_id": "107fe10e59cb889d9321fec338ea15b4ffc98bd9",
+    "src_commit_datetime": "2025-05-28:16:25"
+  }
+}

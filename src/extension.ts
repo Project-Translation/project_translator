@@ -136,7 +136,7 @@ async function handletranslateFolders() {
         }
 
         // Initialize database and ensure it exists
-        const translationDatabase = new TranslationDatabase(workspace.uri.fsPath);
+        const translationDatabase = new TranslationDatabase(workspace.uri.fsPath, outputChannel);
         translationDb = translationDatabase;
 
         // Initialize file processor
@@ -168,9 +168,9 @@ async function handletranslateFolders() {
                 try {
                     for (const folderGroup of specifiedFolders) {
                         const sourceFolder = folderGroup.sourceFolder;
-                        const destFolders = folderGroup.destFolders;
+                        const targetFolders = folderGroup.targetFolders;
 
-                        if (!sourceFolder?.path || !sourceFolder?.lang || !destFolders?.length) {
+                        if (!sourceFolder?.path || !sourceFolder?.lang || !targetFolders?.length) {
                             outputChannel.appendLine(`⚠️ Skipping invalid folder group configuration`);
                             continue;
                         }
@@ -189,10 +189,10 @@ async function handletranslateFolders() {
 
                         // Reset target roots for this folder group
                         translationDatabase.clearTargetRoots();
-                        destFolders.forEach((target: DestFolder) => translationDatabase.setTargetRoot(target.path, target.lang));
+                        targetFolders.forEach((target: DestFolder) => translationDatabase.setTargetRoot(target.path, target.lang));
 
                         // Process this folder group
-                        await fileProcessor.processDirectory(sourceFolder.path, destFolders, sourceFolder.lang);
+                        await fileProcessor.processDirectory(sourceFolder.path, targetFolders, sourceFolder.lang);
 
                         // Get updated stats after processing this folder group
                         const stats = fileProcessor.getProcessingStats();
@@ -268,7 +268,7 @@ async function handleTranslateFiles() {
         }
 
         // Initialize database
-        const translationDatabase = new TranslationDatabase(workspace.uri.fsPath);
+        const translationDatabase = new TranslationDatabase(workspace.uri.fsPath, outputChannel);
         translationDb = translationDatabase;
         
         // Reset state
@@ -288,8 +288,8 @@ async function handleTranslateFiles() {
         let totalFiles = 0;
         for (const fileGroup of specifiedFiles) {
             if (fileGroup.sourceFile && fileGroup.sourceFile.path && 
-                fileGroup.destFiles && fileGroup.destFiles.length > 0) {
-                totalFiles += fileGroup.destFiles.length;
+                fileGroup.targetFiles && fileGroup.targetFiles.length > 0) {
+                totalFiles += fileGroup.targetFiles.length;
             }
         }
         
@@ -309,9 +309,9 @@ async function handleTranslateFiles() {
             try {            
                 for (const fileGroup of specifiedFiles) {
                     const sourceFile = fileGroup.sourceFile;
-                    const destFiles = fileGroup.destFiles;
+                    const targetFiles = fileGroup.targetFiles;
                     
-                    if (!sourceFile || !sourceFile.path || !destFiles || destFiles.length === 0) {
+                    if (!sourceFile || !sourceFile.path || !targetFiles || targetFiles.length === 0) {
                         outputChannel.appendLine(`⚠️ Skipping invalid file group configuration`);
                         continue;
                     }
@@ -323,14 +323,13 @@ async function handleTranslateFiles() {
                     translationDatabase.setSourceRoot(sourceDir);
                     
                     // Register target directories
-                    for (const destFile of destFiles) {
+                    for (const destFile of targetFiles) {
                         const targetDir = path.dirname(destFile.path);
                         translationDatabase.setTargetRoot(targetDir, destFile.lang);
                     }
                     
                     // Process each destination file
-                    for (const destFile of destFiles) {
-                        outputChannel.appendLine(`  🔄 Translating to ${destFile.lang}: ${destFile.path}`);
+                    for (const destFile of targetFiles) {
                         await fileProcessor.processFile(sourceFile.path, destFile.path, sourceFile.lang, destFile.lang);
                         processedFiles++;
                         
@@ -487,7 +486,7 @@ async function handleAddFileToSettings(fileUri: vscode.Uri) {
                 path: relativePath,
                 lang: sourceLang
             },
-            destFiles: [
+            targetFiles: [
                 {
                     path: targetPath,
                     lang: targetLang
@@ -562,7 +561,7 @@ async function handleAddFolderToSettings(folderUri: vscode.Uri) {
                 path: relativePath,
                 lang: sourceLang
             },
-            destFolders: [
+            targetFolders: [
                 {
                     path: targetPath,
                     lang: targetLang

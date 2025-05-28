@@ -28,16 +28,22 @@
     "hash": "7d7246af9876796f9c53502a42ab1c90"
   },
   "../l10n/bundle.l10n.json": {
-    "timestamp": 1745489789044,
-    "hash": "8bdb32c28edeaf63d8736b7133890909"
+    "translate_datetime": "2025-05-28:12:42",
+    "src_hash": "8bdb32c28edeaf63d8736b7133890909",
+    "src_commit_id": "",
+    
   },
   "../package.nls.json": {
-    "timestamp": 1748266544570,
-    "hash": "600543f526656f2b1d0fff1a94602325"
+    "translate_datetime": "2025-05-28:12:47",
+    "src_hash": "600543f526656f2b1d0fff1a94602325",
+    "src_commit_id": "",
+    
   },
   "../README.md": {
-    "timestamp": 1748073317718,
-    "hash": "3318e74583bad7e8d92e0f78be9c2f17"
+    "translate_datetime": "2025-05-28:13:08",
+    "src_hash": "ac4ecfe0e6af8dd6fc1ecc91ad834a2e",
+    "src_commit_id": "",
+    
   },
   "structure/md/should_skip.md": {
     "timestamp": 1748068667973,

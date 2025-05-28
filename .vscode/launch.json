@@ -12,12 +12,23 @@
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
             ],
-            "preLaunchTask": "build",
+            "preLaunchTask": "build-tsc",
             "sourceMaps": true,
+            "smartStep": true,
             "runtimeExecutable": "${execPath}",
             "skipFiles": [
                 "**/node_modules/**"
-            ]
+            ],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**", 
+                "!**/node_modules/**"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMapPathOverrides": {
+                "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+                "webpack:///./*": "${workspaceFolder}/*",
+                "webpack:///*": "*"
+            }
         }
     ]
 }

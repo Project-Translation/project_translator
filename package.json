@@ -237,14 +237,14 @@
                   "lang"
                 ]
               },
-              "destFiles": {
+              "targetFiles": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "path": {
                       "type": "string",
-                      "description": "%config.destFiles.description%"
+                      "description": "%config.targetFiles.description%"
                     },
                     "lang": {
                       "type": "string",
@@ -318,7 +318,7 @@
             },
             "required": [
               "sourceFile",
-              "destFiles"
+              "targetFiles"
             ]
           },
           "default": [],
@@ -406,14 +406,14 @@
                   "lang"
                 ]
               },
-              "destFolders": {
+              "targetFolders": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "path": {
                       "type": "string",
-                      "description": "%config.destFolders.description%"
+                      "description": "%config.targetFolders.description%"
                     },
                     "lang": {
                       "type": "string",
@@ -487,7 +487,7 @@
             },
             "required": [
               "sourceFolder",
-              "destFolders"
+              "targetFolders"
             ]
           },
           "default": [],

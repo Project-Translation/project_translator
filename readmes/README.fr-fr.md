@@ -1,9 +1,9 @@
 # Traducteur de Projet
 
-Une extension VSCode : un outil facile à utiliser pour la localisation multilingue de projets.
+Une extension VSCode : Un outil facile à utiliser pour la localisation multilingue de projets.
 
 <!--
-## Traductions disponibles
+## Traductions Disponibles
 
 L'extension prend en charge la traduction vers ces langues :
 
@@ -48,35 +48,35 @@ Si vous souhaitez contribuer à une traduction ou avez besoin qu'un projet soit 
 2. Flux de travail :
 ```mermaid
 sequenceDiagram
-  Contributeur->>Traducteur de Projet: Créer un problème de traduction
-  Traducteur de Projet->>Communauté: Examiner le problème
-  Communauté-->>Contributeur: Approuver/Commenter
-  Contributeur->>Nouveau Projet: Commencer la traduction
-  Contributeur->>Nouveau Projet: Soumettre au Nouveau Projet
-  Contributeur->>Traducteur de Projet: Créer une Pull Request, modifier README.Samples
-  Traducteur de Projet-->>Traducteur de Projet: Examiner et Fusionner
+  Contributor->>Project Translator: Create translation issue
+  Project Translator->>Community: Review issue
+  Community-->>Contributor: Approve/Comment
+  Contributor->>New Project: Start translation
+  Contributor->>New Project: Submit to New Project
+  Contributor->>Project Translator: Create Pull Request, modify README.Samples
+  Project Translator-->>Project Translator: Review & Merge
 ```
 
-3. Après la fusion de la PR, la traduction sera ajoutée à la section des Échantillons.
+3. Après la fusion de la PR, la traduction sera ajoutée à la section Samples.
 
-Traductions en cours : [Voir les problèmes](https://github.com/Project-Translation/project_translator/issues)
+Traductions en cours : [View Issues](https://github.com/Project-Translation/project_translator/issues)
 
 ## Fonctionnalités
 
-- 📁 Prise en charge de la traduction au niveau du dossier
+- 📁 Prise en charge de la traduction au niveau des dossiers
   - Traduire des dossiers de projet entiers vers plusieurs langues
   - Maintenir la structure et la hiérarchie des dossiers d'origine
   - Prise en charge de la traduction récursive des sous-dossiers
   - Détection automatique du contenu traduisible
   - Traitement par lots pour des traductions à grande échelle efficaces
-- 📄 Prise en charge de la traduction au niveau du fichier
+- 📄 Prise en charge de la traduction au niveau des fichiers
   - Traduire des fichiers individuels vers plusieurs langues
   - Préserver la structure et le formatage des fichiers d'origine
   - Prise en charge des modes de traduction par dossier et par fichier
 - 💡 Traduction intelligente avec IA
   - Maintenir automatiquement l'intégrité de la structure du code
   - Ne traduit que les commentaires de code, préserve la logique du code
-  - Maintenir les formats de structures de données JSON/XML et autres
+  - Maintenir les formats de structures de données comme JSON/XML
   - Qualité de traduction professionnelle pour la documentation technique
 - ⚙️ Configuration flexible
   - Configurer le dossier source et plusieurs dossiers cibles
@@ -87,12 +87,12 @@ Traductions en cours : [Voir les problèmes](https://github.com/Project-Translat
   - Affichage en temps réel de la progression de la traduction
   - Prise en charge de la pause/reprise/arrêt de la traduction
   - Maintenance automatique de la structure du dossier cible
-  - Traduction incrémentielle pour éviter les travaux dupliqués
+  - Traduction incrémentielle pour éviter les travaux en double
 
 ## Installation
 
-1. Rechercher "[Traducteur de Projet](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" dans la marketplace des extensions VS Code
-2. Cliquer sur installer
+1. Recherchez "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" dans la marketplace des extensions VS Code
+2. Cliquez sur installer
 
 ## Configuration
 
@@ -106,7 +106,7 @@ L'extension prend en charge les options de configuration suivantes :
         "path": "Source folder path",
         "lang": "Source language code"
       },
-      "destFolders": [
+      "targetFolders": [
         {
           "path": "Target folder path",
           "lang": "Target language code"
@@ -120,7 +120,7 @@ L'extension prend en charge les options de configuration suivantes :
         "path": "Source file path",
         "lang": "Source language code"
       },
-      "destFiles": [
+      "targetFiles": [
         {
           "path": "Target file path",
           "lang": "Target language code"
@@ -144,39 +144,75 @@ L'extension prend en charge les options de configuration suivantes :
 }
 ```
 
-Détails clés de configuration :
+Détails clés de la configuration :
 
-| Option de configuration                        | Description                                                                                    |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`           | Plusieurs dossiers sources avec leurs dossiers de destination correspondants pour la traduction |
-| `projectTranslator.specifiedFiles`             | Plusieurs fichiers sources avec leurs fichiers de destination correspondants pour la traduction |
-| `projectTranslator.translationIntervalDays`    | Intervalle de traduction en jours (par défaut 7 jours)                                         |
-| `projectTranslator.copyOnly`                   | Fichiers à copier mais non traduire (avec des tableaux `paths` et `extensions`)                |
-| `projectTranslator.ignore`                     | Fichiers à ignorer complètement (avec des tableaux `paths` et `extensions`)                    |
-| `projectTranslator.currentVendor`              | Fournisseur d'API actuel en cours d'utilisation                                                |
-| `projectTranslator.vendors`                    | Liste de configuration des fournisseurs d'API                                                  |
-| `projectTranslator.systemPrompts`              | Tableau de invites système pour guider le processus de traduction                              |
-| `projectTranslator.userPrompts`                | Tableau d'invites définies par l'utilisateur, ces invites seront ajoutées après les invites système lors de la traduction |
-| `projectTranslator.segmentationMarkers`        | Marqueurs de segmentation configurés par type de fichier, prend en charge les expressions régulières |
+| Configuration Option                        | Description                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`        | Plusieurs dossiers sources avec leurs dossiers de destination correspondants pour la traduction |
+| `projectTranslator.specifiedFiles`          | Plusieurs fichiers sources avec leurs fichiers de destination correspondants pour la traduction |
+| `projectTranslator.translationIntervalDays` | Intervalle de traduction en jours (par défaut 7 jours)                                         |
+| `projectTranslator.copyOnly`                | Fichiers à copier mais non traduire (avec des tableaux `paths` et `extensions`)               |
+| `projectTranslator.ignore`                  | Fichiers à ignorer complètement (avec des tableaux `paths` et `extensions`)                   |
+| `projectTranslator.currentVendor`           | Fournisseur d'API actuel en cours d'utilisation                                                |
+| `projectTranslator.vendors`                 | Liste de configuration des fournisseurs d'API                                                  |
+| `projectTranslator.systemPrompts`           | Tableau de invites système pour guider le processus de traduction                              |
+| `projectTranslator.userPrompts`             | Tableau d'invites définies par l'utilisateur, ces invites seront ajoutées après les invites système lors de la traduction |
+| `projectTranslator.segmentationMarkers`     | Marqueurs de segmentation configurés par type de fichier, prend en charge les expressions régulières |
 
 ## Utilisation
 
-1. Ouvrir la palette de commandes (Ctrl+Shift+P / Cmd+Shift+P)
-2. Tapez "Traduire le Projet" et sélectionnez la commande
+1. Ouvrez la palette de commandes (Ctrl+Shift+P / Cmd+Shift+P)
+2. Tapez "Translate Project" et sélectionnez la commande
 3. Si le dossier source n'est pas configuré, une boîte de dialogue de sélection de dossier apparaîtra
 4. Attendez la fin de la traduction
 
 Pendant la traduction :
 
-- Peut mettre en pause/reprendre la traduction via les boutons de la barre d'état
-- Peut arrêter le processus de traduction à tout moment
+- Vous pouvez mettre en pause/reprendre la traduction via les boutons de la barre d'état
+- Vous pouvez arrêter le processus de traduction à tout moment
 - La progression de la traduction est affichée dans la zone de notification
 - Les journaux détaillés sont affichés dans le panneau de sortie
 
-## Remarques
-- Assurer un quota d'utilisation d'API suffisant
-- Il est recommandé de tester d'abord avec de petits projets
-- Utilisez des clés API dédiées et supprimez-les après achèvement
+## Développement
+### Système de Build
+
+Cette extension utilise esbuild pour un regroupement rapide et un développement efficace :
+
+#### Scripts Disponibles
+
+- `npm run build` - Build de production avec minification
+- `npm run compile` - Build de développement 
+- `npm run watch` - Mode de surveillance pour le développement
+- `npm test` - Exécuter les tests
+
+#### Scripts TypeScript Hérités (Fallback)
+
+- `npm run compile-tsc` - Compilation TypeScript uniquement
+- `npm run watch-tsc` - Mode de surveillance TypeScript
+
+#### Tâches VS Code
+
+- **Build** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - Regroupe l'extension pour la production
+- **Watch** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - Mode de développement avec rechargement automatique
+
+### Configuration de Développement
+
+1. Cloner le dépôt
+2. Exécuter `npm install` pour installer les dépendances
+3. Appuyer sur `F5` pour démarrer le débogage ou exécuter la tâche "watch" pour le développement
+
+La configuration esbuild :
+- Regroupe tous les fichiers TypeScript en un seul `out/extension.js`
+- Exclut l'API VS Code (marquée comme externe)
+- Génère des cartes sources pour les builds de développement
+- Minifie le code pour les builds de production
+- Fournit une intégration de correspondance de problèmes pour VS Code
+
+## Notes
+
+- Assurer une quantité suffisante d'utilisation de l'API
+- Recommandé de tester d'abord avec de petits projets
+- Utiliser des clés API dédiées et les supprimer après achèvement
 
 ## Licence
 

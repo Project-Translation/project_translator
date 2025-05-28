@@ -23,7 +23,7 @@ export interface SpecifiedFolder {
         path: string;
         lang: SupportedLanguage;
     };
-    destFolders: DestFolder[];
+    targetFolders: DestFolder[];
 }
 
 // Chat message interface
@@ -50,7 +50,7 @@ export interface SpecifiedFile {
         path: string;
         lang: SupportedLanguage;
     };
-    destFiles: DestFile[];
+    targetFiles: DestFile[];
 }
 
 // Configuration interface for copy-only files

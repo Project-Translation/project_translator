@@ -4,4 +4,4 @@
 draft: false
 ---
 
-此md应被翻译。
+此md不应被翻译。

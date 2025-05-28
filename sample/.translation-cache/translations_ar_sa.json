@@ -6,15 +6,21 @@
     "hash": "41636e41ccbb792e07a7b223919a4746"
   },
   "../l10n/bundle.l10n.json": {
-    "timestamp": 1745489983302,
-    "hash": "8bdb32c28edeaf63d8736b7133890909"
+    "translate_datetime": "2025-05-28:12:46",
+    "src_hash": "8bdb32c28edeaf63d8736b7133890909",
+    "src_commit_id": "",
+    
   },
   "../package.nls.json": {
-    "timestamp": 1748266635809,
-    "hash": "600543f526656f2b1d0fff1a94602325"
+    "translate_datetime": "2025-05-28:13:00",
+    "src_hash": "600543f526656f2b1d0fff1a94602325",
+    "src_commit_id": "",
+    
   },
   "../README.md": {
-    "timestamp": 1748073643483,
-    "hash": "3318e74583bad7e8d92e0f78be9c2f17"
+    "translate_datetime": "2025-05-28:15:04",
+    "src_hash": "ac4ecfe0e6af8dd6fc1ecc91ad834a2e",
+    "src_commit_id": "107fe10e59cb889d9321fec338ea15b4ffc98bd9",
+    "src_commit_datetime": "2025-05-28:15:04"
   }
 }

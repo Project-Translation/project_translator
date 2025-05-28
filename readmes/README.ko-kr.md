@@ -1,11 +1,11 @@
 # 프로젝트 번역기
 
-VSCode 확장: 프로젝트의 다국어 현지화에 쉽게 사용할 수 있는 도구.
+VSCode 확장 프로그램: 프로젝트의 다국어 현지화에 쉽게 사용할 수 있는 도구.
 
 <!--
 ## 사용 가능한 번역
 
-이 확장은 이러한 언어로 번역을 지원합니다:
+확장 프로그램은 이러한 언어로의 번역을 지원합니다:
 
 - [简体中文 (zh-cn)](./README.zh-cn.md)
 - [繁體中文 (zh-tw)](./README.zh-tw.md)
@@ -17,9 +17,10 @@ VSCode 확장: 프로젝트의 다국어 현지화에 쉽게 사용할 수 있�
 - [Português (pt-br)](./README.pt-br.md)
 - [Русский (ru-ru)](./README.ru-ru.md)
 - [العربية (ar-sa)](./README.ar-sa.md)
-- [العربية (ar-ae)](./README.ar-ae.md) -->
+- [العربية (ar-ae)](./README.ar-ae.md)
+- [العربية (ar-eg)](./README.ar-eg.md) -->
 
-## 샘플들
+## 샘플
 | 프로젝트                                                                             | 원본 저장소                                                                                       | 설명                                                                                                                                                               | 별   | 태그                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:코드에서 알고리즘을 시각화하는 대화형 온라인 플랫폼                                                                                               | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -56,7 +57,7 @@ sequenceDiagram
   Project Translator-->>Project Translator: Review & Merge
 ```
 
-3. PR이 병합된 후, 번역이 Samples 섹션에 추가됩니다.
+3. PR이 병합된 후, 번역이 샘플 섹션에 추가됩니다.
 
 현재 진행 중인 번역: [이슈 보기](https://github.com/Project-Translation/project_translator/issues)
 
@@ -64,18 +65,18 @@ sequenceDiagram
 
 - 📁 폴더 수준 번역 지원
   - 전체 프로젝트 폴더를 여러 언어로 번역
-  - 원본 폴더 구조와 계층 유지
+  - 원래 폴더 구조와 계층 유지
   - 하위 폴더의 재귀 번역 지원
   - 번역 가능한 콘텐츠 자동 감지
   - 대규모 번역을 위한 일괄 처리
 - 📄 파일 수준 번역 지원
   - 개별 파일을 여러 언어로 번역
-  - 원본 파일 구조와 형식을 유지
+  - 원래 파일 구조와 형식을 유지
   - 폴더 및 파일 번역 모드 지원
 - 💡 AI 기반 스마트 번역
   - 코드 구조 무결성 자동 유지
   - 코드 주석만 번역, 코드 로직 유지
-  - JSON/XML 등 데이터 구조 형식 유지
+  - JSON/XML 및 기타 데이터 구조 형식 유지
   - 전문적인 기술 문서 번역 품질
 - ⚙️ 유연한 구성
   - 소스 폴더와 여러 대상 폴더 구성
@@ -102,13 +103,13 @@ sequenceDiagram
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "원본 폴더 경로",
-        "lang": "원본 언어 코드"
+        "path": "Source folder path",
+        "lang": "Source language code"
       },
-      "destFolders": [
+      "targetFolders": [
         {
-          "path": "대상 폴더 경로",
-          "lang": "대상 언어 코드"
+          "path": "Target folder path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -116,13 +117,13 @@ sequenceDiagram
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "원본 파일 경로",
-        "lang": "원본 언어 코드"
+        "path": "Source file path",
+        "lang": "Source language code"
       },
-      "destFiles": [
+      "targetFiles": [
         {
-          "path": "대상 파일 경로",
-          "lang": "대상 언어 코드"
+          "path": "Target file path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -131,10 +132,10 @@ sequenceDiagram
   "projectTranslator.vendors": [
     {
       "name": "openai",
-      "apiEndpoint": "API 엔드포인트 URL",
-      "apiKey": "API 인증 키",
-      "model": "사용할 모델 이름",
-      "rpm": "분당 최대 요청 수",
+      "apiEndpoint": "API endpoint URL",
+      "apiKey": "API authentication key",
+      "model": "Model name to use",
+      "rpm": "Maximum requests per minute",
       "maxTokensPerSegment": 4096,
       "timeout": 30,
       "temperature": 0.0
@@ -145,25 +146,25 @@ sequenceDiagram
 
 주요 구성 세부 사항:
 
-| 구성 옵션                          | 설명                                                                                  |
-| --------------------------------- | ------------------------------------------------------------------------------------ |
-| `projectTranslator.specifiedFolders`        | 번역을 위한 여러 소스 폴더와 해당 대상 폴더                                         |
-| `projectTranslator.specifiedFiles`          | 번역을 위한 여러 소스 파일과 해당 대상 파일                                         |
-| `projectTranslator.translationIntervalDays` | 번역 간격(일 단위, 기본 7일)                                                        |
-| `projectTranslator.copyOnly`                | 번역하지 않고 복사할 파일( `paths` 및 `extensions` 배열 포함)                       |
-| `projectTranslator.ignore`                  | 완전히 무시할 파일( `paths` 및 `extensions` 배열 포함)                              |
-| `projectTranslator.currentVendor`           | 현재 사용 중인 API 공급자                                                            |
-| `projectTranslator.vendors`                 | API 공급자 구성 목록                                                                  |
-| `projectTranslator.systemPrompts`           | 번역 프로세스 안내를 위한 시스템 프롬프트 배열                                       |
-| `projectTranslator.userPrompts`             | 사용자 정의 프롬프트 배열, 번역 중 시스템 프롬프트 후에 추가됨                      |
-| `projectTranslator.segmentationMarkers`     | 파일 유형별로 구성된 세그먼테이션 마커, 정규 표현식 지원                            |
+| Configuration Option                        | Description                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`        | 번역을 위한 여러 소스 폴더와 해당 대상 폴더                                                   |
+| `projectTranslator.specifiedFiles`          | 번역을 위한 여러 소스 파일과 해당 대상 파일                                                  |
+| `projectTranslator.translationIntervalDays` | 번역 간격(기본 7일)                                                                          |
+| `projectTranslator.copyOnly`                | 번역하지 않고 복사할 파일( `paths` 및 `extensions` 배열 포함)                                |
+| `projectTranslator.ignore`                  | 완전히 무시할 파일( `paths` 및 `extensions` 배열 포함)                                        |
+| `projectTranslator.currentVendor`           | 사용 중인 현재 API 공급자                                                                     |
+| `projectTranslator.vendors`                 | API 공급자 구성 목록                                                                          |
+| `projectTranslator.systemPrompts`           | 번역 프로세스를 안내하는 시스템 프롬프트 배열                                                 |
+| `projectTranslator.userPrompts`             | 사용자 정의 프롬프트 배열, 번역 중 시스템 프롬프트 후 추가                                    |
+| `projectTranslator.segmentationMarkers`     | 파일 유형별로 구성된 세그먼테이션 마커, 정규 표현식 지원                                     |
 
 ## 사용법
 
 1. 명령 팔레트 열기 (Ctrl+Shift+P / Cmd+Shift+P)
 2. "Translate Project" 입력 후 명령 선택
-3. 소스 폴더가 구성되지 않은 경우 폴더 선택 대화상자가 나타남
-4. 번역 완료까지 기다림
+3. 소스 폴더가 구성되지 않은 경우 폴더 선택 대화상자 표시
+4. 번역 완료까지 기다리기
 
 번역 중:
 
@@ -172,10 +173,46 @@ sequenceDiagram
 - 알림 영역에 번역 진행 상황 표시
 - 출력 패널에 상세 로그 표시
 
+## 개발
+### 빌드 시스템
+
+이 확장자는 빠른 번들링과 개발을 위해 esbuild를 사용합니다:
+
+#### 사용 가능한 스크립트
+
+- `npm run build` - 프로덕션 빌드(최적화 포함)
+- `npm run compile` - 개발 빌드 
+- `npm run watch` - 개발을 위한 감시 모드
+- `npm test` - 테스트 실행
+
+#### 레거시 TypeScript 스크립트(대체 옵션)
+
+- `npm run compile-tsc` - TypeScript 컴파일 전용
+- `npm run watch-tsc` - TypeScript 감시 모드
+
+#### VS Code 작업
+
+- **Build** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - 프로덕션용 확장자 번들링
+- **Watch** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - 자동 재빌드가 포함된 개발 모드
+
+### 개발 설정
+
+1. 저장소를 클론합니다
+2. `npm install`을 실행하여 종속성을 설치합니다
+3. 디버깅을 시작하려면 `F5`를 누르거나 개발을 위한 "watch" 작업을 실행합니다
+
+esbuild 구성:
+- 모든 TypeScript 파일을 단일 `out/extension.js`로 번들링
+- VS Code API를 외부로 표시하여 제외
+- 개발 빌드용 소스 맵 생성
+- 프로덕션 빌드용 코드 최적화
+- VS Code용 문제 매처 통합
+
 ## 주의사항
+
 - 충분한 API 사용 쿼터를 확보하세요
 - 먼저 작은 프로젝트로 테스트하는 것을 추천합니다
-- 전용 API 키를 사용하고 완료 후 제거하세요
+- 전용 API 키를 사용하고 작업 후 제거하세요
 
 ## 라이선스
 

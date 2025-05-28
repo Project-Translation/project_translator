@@ -7,7 +7,7 @@
       "apiKeyEnvVarName": "GEMINI_API_KEY",
       "model": "gemini-2.0-flash",
       "rpm": 15,
-      "maxTokensPerSegment": 1000,
+      "maxTokensPerSegment": 3000,
       "timeout": 30,
       "streamMode": true
     },
@@ -59,7 +59,7 @@
         "path": "../l10n/bundle.l10n.json",
         "lang": "en-us"
       },
-      "destFiles": [
+      "targetFiles": [
         {
           "path": "../l10n/bundle.l10n.zh-cn.json",
           "lang": "zh-cn"
@@ -107,7 +107,7 @@
         "path": "../package.nls.json",
         "lang": "en-us"
       },
-      "destFiles": [
+      "targetFiles": [
         {
           "path": "../package.nls.zh-cn.json",
           "lang": "zh-cn"
@@ -155,7 +155,7 @@
         "path": "../README.md",
         "lang": "en-us"
       },
-      "destFiles": [
+      "targetFiles": [
         {
           "path": "../readmes/README.zh-cn.md",
           "lang": "zh-cn"
@@ -205,7 +205,7 @@
         "path": "embeded",
         "lang": "en-us"
       },
-      "destFolders": [
+      "targetFolders": [
         {
           "path": "embeded/zh-cn",
           "lang": "zh-cn"
@@ -217,7 +217,7 @@
         "path": "structure/json",
         "lang": "en-us"
       },
-      "destFolders": [
+      "targetFolders": [
         {
           "path": "i18n/zh-cn/structure/json",
           "lang": "zh-cn"

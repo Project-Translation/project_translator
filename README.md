@@ -108,7 +108,7 @@ The extension supports the following configuration options:
         "path": "Source folder path",
         "lang": "Source language code"
       },
-      "destFolders": [
+      "targetFolders": [
         {
           "path": "Target folder path",
           "lang": "Target language code"
@@ -122,7 +122,7 @@ The extension supports the following configuration options:
         "path": "Source file path",
         "lang": "Source language code"
       },
-      "destFiles": [
+      "targetFiles": [
         {
           "path": "Target file path",
           "lang": "Target language code"
