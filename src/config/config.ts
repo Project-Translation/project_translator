@@ -258,10 +258,64 @@ export function getConfiguration(): Config {
   };
 }
 
+/**
+ * Resolves prompt strings, loading from files if they are file paths
+ * @param prompts Array of strings that can be either prompt content or file paths
+ * @returns Array of resolved prompt content
+ */
+function resolvePrompts(prompts: string[]): string[] {
+  const resolvedPrompts: string[] = [];
+
+  for (const prompt of prompts) {
+    // Check if the prompt is a file path (contains path separators and has file extension)
+    if (prompt.includes('/') || prompt.includes('\\') || path.extname(prompt)) {
+      try {
+        let filePath = prompt;
+        
+        // If it's a relative path, resolve it relative to workspace root
+        if (!path.isAbsolute(filePath)) {
+          const workspaceFolders = vscode.workspace.workspaceFolders;
+          if (workspaceFolders && workspaceFolders.length > 0) {
+            const workspaceRoot = workspaceFolders[0].uri.fsPath;
+            filePath = path.resolve(workspaceRoot, filePath);
+          }
+        }
+
+        // Check if file exists and read its content
+        if (fs.existsSync(filePath)) {
+          const fileContent = fs.readFileSync(filePath, 'utf-8');
+          resolvedPrompts.push(fileContent.trim());
+        } else {
+          // If file doesn't exist, treat the string as the prompt content itself
+          resolvedPrompts.push(prompt);
+        }
+      } catch (error) {
+        // If any error occurs reading the file, treat the string as the prompt content
+        resolvedPrompts.push(prompt);
+      }
+    } else {
+      // If it doesn't look like a file path, treat it as prompt content
+      resolvedPrompts.push(prompt);
+    }
+  }
+
+  return resolvedPrompts;
+}
+
 export function getTranslationPrompts() {
   const projectConfig = vscode.workspace.getConfiguration("projectTranslator");
-  const systemPrompts = projectConfig.get<string[]>("systemPrompts") || [];
-  const userPrompts = projectConfig.get<string[]>("userPrompts") || [];
+  const rawSystemPrompts = projectConfig.get<string[]>("systemPrompts") || [];
+  const rawUserPrompts = projectConfig.get<string[]>("userPrompts") || [];
+
+  // If no system prompts are configured, use the default system prompt file
+  let systemPromptsToResolve = rawSystemPrompts;
+  if (rawSystemPrompts.length === 0) {
+    // Use the default system prompt file
+    systemPromptsToResolve = ["prompts/default-system-prompt.md"];
+  }
+
+  const systemPrompts = resolvePrompts(systemPromptsToResolve);
+  const userPrompts = resolvePrompts(rawUserPrompts);
 
   return {
     systemPrompts,

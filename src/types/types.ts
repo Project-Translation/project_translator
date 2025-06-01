@@ -39,7 +39,7 @@ export interface DestFolder {
 }
 
 // Destination file interface (same structure as DestFolder)
-export interface DestFile {
+export interface TargetFile {
     path: string;
     lang: SupportedLanguage;
 }
@@ -50,7 +50,7 @@ export interface SpecifiedFile {
         path: string;
         lang: SupportedLanguage;
     };
-    targetFiles: DestFile[];
+    targetFiles: TargetFile[];
 }
 
 // Configuration interface for copy-only files

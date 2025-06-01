@@ -184,14 +184,9 @@ This extension uses esbuild for fast bundling and development:
 #### Available Scripts
 
 - `npm run build` - Production build with minification
-- `npm run compile` - Development build 
+- `npm run compile` - Development build
 - `npm run watch` - Watch mode for development
 - `npm test` - Run tests
-
-#### Legacy TypeScript Scripts (Fallback)
-
-- `npm run compile-tsc` - TypeScript compilation only
-- `npm run watch-tsc` - TypeScript watch mode
 
 #### VS Code Tasks
 
@@ -205,6 +200,7 @@ This extension uses esbuild for fast bundling and development:
 3. Press `F5` to start debugging or run the "watch" task for development
 
 The esbuild configuration:
+
 - Bundles all TypeScript files into a single `out/extension.js`
 - Excludes VS Code API (marked as external)
 - Generates source maps for development builds

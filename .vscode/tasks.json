@@ -67,34 +67,6 @@
             "detail": "Watch and bundle extension with esbuild"
         },
         {
-            "label": "build-tsc",
-            "type": "shell",
-            "command": "npm",
-            "args": [
-                "run",
-                "compile-tsc"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$tsc"
-            ],
-            "detail": "Compile TypeScript files (fallback)"
-        },
-        {
-            "label": "watch-tsc",
-            "type": "shell",
-            "command": "npm",
-            "args": [
-                "run",
-                "watch-tsc"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$tsc-watch"
-            ],
-            "detail": "Watch TypeScript files for changes (fallback)"
-        },
-        {
             "label": "publish patch",
             "type": "shell",
             "command": "npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",

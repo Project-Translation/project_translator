@@ -323,14 +323,14 @@ async function handleTranslateFiles() {
                     translationDatabase.setSourceRoot(sourceDir);
                     
                     // Register target directories
-                    for (const destFile of targetFiles) {
-                        const targetDir = path.dirname(destFile.path);
-                        translationDatabase.setTargetRoot(targetDir, destFile.lang);
+                    for (const targetFile of targetFiles) {
+                        const targetDir = path.dirname(targetFile.path);
+                        translationDatabase.setTargetRoot(targetDir, targetFile.lang);
                     }
                     
                     // Process each destination file
-                    for (const destFile of targetFiles) {
-                        await fileProcessor.processFile(sourceFile.path, destFile.path, sourceFile.lang, destFile.lang);
+                    for (const targetFile of targetFiles) {
+                        await fileProcessor.processFile(sourceFile.path, targetFile.path, sourceFile.lang, targetFile.lang);
                         processedFiles++;
                         
                         // Update progress with both file groups and individual files

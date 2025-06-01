@@ -577,13 +577,7 @@
           "items": {
             "type": "string"
           },
-          "default": [
-            "You are a professional translator familiar with various structured documents. When translating, strictly follow the format of the structured documents. You need to prioritize the format of structured documents above all else. When in doubt, it is better not to translate than to break the document format. You need to keep the number and position of '```' unchanged. You are only allowed to output '```' if there are '```' code blocks in the input to be translated. You need to follow the expression habits of the target language and maintain the format and structure unchanged during translation. You only need to return the translated content, do not add any extra content.",
-            "When translating, ensure technical terms are accurate. Follow target language expression conventions.",
-            "The front matter of Markdown files needs to be translated, and only the values are translated.",
-            "All relative paths should change to the target path, e.g. if the source path is **./docs** and the target path is **./i18n/zh-cn**, **./docs** should be changed to **./i18n/zh-cn/docs**.",
-            "**This is the business logic part of the project translator, please do not delete this prompt**\n\n- Determine whether translation is needed. If not, return a pure string response '727d2eb8-8683-42bd-a1d0-f604fcd82163' to indicate that no translation is required."
-          ],
+          "default": [],
           "description": "%config.systemPrompts.description%",
           "order": 10
         },
@@ -687,8 +681,6 @@
     "compile": "npm run esbuild-base",
     "watch": "npm run esbuild-base -- --watch",
     "esbuild-base": "node esbuild.config.js",
-    "compile-tsc": "tsc -p ./",
-    "watch-tsc": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "test": "npm run compile-tsc && node ./out/test/simpleRunner.js",
     "test-compile": "tsc -p ./",
