@@ -1,5 +1,6 @@
 {
-    "projectTranslator.currentVendor": "siliconflow",
+    "projectTranslator.debug": true,
+    "projectTranslator.currentVendor": "openrouter",
     "projectTranslator.vendors": [
         {
             "name": "gemini",
@@ -12,7 +13,7 @@
             "streamMode": true
         },
         {
-            "name": "grok",
+            "name": "grok", // 不再免费
             "apiEndpoint": "https://api.x.ai/v1",
             "apiKeyEnvVarName": "GROK_API_KEY",
             "model": "grok-3-mini",
@@ -23,7 +24,7 @@
             "streamMode": true
         },
         {
-            "name": "deepseek",
+            "name": "deepseek", // 需付费
             "apiEndpoint": "https://api.deepseek.com/v1",
             "apiKeyEnvVarName": "DEEPSEEK_API_KEY",
             "model": "deepseek-chat", // deepseek-chat, deepseek-reasoner
@@ -33,7 +34,7 @@
             "streamMode": true
         },
         {
-            "name": "aliyun",
+            "name": "aliyun",   // 暂时免费
             "apiEndpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
             "apiKeyEnvVarName": "QWEN_API_KEY",
             "model": "qwen3-30b-a3b", // https://bailian.console.aliyun.com/?productCode=p_efm#/model-market/detail/qwq-32b
@@ -43,7 +44,7 @@
             "streamMode": true
         },
         {
-            "name": "siliconflow",
+            "name": "siliconflow", // 超级慢
             "apiEndpoint": "https://api.siliconflow.cn/v1",
             "apiKeyEnvVarName": "SILICONFLOW_API_KEY",
             "model": "Qwen/Qwen3-8B",
@@ -53,10 +54,20 @@
             "streamMode": true
         },
         {
-            "name": "openrouter",
+            "name": "openrouter",   // 每日免费次数
             "apiEndpoint": "https://openrouter.ai/api/v1",
             "apiKeyEnvVarName": "OPENROUTER_API_KEY",
             "model": "qwen/qwen3-14b:free",
+            "rpm": 0,
+            "maxTokensPerSegment": 10000,
+            "timeout": 30,
+            "streamMode": true
+        },
+        {
+            "name": "modelscope",   // 每日免费次数
+            "apiEndpoint": "https://api-inference.modelscope.cn/v1/",
+            "apiKeyEnvVarName": "MODELSCOPE_SDK_TOKEN",
+            "model": "Qwen/Qwen3-30B-A3B",
             "rpm": 0,
             "maxTokensPerSegment": 10000,
             "timeout": 30,
@@ -103,6 +114,7 @@
         }
     ],
     "projectTranslator.specifiedFiles": [
+        // test
         // {
         //     "sourceFile": {
         //         "path": "structure/md/should_skip.md",
@@ -135,15 +147,26 @@
         //         }
         //     ]
         // },
-        // test
+        // {
+        //     "sourceFile": {
+        //         "path": "translate_source.json",
+        //         "lang": "en-us"
+        //     },
+        //     "targetFiles": [
+        //         {
+        //             "path": "translate_source_zh-cn.json",
+        //             "lang": "zh-cn"
+        //         }
+        //     ]
+        // }
         {
             "sourceFile": {
-                "path": "translate_source.json",
+                "path": "../package.nls.json",
                 "lang": "en-us"
             },
             "targetFiles": [
                 {
-                    "path": "translate_source_zh-cn.json",
+                    "path": "../package.nls.zh-cn.json",
                     "lang": "zh-cn"
                 }
             ]

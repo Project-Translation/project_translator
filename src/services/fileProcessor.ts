@@ -707,32 +707,44 @@ export class FileProcessor {
                 return false;
             }
 
-            // Translate the differences
-            this.outputChannel.appendLine(`🔤 Starting translation of ${diffTexts.length} diff segments`);
+            // Translate all differences in a single API call
+            this.outputChannel.appendLine(`🔤 Starting batch translation of ${diffTexts.length} diff segments`);
             const translatedTexts: string[] = [];
 
-            for (let i = 0; i < diffTexts.length; i++) {
-                const text = diffTexts[i];
+            if (diffTexts.length > 0) {
                 this.checkCancellation();
                 
-                this.outputChannel.appendLine(`🔤 Translating segment ${i + 1}/${diffTexts.length}`);
+                // Combine all diff texts into a single request with formatting
+                const batchContent = this.formatDiffTextsForBatchTranslation(diffTexts);
+                this.outputChannel.appendLine(`🔤 Sending batch translation request for all ${diffTexts.length} segments`);
                 
-                const [returnCode, translatedText] = await this.translatorService.translateContent(
-                    text,
+                const [returnCode, batchTranslatedText] = await this.translatorService.translateContent(
+                    batchContent,
                     sourceLang,
                     targetLang,
                     sourcePath,
-                    this.cancellationToken
+                    this.cancellationToken,
+                    undefined, // progressCallback
+                    true // isDiffTranslation
                 );
 
                 if (returnCode === AI_RETURN_CODE.OK) {
-                    translatedTexts.push(translatedText);
+                    // Parse the batch translation result
+                    const parsedResults = this.parseBatchTranslationResult(batchTranslatedText, diffTexts.length);
+                    if (parsedResults.length === diffTexts.length) {
+                        translatedTexts.push(...parsedResults);
+                        this.outputChannel.appendLine(`✅ Successfully parsed ${parsedResults.length} translated segments`);
+                    } else {
+                        this.outputChannel.appendLine(`⚠️ Parsed result count (${parsedResults.length}) doesn't match expected count (${diffTexts.length}), falling back to individual translation`);
+                        return await this.fallbackToIndividualTranslation(diffTexts, sourceLang, targetLang, sourcePath, targetPath, diffResult, diffResult.changedLines);
+                    }
                 } else if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                    // If no translation is needed, use the original
-                    translatedTexts.push(text);
+                    // If no translation is needed, use the original texts
+                    translatedTexts.push(...diffTexts);
+                    this.outputChannel.appendLine(`🔄 No translation needed for diff segments`);
                 } else {
-                    this.outputChannel.appendLine(`❌ Translation of segment ${i + 1} failed`);
-                    return false;
+                    this.outputChannel.appendLine(`❌ Batch translation failed, falling back to individual translation`);
+                    return await this.fallbackToIndividualTranslation(diffTexts, sourceLang, targetLang, sourcePath, targetPath, diffResult, diffResult.changedLines);
                 }
             }            // Apply translation results to target file
             const success = await this.applyTranslationDiff(
@@ -775,6 +787,185 @@ export class FileProcessor {
             return false;
         }
     }    /**
+     * Format diff texts for batch translation
+     */
+    private formatDiffTextsForBatchTranslation(diffTexts: string[]): string {
+        const formattedSegments = diffTexts.map((text, index) => {
+            return `<DIFF_SEGMENT_${index + 1}>
+${text}
+</DIFF_SEGMENT_${index + 1}>`;
+        });
+        
+        const batchContent = `Please translate the following ${diffTexts.length} diff segments. Each segment is wrapped with XML-like tags for identification. Maintain the same structure in your response and translate only the content within each segment.
+
+${formattedSegments.join('\n\n')}
+
+Please respond with the translated segments in the same format, preserving the segment tags and order.`;
+        
+        return batchContent;
+    }
+
+    /**
+     * Parse batch translation result
+     */
+    private parseBatchTranslationResult(batchResult: string, expectedCount: number): string[] {
+        const results: string[] = [];
+        
+        try {
+            // Extract segments using regex pattern
+            for (let i = 1; i <= expectedCount; i++) {
+                const segmentPattern = new RegExp(`<DIFF_SEGMENT_${i}>([\s\S]*?)</DIFF_SEGMENT_${i}>`, 'i');
+                const match = batchResult.match(segmentPattern);
+                
+                if (match && match[1]) {
+                    results.push(match[1].trim());
+                } else {
+                    this.outputChannel.appendLine(`⚠️ Could not find segment ${i} in batch translation result`);
+                    // Try alternative parsing methods
+                    const fallbackResult = this.tryAlternativeParsing(batchResult, i, expectedCount);
+                    if (fallbackResult) {
+                        results.push(fallbackResult);
+                    } else {
+                        break; // Stop parsing if we can't find a segment
+                    }
+                }
+            }
+        } catch (error) {
+            this.outputChannel.appendLine(`❌ Error parsing batch translation result: ${error}`);
+        }
+        
+        return results;
+    }
+
+    /**
+     * Try alternative parsing methods when structured parsing fails
+     */
+    private tryAlternativeParsing(batchResult: string, segmentIndex: number, totalSegments: number): string | null {
+        try {
+            // Method 1: Try to split by line breaks and find content
+            const lines = batchResult.split('\n');
+            const segmentLines: string[] = [];
+            let inSegment = false;
+            
+            for (const line of lines) {
+                if (line.includes(`DIFF_SEGMENT_${segmentIndex}`)) {
+                    inSegment = !inSegment;
+                    continue;
+                }
+                
+                if (inSegment && !line.includes('DIFF_SEGMENT_')) {
+                    segmentLines.push(line);
+                }
+                
+                if (inSegment && line.includes(`</DIFF_SEGMENT_${segmentIndex}`)) {
+                    break;
+                }
+            }
+            
+            if (segmentLines.length > 0) {
+                return segmentLines.join('\n').trim();
+            }
+            
+            // Method 2: If structured parsing completely fails, try to split the result evenly
+            if (segmentIndex === 1 && totalSegments > 1) {
+                const cleanedResult = batchResult.replace(/<\/?DIFF_SEGMENT_\d+>/g, '').trim();
+                const segments = cleanedResult.split(/\n\s*\n/).filter(s => s.trim());
+                
+                if (segments.length === totalSegments) {
+                    return segments[segmentIndex - 1]?.trim() || null;
+                }
+            }
+        } catch (error) {
+            this.outputChannel.appendLine(`❌ Alternative parsing failed: ${error}`);
+        }
+        
+        return null;
+    }
+
+    /**
+     * Fallback to individual translation when batch translation fails
+     */
+    private async fallbackToIndividualTranslation(
+        diffTexts: string[],
+        sourceLang: SupportedLanguage,
+        targetLang: SupportedLanguage,
+        sourcePath: string,
+        targetPath: string,
+        diffInfo?: any,
+        changedLines?: Array<{
+            lineNumber: number;
+            oldContent: string;
+            newContent: string;
+            changeType: 'added' | 'deleted' | 'modified';
+        }>
+    ): Promise<boolean> {
+        this.outputChannel.appendLine(`🔄 Falling back to individual translation for ${diffTexts.length} segments`);
+        const translatedTexts: string[] = [];
+        
+        for (let i = 0; i < diffTexts.length; i++) {
+            const text = diffTexts[i];
+            this.checkCancellation();
+            
+            this.outputChannel.appendLine(`🔤 Translating segment ${i + 1}/${diffTexts.length} (fallback mode)`);
+            
+            const [returnCode, translatedText] = await this.translatorService.translateContent(
+                text,
+                sourceLang,
+                targetLang,
+                sourcePath,
+                this.cancellationToken,
+                undefined, // progressCallback
+                true // isDiffTranslation
+            );
+
+            if (returnCode === AI_RETURN_CODE.OK) {
+                translatedTexts.push(translatedText);
+            } else if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                translatedTexts.push(text);
+            } else {
+                this.outputChannel.appendLine(`❌ Translation of segment ${i + 1} failed in fallback mode`);
+                return false;
+            }
+        }
+        
+        // Apply the individually translated texts using the same logic as batch translation
+        if (diffInfo && changedLines && translatedTexts.length === diffTexts.length) {
+            const sourceContent = fs.readFileSync(sourcePath, 'utf8');
+            let targetContent = '';
+            
+            try {
+                if (fs.existsSync(targetPath)) {
+                    targetContent = fs.readFileSync(targetPath, 'utf8');
+                } else {
+                    targetContent = sourceContent;
+                }
+            } catch (error) {
+                targetContent = sourceContent;
+            }
+            
+            const success = await this.applyTranslationDiff(
+                sourcePath,
+                targetPath,
+                sourceContent,
+                targetContent,
+                changedLines,
+                translatedTexts
+            );
+            
+            if (success) {
+                this.outputChannel.appendLine(`✅ Successfully applied ${translatedTexts.length} individual translations`);
+                return true;
+            } else {
+                this.outputChannel.appendLine(`❌ Failed to apply individual translations`);
+                return false;
+            }
+        }
+        
+        this.outputChannel.appendLine(`⚠️ Missing required parameters for diff application in fallback mode`);
+        return false;
+    }
+
+    /**
      * Apply translation diff to target file
      */
     private async applyTranslationDiff(

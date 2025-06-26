@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { getConfiguration } from "../config/config";
 import { SupportedLanguage } from "../translationDatabase";
 import * as path from "path";
+import * as fs from "fs";
 
 // Store the last request timestamp for each vendor
 const vendorLastRequest: Map<string, number> = new Map();
@@ -22,9 +23,15 @@ export class TranslatorService {
   private outputChannel: vscode.OutputChannel;
   private projectTotalInputTokens = 0;
   private projectTotalOutputTokens = 0;
+  private workspaceRoot: string | null = null;
 
   constructor(outputChannel: vscode.OutputChannel) {
     this.outputChannel = outputChannel;
+    // Get workspace root for saving diff responses
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders && workspaceFolders.length > 0) {
+      this.workspaceRoot = workspaceFolders[0].uri.fsPath;
+    }
   }
 
   public initializeOpenAIClient() {
@@ -74,7 +81,8 @@ export class TranslatorService {
     targetLang: SupportedLanguage,
     sourcePath: string,
     cancellationToken?: vscode.CancellationToken,
-    progressCallback?: TranslationProgressCallback
+    progressCallback?: TranslationProgressCallback,
+    isDiffTranslation: boolean = false
   ): Promise<[string, string]> {
     if (!this.openaiClient) {
       const error = "OpenAI client not initialized";
@@ -135,7 +143,9 @@ export class TranslatorService {
           currentVendorName,
           content,
           progressCallback,
-          cancellationToken
+          cancellationToken,
+          isDiffTranslation,
+          sourcePath
         );
       } else {
         return await this.standardTranslateContent(
@@ -143,7 +153,9 @@ export class TranslatorService {
           model || "",
           temperature,
           currentVendorName,
-          content
+          content,
+          isDiffTranslation,
+          sourcePath
         );
       }
     } catch (error) {
@@ -159,17 +171,45 @@ export class TranslatorService {
     model: string,
     temperature: number | undefined,
     currentVendorName: string,
-    originalContent: string
+    originalContent: string,
+    isDiffTranslation: boolean = false,
+    sourcePath: string = ""
   ): Promise<[string, string]> {
     if (!this.openaiClient) {
       throw new Error("OpenAI client not initialized");
     }
 
-    const response = await this.openaiClient.chat.completions.create({
+    // Get debug configuration
+    const { debug } = getConfiguration();
+    
+    // Record start time for API request
+    const startTime = Date.now();
+    this.outputChannel.appendLine(`⏱️ Starting OpenAI API request at ${new Date(startTime).toISOString()}`);
+
+    const requestPayload = {
       model: model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: temperature,
-    });
+    };
+
+    // Debug: Log request payload
+    if (debug) {
+      this.outputChannel.appendLine(`🐛 [DEBUG] OpenAI API Request:`);
+      this.outputChannel.appendLine(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
+    }
+
+    const response = await this.openaiClient.chat.completions.create(requestPayload);
+
+    // Record end time and calculate duration
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    this.outputChannel.appendLine(`⏱️ OpenAI API request completed in ${duration}ms (${(duration / 1000).toFixed(2)}s)`);
+
+    // Debug: Log response
+    if (debug) {
+      this.outputChannel.appendLine(`🐛 [DEBUG] OpenAI API Response:`);
+      this.outputChannel.appendLine(`🐛 [DEBUG] ${JSON.stringify(response, null, 2)}`);
+    }
 
     // Update the timestamp regardless of translation status
     vendorLastRequest.set(currentVendorName, Date.now());
@@ -185,6 +225,11 @@ export class TranslatorService {
 
     const translatedContent =
       response.choices[0]?.message?.content || originalContent;
+
+    // Save raw response for diff translation if needed
+    if (isDiffTranslation && sourcePath) {
+      await this.saveDiffRawResponse(currentVendorName, sourcePath, response);
+    }
 
     // Check if the response contains the NO_NEED_TRANSLATE return code
     if (translatedContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE)) {
@@ -204,12 +249,17 @@ export class TranslatorService {
     currentVendorName: string,
     originalContent: string,
     progressCallback: TranslationProgressCallback,
-    cancellationToken?: vscode.CancellationToken
+    cancellationToken?: vscode.CancellationToken,
+    isDiffTranslation: boolean = false,
+    sourcePath: string = ""
   ): Promise<[string, string]> {
     if (!this.openaiClient) {
       throw new Error("OpenAI client not initialized");
     }
 
+    // Get debug configuration
+    const { debug } = getConfiguration();
+    
     this.outputChannel.appendLine(`🔄 Starting streaming translation...`);
     let fullContent = "";
     let foundNoNeedTranslate = false;
@@ -217,12 +267,24 @@ export class TranslatorService {
     // Extract the first part of the UUID to detect partial occurrences
     const uuidFirstPart = AI_RETURN_CODE.NO_NEED_TRANSLATE.substring(0, 20);
 
-    const stream = await this.openaiClient.chat.completions.create({
+    // Record start time for streaming API request
+    const startTime = Date.now();
+    this.outputChannel.appendLine(`⏱️ Starting OpenAI streaming API request at ${new Date(startTime).toISOString()}`);
+
+    const requestPayload = {
       model: model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: temperature,
       stream: true,
-    });
+    };
+
+    // Debug: Log request payload
+    if (debug) {
+      this.outputChannel.appendLine(`🐛 [DEBUG] OpenAI Streaming API Request:`);
+      this.outputChannel.appendLine(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
+    }
+
+    const stream = await this.openaiClient.chat.completions.create(requestPayload) as any;
 
     // Update request timestamp at the start of streaming
     vendorLastRequest.set(currentVendorName, Date.now());
@@ -230,6 +292,7 @@ export class TranslatorService {
     // Initialize token counters - this is an estimate since the streaming API doesn't provide token counts
     let estimatedInputTokens = 0;
     let estimatedOutputTokens = 0;
+    let rawStreamChunks: any[] = []; // Store raw chunks for diff translation
 
     // Estimate input tokens based on input messages
     for (const message of messages) {
@@ -241,6 +304,16 @@ export class TranslatorService {
       if (cancellationToken?.isCancellationRequested) {
         this.outputChannel.appendLine("⛔ Translation cancelled");
         throw new vscode.CancellationError();
+      }
+
+      // Store raw chunk for diff translation if needed
+      if (isDiffTranslation) {
+        rawStreamChunks.push(chunk);
+      }
+
+      // Debug: Log each chunk
+      if (debug) {
+        this.outputChannel.appendLine(`🐛 [DEBUG] Stream Chunk: ${JSON.stringify(chunk)}`);
       }
 
       const content = chunk.choices[0]?.delta?.content || "";
@@ -306,13 +379,31 @@ export class TranslatorService {
       }
     }
 
+    // Record end time and calculate duration for streaming
+    const endTime = Date.now();
+    const duration = endTime - startTime;
     this.outputChannel.appendLine(
-      `📥 Streaming translation completed (estimated input: ~${estimatedInputTokens} tokens, estimated output: ~${estimatedOutputTokens} tokens)`
+      `📥 Streaming translation completed in ${duration}ms (${(duration / 1000).toFixed(2)}s) (estimated input: ~${estimatedInputTokens} tokens, estimated output: ~${estimatedOutputTokens} tokens)`
     );
+    this.outputChannel.appendLine(`⏱️ OpenAI streaming API request total duration: ${duration}ms`);
+
+    // Debug: Log complete streaming response
+    if (debug) {
+      this.outputChannel.appendLine(`🐛 [DEBUG] Complete Streaming Response Content:`);
+      this.outputChannel.appendLine(`🐛 [DEBUG] ${fullContent}`);
+      if (rawStreamChunks.length > 0) {
+        this.outputChannel.appendLine(`🐛 [DEBUG] Total Stream Chunks: ${rawStreamChunks.length}`);
+      }
+    }
 
     // Add estimated tokens to project total
     this.projectTotalInputTokens += estimatedInputTokens;
     this.projectTotalOutputTokens += estimatedOutputTokens;
+
+    // Save raw response for diff translation if needed
+    if (isDiffTranslation && sourcePath && rawStreamChunks.length > 0) {
+      await this.saveDiffRawStreamResponse(currentVendorName, sourcePath, rawStreamChunks, fullContent);
+    }
 
     // Check if the response contains the full or partial UUID code
     if (
@@ -377,5 +468,92 @@ export class TranslatorService {
   public resetTokenCounts() {
     this.projectTotalInputTokens = 0;
     this.projectTotalOutputTokens = 0;
+  }
+
+  /**
+   * Save raw OpenAI API response for differential translation
+   */
+  private async saveDiffRawResponse(
+    vendorName: string,
+    sourcePath: string,
+    response: OpenAI.Chat.Completions.ChatCompletion
+  ): Promise<void> {
+    if (!this.workspaceRoot) {
+      return;
+    }
+
+    try {
+      const cacheDir = path.join(this.workspaceRoot, ".translation-cache");
+      
+      // Ensure cache directory exists
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+
+      // Generate filename: {vendor_name}_diff_resp_{filename}
+      const sourceFileName = path.basename(sourcePath, path.extname(sourcePath));
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const fileName = `${vendorName}_diff_resp_${sourceFileName}_${timestamp}.json`;
+      const filePath = path.join(cacheDir, fileName);
+
+      // Save the raw response
+      const responseData = {
+        timestamp: new Date().toISOString(),
+        sourcePath: sourcePath,
+        vendorName: vendorName,
+        model: response.model,
+        usage: response.usage,
+        response: response
+      };
+
+      fs.writeFileSync(filePath, JSON.stringify(responseData, null, 2), "utf8");
+      this.outputChannel.appendLine(`💾 Saved diff raw response to: ${fileName}`);
+    } catch (error) {
+      this.outputChannel.appendLine(`⚠️ Failed to save diff raw response: ${error}`);
+    }
+  }
+
+  /**
+   * Save raw OpenAI streaming API response for differential translation
+   */
+  private async saveDiffRawStreamResponse(
+    vendorName: string,
+    sourcePath: string,
+    rawChunks: any[],
+    fullContent: string
+  ): Promise<void> {
+    if (!this.workspaceRoot) {
+      return;
+    }
+
+    try {
+      const cacheDir = path.join(this.workspaceRoot, ".translation-cache");
+      
+      // Ensure cache directory exists
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+
+      // Generate filename: {vendor_name}_diff_resp_{filename}
+      const sourceFileName = path.basename(sourcePath, path.extname(sourcePath));
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const fileName = `${vendorName}_diff_resp_${sourceFileName}_${timestamp}.json`;
+      const filePath = path.join(cacheDir, fileName);
+
+      // Save the raw streaming response
+      const responseData = {
+        timestamp: new Date().toISOString(),
+        sourcePath: sourcePath,
+        vendorName: vendorName,
+        streamMode: true,
+        fullContent: fullContent,
+        rawChunks: rawChunks
+      };
+
+      fs.writeFileSync(filePath, JSON.stringify(responseData, null, 2), "utf8");
+      this.outputChannel.appendLine(`💾 Saved diff stream raw response to: ${fileName}`);
+    } catch (error) {
+      this.outputChannel.appendLine(`⚠️ Failed to save diff stream raw response: ${error}`);
+    }
   }
 }

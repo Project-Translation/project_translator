@@ -156,6 +156,12 @@
           "description": "%config.vendors.description%",
           "order": 2
         },
+        "projectTranslator.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug mode to log all OpenAI API requests and responses to output channel",
+          "order": 3
+        },
         "projectTranslator.specifiedFiles": {
           "type": "array",
           "items": {
@@ -323,7 +329,7 @@
           },
           "default": [],
           "description": "%config.specifiedFiles.description%",
-          "order": 6
+          "order": 4
         },
         "projectTranslator.specifiedFolders": {
           "type": "array",
@@ -492,13 +498,13 @@
           },
           "default": [],
           "description": "%config.specifiedFolders.description%",
-          "order": 6
+          "order": 5
         },
         "projectTranslator.translationIntervalDays": {
           "type": "number",
           "default": 7,
           "description": "%config.translationIntervalDays.description%",
-          "order": 7
+          "order": 6
         },
         "projectTranslator.copyOnly": {
           "type": "object",
@@ -529,7 +535,7 @@
             ]
           },
           "description": "%config.copyOnly.description%",
-          "order": 8
+          "order": 7
         },
         "projectTranslator.ignore": {
           "type": "object",
@@ -570,7 +576,7 @@
             "extensions": []
           },
           "description": "%config.ignore.description%",
-          "order": 9
+          "order": 8
         },
         "projectTranslator.systemPrompts": {
           "type": "array",
@@ -579,7 +585,7 @@
           },
           "default": [],
           "description": "%config.systemPrompts.description%",
-          "order": 10
+          "order": 9
         },
         "projectTranslator.userPrompts": {
           "type": "array",
@@ -588,7 +594,7 @@
           },
           "default": [],
           "description": "%config.userPrompts.description%",
-          "order": 11
+          "order": 10
         },
         "projectTranslator.segmentationMarkers": {
           "type": "object",
@@ -661,7 +667,7 @@
             ]
           },
           "description": "%config.segmentationMarkers.description%",
-          "order": 12
+          "order": 11
         },
         "projectTranslator.enableMetrics": {
           "type": "boolean",
@@ -728,7 +734,7 @@
             "fallbackToFullTranslation": true
           },
           "description": "%config.diffApply.description%",
-          "order": 14
+          "order": 12
         }
       }
     }

@@ -7,6 +7,7 @@
     },
     "typescript.tsdk": "node_modules/typescript/lib",
     "js/ts.implicitProjectConfig.checkJs": true,
+    "projectTranslator.currentVendor": "siliconflow",
     "projectTranslator.diffApply": {
         "enabled": true,
         "strategy": "auto",
@@ -24,10 +25,6 @@
                 {
                     "path": "package.nls.zh-cn.json",
                     "lang": "zh-cn"
-                },
-                {
-                    "path": "package.nls.zh-tw.json",
-                    "lang": "zh-tw"
                 }
             ]
         }

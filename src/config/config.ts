@@ -11,6 +11,81 @@ import * as path from "path";
 import * as fs from "fs";
 import * as process from "process";
 
+// Default system prompt content embedded in code
+const DEFAULT_SYSTEM_PROMPT = `你是一个专业翻译 AI，严格遵守以下准则：
+
+1. **格式绝对优先**：保持原始内容的完整格式(JSON/XML/Markdown 等)，所有格式标记(包括\`\`\`代码块符号)必须原样保留，数量、位置和形式不得更改
+2. **精准符号控制**：特别关注三重反引号(\`\`\`)的使用：
+   - 禁止添加或删除任何\`\`\`符号
+   - 代码块内的文本仅当明确语言变化时才翻译
+   - Markdown 中的代码块标识符(如\`\`\`python)绝不翻译
+3. **核心流程**：
+   - 首先判断是否需要翻译
+   - 需要翻译 → 保留格式进行翻译
+   - 不需要翻译 → 返回固定 UUID：727d2eb8-8683-42bd-a1d0-f604fcd82163
+
+## 翻译判断标准(按优先级)
+
+| 判断依据                       | 处理方式             |
+| ------------------------------ | -------------------- |
+| **纯代码/数据**(无自然语言)    | 返回 UUID            |
+| **Markdown 手稿**(draft: true) | 返回 UUID            |
+| **混合语言内容**               | 翻译全部自然语言文本 |
+
+## 响应协议
+
+**不需要翻译**：
+
+- 严格返回纯文本：\`727d2eb8-8683-42bd-a1d0-f604fcd82163\`
+- 无任何额外字符/格式
+
+**需要翻译**：
+
+- 各种纯文本文档
+
+## 严格禁令
+
+1. 禁止解释判断逻辑
+2. 禁止添加任何前缀/后缀
+3. 禁止将固定 UUID 包裹在任何格式中
+4. 禁止改动原始空白字符(制表符/缩进/空行)
+5. 必须 1:1 匹配\`\`\`数量：
+   - 输入含 3 个\` → 输出必须3个\`
+   - 输入无\`\`\` → 输出禁止添加
+
+## 执行样例
+
+输入示例(XML)：
+
+\`\`\`xml
+<article>
+  <title>Hello World</title>
+  <content>This needs translation</content>
+</article>
+\`\`\`
+
+输出(翻译后)：
+
+\`\`\`xml
+<article>
+  <title>你好世界</title>
+  <content>这需要翻译</content>
+</article>
+\`\`\`
+
+输入示例(Markdown)：
+
+\`\`\`markdown
+---
+title: Sample Document
+draft: true
+---
+
+- [ ] Sample Task
+\`\`\`
+
+输出: 727d2eb8-8683-42bd-a1d0-f604fcd82163`;
+
 // Using Record<string, string> instead of any
 let translations: Record<string, string> = {};
 
@@ -40,6 +115,7 @@ export interface Config {
   userPrompts?: string[]; // User prompts for translation
   segmentationMarkers?: Record<string, string[]>; // Segmentation markers configured by file type
   diffApply?: DiffApplyConfig; // Configuration for diff apply functionality
+  debug?: boolean; // Enable debug mode to log API requests and responses
 }
 
 /**
@@ -103,6 +179,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
     const settingKeys = [
       "currentVendor",
       "vendors",
+      "debug",
       "specifiedFiles",
       "specifiedFolders",
       "translationIntervalDays",
@@ -186,6 +263,7 @@ export function getConfiguration(): Config {
       userPrompts: config.get("userPrompts"),
       segmentationMarkers: config.get("segmentationMarkers"),
       diffApply: config.get("diffApply"),
+      debug: config.get("debug"),
     };
   } // Extract and normalize configuration data
   const copyOnly = configData.copyOnly;
@@ -196,6 +274,7 @@ export function getConfiguration(): Config {
   const specifiedFolders = configData.specifiedFolders;
   const translationIntervalDays = configData.translationIntervalDays || 1;
   const segmentationMarkers = configData.segmentationMarkers;
+  const debug = configData.debug || false;
 
   // Get diffApply configuration with default values
   const diffApply = configData.diffApply || {
@@ -267,6 +346,7 @@ export function getConfiguration(): Config {
     userPrompts,
     segmentationMarkers,
     diffApply,
+    debug,
   };
 }
 
@@ -319,14 +399,16 @@ export function getTranslationPrompts() {
   const rawSystemPrompts = projectConfig.get<string[]>("systemPrompts") || [];
   const rawUserPrompts = projectConfig.get<string[]>("userPrompts") || [];
 
-  // If no system prompts are configured, use the default system prompt file
-  let systemPromptsToResolve = rawSystemPrompts;
+  // If no system prompts are configured, use the embedded default system prompt
+  let systemPrompts: string[];
   if (rawSystemPrompts.length === 0) {
-    // Use the default system prompt file
-    systemPromptsToResolve = ["prompts/default-system-prompt.md"];
+    // Use the embedded default system prompt
+    systemPrompts = [DEFAULT_SYSTEM_PROMPT];
+  } else {
+    // Resolve user-configured system prompts
+    systemPrompts = resolvePrompts(rawSystemPrompts);
   }
 
-  const systemPrompts = resolvePrompts(systemPromptsToResolve);
   const userPrompts = resolvePrompts(rawUserPrompts);
 
   return {

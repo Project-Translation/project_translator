@@ -13,5 +13,10 @@
     "translate_datetime": "2025-06-26:15:37",
     "src_hash": "fae47d662c83eefe67230b3ead3e5f4d",
     "src_commit_id": ""
+  },
+  "../package.nls.json": {
+    "translate_datetime": "2025-06-26:18:56",
+    "src_hash": "c4499c1f2f4ee70e723d9a79edd60146",
+    "src_commit_id": "590efd4024be34ca76cc1bfd6b1f56e0262396de"
   }
 }
