@@ -311,10 +311,8 @@ export class TranslatorService {
         rawStreamChunks.push(chunk);
       }
 
-      // Debug: Log each chunk
-      if (debug) {
-        this.outputChannel.appendLine(`🐛 [DEBUG] Stream Chunk: ${JSON.stringify(chunk)}`);
-      }
+      // Debug: Log each chunk (disabled in stream mode when debug is enabled)
+      // Stream Chunk logging is intentionally disabled in debug mode to reduce noise
 
       const content = chunk.choices[0]?.delta?.content || "";
       if (content) {

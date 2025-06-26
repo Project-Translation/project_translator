@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { spawn } from 'child_process';
 import { DiffInfo, DiffStrategy, DiffGranularity } from '../types/types';
+import { getConfiguration } from '../config/config';
 
 /**
  * Git Diff Analysis Service
@@ -212,12 +213,23 @@ export class GitDiffAnalyzer {
      * Parse unified diff format
      */
     private parseUnifiedDiff(diffOutput: string): DiffInfo {
+        const config = getConfiguration();
+        
         if (!diffOutput.trim()) {
             return {
                 hasChanges: false,
                 changedLines: [],
                 contextLines: []
             };
+        }
+
+        // Print raw diff output when debug mode is enabled or diffApply is enabled
+        if (config.debug || config.diffApply?.enabled) {
+            const prefix = config.debug ? '🐛 [DEBUG]' : '📊 [DIFF]';
+            this.outputChannel.appendLine(`${prefix} Raw diff output:`);
+            this.outputChannel.appendLine('--- DIFF START ---');
+            this.outputChannel.appendLine(diffOutput);
+            this.outputChannel.appendLine('--- DIFF END ---');
         }
 
         const lines = diffOutput.split('\n');
@@ -267,11 +279,35 @@ export class GitDiffAnalyzer {
             }
         }
 
-        return {
+        const result = {
             hasChanges: changedLines.length > 0,
             changedLines,
             contextLines
         };
+
+        // Print parsed diff information when debug mode is enabled or diffApply is enabled
+        if (config.debug || config.diffApply?.enabled) {
+            const prefix = config.debug ? '🐛 [DEBUG]' : '📊 [DIFF]';
+            this.outputChannel.appendLine(`${prefix} Parsed diff information:`);
+            this.outputChannel.appendLine(`  - Has changes: ${result.hasChanges}`);
+            this.outputChannel.appendLine(`  - Changed lines count: ${result.changedLines.length}`);
+            this.outputChannel.appendLine(`  - Context lines count: ${result.contextLines.length}`);
+            
+            if (result.changedLines.length > 0) {
+                this.outputChannel.appendLine('  - Changed lines details:');
+                result.changedLines.forEach((change, index) => {
+                    this.outputChannel.appendLine(`    [${index + 1}] Line ${change.lineNumber}: ${change.changeType}`);
+                    if (change.oldContent) {
+                        this.outputChannel.appendLine(`        Old: "${change.oldContent}"`);
+                    }
+                    if (change.newContent) {
+                        this.outputChannel.appendLine(`        New: "${change.newContent}"`);
+                    }
+                });
+            }
+        }
+
+        return result;
     }
 
     /**

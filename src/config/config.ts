@@ -290,10 +290,10 @@ export function getConfiguration(): Config {
   let userPrompts = configData.userPrompts;
 
   // If prompts are not available from the current source, get them from VSCode settings or defaults
-  if (!systemPrompts || !userPrompts) {
+  if (!systemPrompts || !userPrompts || (Array.isArray(systemPrompts) && systemPrompts.length === 0) || (Array.isArray(userPrompts) && userPrompts.length === 0)) {
     const prompts = getTranslationPrompts();
-    systemPrompts = systemPrompts || prompts.systemPrompts;
-    userPrompts = userPrompts || prompts.userPrompts;
+    systemPrompts = (systemPrompts && Array.isArray(systemPrompts) && systemPrompts.length > 0) ? systemPrompts : prompts.systemPrompts;
+    userPrompts = (userPrompts && Array.isArray(userPrompts) && userPrompts.length > 0) ? userPrompts : prompts.userPrompts;
   }
 
   // Find current vendor configuration

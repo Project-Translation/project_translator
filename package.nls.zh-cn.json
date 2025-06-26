@@ -41,16 +41,16 @@
   "config.ignore.description": "应完全忽略的文件和路径（既不复制也不翻译）",
   "config.ignore.paths.description": "应完全忽略的路径模式列表（使用glob语法）",
   "config.ignore.extensions.description": "应完全忽略的文件扩展名列表",
-  "config.diffApply.description": "基于Git差异的增量翻译配置。比较源文件的最新提交与目标文件翻译时记录的提交，以执行增量翻译。如果要翻译的文件没有提交记录，则不会翻译差异部分，因为增量翻译需要历史记录中的已提交记录。随机修改而未形成历史记录的文件无法进行增量翻译。",
-  "config.diffApply.enabled.description": "启用基于Git更改的增量翻译。启用后，仅翻译源文件的最新提交与目标文件上次翻译时记录的提交之间的差异（默认：false）",
-  "config.diffApply.strategy.description": "检测文件差异的策略：'auto'（自动），'vscode-api'（VS Code Git API），'git-command'（Git命令行）",
-  "config.diffApply.granularity.description": "差异检测的粒度：'line'（行级），'block'（块级），'semantic'（语义级）",
-  "config.diffApply.contextLines.description": "在更改周围包含的上下文行数（默认：3）",
+  "config.diffApply.description": "(实验性) 基于 Git diff 的差异翻译配置。将源文件的最新提交与目标文件翻译时记录的提交进行比较，执行差异翻译。如果待翻译文件没有提交记录，差异部分将不会被翻译，因为差异翻译需要历史记录中存在已记录的提交。没有形成历史记录的随机修改无法用于差异翻译。",
+  "config.diffApply.enabled.description": "(实验性) 基于 Git 更改启用差异翻译。启用后，仅翻译源文件最新提交与目标文件上次翻译时记录的提交之间的差异 (默认: false)",
+  "config.diffApply.strategy.description": "(实验性) 检测文件差异的策略: 'auto' (自动), 'vscode-api' (VS Code Git API), 'git-command' (Git 命令行)",
+  "config.diffApply.granularity.description": "(实验性) 差异检测粒度: 'line' (行级), 'block' (块级), 'semantic' (语义级)",
+  "config.diffApply.contextLines.description": "(实验性) 更改周围包含的上下文行数 (默认: 3)",
   "config.diffApply.fallbackToFullTranslation.description": "当增量翻译失败时是否回退到完整翻译（默认：true）",
   "config.diffApply.strategy.auto.description": "自动选择最佳策略（推荐）",
   "config.diffApply.strategy.vscode-api.description": "使用VS Code内置的Git API进行差异比较（快速，但可能不完整）",
   "config.diffApply.strategy.git-command.description": "直接执行'git diff'命令获取差异（最准确，但可能较慢）",
   "config.diffApply.granularity.line.description": "在行级别检测差异",
   "config.diffApply.granularity.block.description": "在代码块级别检测差异（实验性）",
-  "config.diffApply.granularity.semantic.description": "在语义级别检测差异（实验性，需要更智能的模型）"
+  "config.diffApply.granularity.semantic.description": "(实验性) 在语义级别检测差异（实验性，需要更智能的模型）"
 }

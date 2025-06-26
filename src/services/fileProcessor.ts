@@ -672,6 +672,18 @@ export class FileProcessor {
                 config.diffApply?.strategy || 'auto'
             );
 
+            // Print diff analysis details when debug mode is enabled or diffApply is enabled
+            if (config.debug || config.diffApply?.enabled) {
+                const prefix = config.debug ? '🐛 [DEBUG]' : '📊 [DIFF]';
+                this.outputChannel.appendLine(`${prefix} Differential translation analysis:`);
+                this.outputChannel.appendLine(`  - Source file: ${sourcePath}`);
+                this.outputChannel.appendLine(`  - Target file: ${targetPath}`);
+                this.outputChannel.appendLine(`  - Last commit ID: ${lastCommitId}`);
+                this.outputChannel.appendLine(`  - Diff strategy: ${config.diffApply?.strategy || 'auto'}`);
+                this.outputChannel.appendLine(`  - Has changes: ${diffResult.hasChanges}`);
+                this.outputChannel.appendLine(`  - Changed lines: ${diffResult.changedLines.length}`);
+            }
+
             if (!diffResult.hasChanges || diffResult.changedLines.length === 0) {
                 this.outputChannel.appendLine("📋 No valid file differences detected");
                 return false;
@@ -698,6 +710,13 @@ export class FileProcessor {
                     
                     if (changedText.trim()) {
                         diffTexts.push(changedText);
+                        
+                        // Print extracted diff text when debug mode is enabled or diffApply is enabled
+                        if (config.debug || config.diffApply?.enabled) {
+                            const prefix = config.debug ? '🐛 [DEBUG]' : '📊 [DIFF]';
+                            this.outputChannel.appendLine(`${prefix} Extracted diff text [${diffTexts.length}]:`);
+                            this.outputChannel.appendLine(`  - Line ${change.lineNumber}: "${changedText}"`);
+                        }
                     }
                 }
             }
@@ -705,6 +724,15 @@ export class FileProcessor {
             if (diffTexts.length === 0) {
                 this.outputChannel.appendLine("📋 No differences need translation");
                 return false;
+            }
+
+            // Print summary of extracted diff texts when debug mode is enabled or diffApply is enabled
+            if (config.debug || config.diffApply?.enabled) {
+                const prefix = config.debug ? '🐛 [DEBUG]' : '📊 [DIFF]';
+                this.outputChannel.appendLine(`${prefix} Total extracted diff texts: ${diffTexts.length}`);
+                diffTexts.forEach((text, index) => {
+                    this.outputChannel.appendLine(`  [${index + 1}] "${text}"`);
+                });
             }
 
             // Translate all differences in a single API call
