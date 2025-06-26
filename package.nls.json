@@ -50,6 +50,6 @@
   "config.diffApply.strategy.vscode-api.description": "(experimental) Uses VS Code's built-in Git API for diffs (fast, but may be incomplete)",
   "config.diffApply.strategy.git-command.description": "(experimental) Executes the 'git diff' command directly to get differences (most accurate, but may be slower)",
   "config.diffApply.granularity.line.description": "(experimental) Detects differences at the line level",
-  "config.diffApply.granularity.block.description": "(experimental) Detects differences at the code block level (experimental)",
-  "config.diffApply.granularity.semantic.description": "(experimental) Detects differences at the semantic level (experimental, requires smarter models)"
+  "config.diffApply.granularity.block.description": "(experimental) Detects differences at the code block level",
+  "config.diffApply.granularity.semantic.description": " (experimental, requires smarter models)Detects differences at the semantic level"
 }
