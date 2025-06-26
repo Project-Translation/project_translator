@@ -1,11 +1,35 @@
 {
     "debug.javascript.autoAttachFilter": "smart",
-    "debug.javascript.usePreview": true,
     "debug.javascript.terminalOptions": {
         "skipFiles": [
             "<node_internals>/**"
         ]
     },
     "typescript.tsdk": "node_modules/typescript/lib",
-    "js/ts.implicitProjectConfig.checkJs": true
+    "js/ts.implicitProjectConfig.checkJs": true,
+    "projectTranslator.diffApply": {
+        "enabled": true,
+        "strategy": "auto",
+        "granularity": "line",
+        "contextLines": 3,
+        "fallbackToFullTranslation": false
+    },
+    "projectTranslator.specifiedFiles": [
+        {
+            "sourceFile": {
+                "path": "package.nls.json",
+                "lang": "en-us"
+            },
+            "targetFiles": [
+                {
+                    "path": "package.nls.zh-cn.json",
+                    "lang": "zh-cn"
+                },
+                {
+                    "path": "package.nls.zh-tw.json",
+                    "lang": "zh-tw"
+                }
+            ]
+        }
+    ]
 }

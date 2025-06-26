@@ -4,8 +4,9 @@
   "command.translateFolders": "Translate Folders",
   "command.translateProject": "Translate Project",
   "nothing": "no need do anything",
+  "anything": "do anything is good",
   "command.translateFiles": "Translate Files",
   "command.pauseTranslation": "Pause Translation",
   "command.resumeTranslation": "Resume Translation",
-  "command.stopTranslation": "Awesome Translation",
+  "command.stopTranslation": "Stop Translation"
 }

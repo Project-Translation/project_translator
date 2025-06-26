@@ -165,16 +165,25 @@ export class GitDiffAnalyzer {
      * Get working directory diff (compare with HEAD)
      */
     private async getWorkingDirectoryDiff(repository: any, filePath: string): Promise<DiffInfo> {
-        // Note: This is a simplified implementation, actual implementation requires more complex logic for VS Code git API
-        // Currently serves as a fallback for git command
-        this.outputChannel.appendLine('📋 Detecting working directory diff');
-        
-        // Temporarily return empty diff, actual implementation requires more VSCode git API calls
-        return {
-            hasChanges: false,
-            changedLines: [],
-            contextLines: []
-        };
+        this.outputChannel.appendLine('📋 Detecting working directory diff (vs HEAD)');
+
+        // Get relative path from repository root
+        const relativePath = path.relative(repository.rootUri.fsPath, filePath);
+
+        // Get the diff content as a string, comparing HEAD with the working tree
+        const diffOutput = await repository.diffWith('HEAD', relativePath);
+
+        if (!diffOutput) {
+            this.outputChannel.appendLine('✅ No changes detected in working directory via VSCode API.');
+            return {
+                hasChanges: false,
+                changedLines: [],
+                contextLines: []
+            };
+        }
+
+        // Parse the unified diff output
+        return this.parseUnifiedDiff(diffOutput);
     }
 
     /**
@@ -182,13 +191,21 @@ export class GitDiffAnalyzer {
      */
     private async getCommitDiff(repository: any, filePath: string, commitId: string): Promise<DiffInfo> {
         this.outputChannel.appendLine(`📊 Detecting diff with commit ${commitId.substring(0, 8)}...`);
-        
-        // Temporarily return empty diff, actual implementation requires more VSCode git API calls
-        return {
-            hasChanges: false,
-            changedLines: [],
-            contextLines: []
-        };
+
+        // Get relative path from repository root
+        const relativePath = path.relative(repository.rootUri.fsPath, filePath);
+
+        // Get the diff content as a string
+        // This compares the given commit with the working tree version of the file
+        const diffOutput = await repository.diffWith(commitId, relativePath);
+
+        if (!diffOutput) {
+            this.outputChannel.appendLine('✅ No changes detected via VSCode API.');
+            return { hasChanges: false, changedLines: [], contextLines: [] };
+        }
+
+        // Parse the unified diff output
+        return this.parseUnifiedDiff(diffOutput);
     }
 
     /**

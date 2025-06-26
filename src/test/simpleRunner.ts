@@ -1,6 +1,6 @@
-import * as path from 'path';
 import Mocha from 'mocha';
 import { glob } from 'glob';
+import * as path from 'path';
 
 // Simple test runner that doesn't require VS Code GUI
 async function runTests() {
@@ -8,7 +8,7 @@ async function runTests() {
     
     // Create the mocha test
     const mocha = new Mocha({
-        ui: 'tdd',
+        ui: 'bdd',
         color: true,
         timeout: 10000,
         reporter: 'spec'
@@ -18,8 +18,8 @@ async function runTests() {
         const testsRoot = path.resolve(__dirname, '.');
         console.log('Looking for tests in:', testsRoot);
         
-        // Only run pure tests that don't require VS Code
-        const files = await glob('**/*.pure.test.js', { cwd: testsRoot });
+        // Run only service tests that don't require VS Code
+            const files = await glob('services/*.test.js', { cwd: testsRoot });
         console.log('Found test files:', files);
 
         if (files.length === 0) {

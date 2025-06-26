@@ -115,6 +115,9 @@
             "type": "shell",
             "command": "npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
             "group": "build",
+            "dependsOn": [
+                "build"
+            ],
             "problemMatcher": [],
             "detail": "Build a VSIX package for local installation"
         },

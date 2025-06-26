@@ -47,7 +47,7 @@
             "apiEndpoint": "https://api.siliconflow.cn/v1",
             "apiKeyEnvVarName": "SILICONFLOW_API_KEY",
             "model": "Qwen/Qwen3-8B",
-            "rpm": 20,
+            "rpm": 600,
             "maxTokensPerSegment": 3000,
             "timeout": 30,
             "streamMode": true
@@ -135,6 +135,7 @@
         //         }
         //     ]
         // },
+        // test
         {
             "sourceFile": {
                 "path": "translate_source.json",
