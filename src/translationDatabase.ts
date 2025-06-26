@@ -2,6 +2,8 @@ import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
 import * as vscode from "vscode";
+import { exec } from "child_process";
+import { promisify } from "util";
 import { SpecifiedFolder } from "./types/types";
 import { getConfiguration } from "./config/config";
 
@@ -480,23 +482,50 @@ export class TranslationDatabase {
       } // Get the relative path from repository root
       const relativePath = path.relative(repository.rootUri.fsPath, filePath);
 
-      // Get the HEAD commit
-      const head = repository.state.HEAD;
-      if (!head || !head.commit) {
-        this.outputChannel.appendLine("📡 No HEAD commit found in repository");
-        return { commitId: "" };
+      // Get the last commit that modified this specific file
+      try {
+        // Use git log to get the last commit for this specific file
+        const execAsync = promisify(exec);
+        
+        const gitCommand = `git log -1 --format="%H" -- "${relativePath}"`;
+        const { stdout } = await execAsync(gitCommand, { cwd: repository.rootUri.fsPath });
+        
+        const commitId = stdout.trim();
+        if (!commitId) {
+          this.outputChannel.appendLine(
+            `📡 No commits found for file ${path.basename(filePath)}`
+          );
+          return { commitId: "" };
+        }
+        
+        this.outputChannel.appendLine(
+          `📡 Last commit for ${path.basename(
+            filePath
+          )}: ${commitId.substring(0, 8)}...`
+        );
+        
+        return { commitId };
+      } catch (gitError) {
+        this.outputChannel.appendLine(
+          `📡 Failed to get file-specific commit, falling back to HEAD: ${gitError}`
+        );
+        
+        // Fallback to HEAD commit if git log fails
+        const head = repository.state.HEAD;
+        if (!head || !head.commit) {
+          this.outputChannel.appendLine("📡 No HEAD commit found in repository");
+          return { commitId: "" };
+        }
+        
+        const commitId = head.commit;
+        this.outputChannel.appendLine(
+          `📡 Using HEAD commit for ${path.basename(
+            filePath
+          )}: ${commitId.substring(0, 8)}...`
+        );
+        
+        return { commitId };
       }
-
-      // For now, we'll use the HEAD commit info
-      // In a more advanced implementation, we could get the last commit that modified this specific file
-      const commitId = head.commit;
-      this.outputChannel.appendLine(
-        `📡 Git commit info for ${path.basename(
-          filePath
-        )}: ${commitId.substring(0, 8)}...`
-      );
-
-      return { commitId };
     } catch (error) {
       // If there's any error with git operations, return empty values
       this.outputChannel.appendLine(
