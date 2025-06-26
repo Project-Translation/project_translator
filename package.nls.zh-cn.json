@@ -40,5 +40,17 @@
   "config.copyOnly.extensions.description": "应复制但不翻译的文件扩展名列表",
   "config.ignore.description": "应完全忽略的文件和路径（既不复制也不翻译）",
   "config.ignore.paths.description": "应完全忽略的文件的路径模式列表（glob 语法）",
-  "config.ignore.extensions.description": "应完全忽略的文件扩展名列表"
+  "config.ignore.extensions.description": "应完全忽略的文件扩展名列表",
+  "config.diffApply.description": "基于 Git diff 的差异翻译配置",
+  "config.diffApply.enabled.description": "启用基于 Git 变更的差异翻译（默认：false）",
+  "config.diffApply.strategy.description": "检测文件差异的策略：'auto'（自动）、'vscode-api'（VS Code Git API）、'git-command'（Git 命令行）",
+  "config.diffApply.granularity.description": "差异检测的粒度：'line'（行级别）、'block'（块级别）、'semantic'（语义级别）",
+  "config.diffApply.contextLines.description": "变更周围包含的上下文行数（默认：3）",
+  "config.diffApply.fallbackToFullTranslation.description": "当差异翻译失败时是否回退到完整翻译（默认：true）",
+  "config.diffApply.strategy.auto.description": "自动选择最佳策略（推荐）",
+  "config.diffApply.strategy.vscode-api.description": "使用 VS Code 内置的 Git API 获取差异（速度快，但可能不完整）",
+  "config.diffApply.strategy.git-command.description": "直接执行 git diff 命令获取差异（最准确，但可能稍慢）",
+  "config.diffApply.granularity.line.description": "以行为单位检测差异",
+  "config.diffApply.granularity.block.description": "以代码块为单位检测差异（实验性）",
+  "config.diffApply.granularity.semantic.description": "以语义为单位检测差异（实验性，需要更智能的模型）"
 }

@@ -7,6 +7,7 @@ import * as glob from 'glob';
 import { TranslationDatabase } from "../translationDatabase";
 import { DestFolder, SupportedLanguage } from "../types/types";
 import { TranslatorService, AI_RETURN_CODE } from "./translatorService";
+import { GitDiffAnalyzer } from "./diffAnalyzer";
 import { estimateTokenCount, segmentText, combineSegments } from "../segmentationUtils";
 import { getConfiguration } from "../config/config";
 
@@ -14,15 +15,14 @@ export class FileProcessor {
     private outputChannel: vscode.OutputChannel;
     private translationDb: TranslationDatabase;
     private translatorService: TranslatorService;
+    private diffAnalyzer: GitDiffAnalyzer;
     private processedFilesCount = 0;
     private skippedFilesCount = 0;
     private failedFilesCount = 0;
     private failedFilePaths: string[] = [];
     private isPaused = false;
     private cancellationToken?: vscode.CancellationToken;
-    private workspaceRoot: string;
-
-    constructor(
+    private workspaceRoot: string;    constructor(
         outputChannel: vscode.OutputChannel,
         translationDb: TranslationDatabase,
         translatorService: TranslatorService
@@ -30,6 +30,10 @@ export class FileProcessor {
         this.outputChannel = outputChannel;
         this.translationDb = translationDb;
         this.translatorService = translatorService;
+        
+        // Initialize diff analyzer with default configuration
+        this.diffAnalyzer = new GitDiffAnalyzer(outputChannel);
+        
         // Get workspace root path
         this.workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
     }
@@ -214,7 +218,6 @@ export class FileProcessor {
             this.outputChannel.appendLine("⏭️ Skipping translation");
             return true;
         }
-
         return false;
     }
 
@@ -269,7 +272,7 @@ export class FileProcessor {
         fs.copyFileSync(sourcePath, targetPath);
         this.outputChannel.appendLine("✅ Binary file copy completed");
         this.processedFilesCount++;
-    } private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
+    }    private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
         // Handle pause state
         while (this.isPaused) {
             this.checkCancellation();
@@ -277,7 +280,43 @@ export class FileProcessor {
             this.outputChannel.appendLine("⏸️ Translation paused...");
         }
 
-        // Start translation
+        // Check if diff apply is enabled and if we should use differential translation
+        const config = getConfiguration();
+        const shouldUseDiffTranslation = await this.shouldUseDifferentialTranslation(sourcePath, targetLang, config);
+        
+        if (shouldUseDiffTranslation.useDiff) {
+            this.outputChannel.appendLine("🔍 Using diff translation mode");
+            try {
+                const success = await this.handleDifferentialTranslation(
+                    sourcePath, 
+                    targetPath, 
+                    sourceLang, 
+                    targetLang, 
+                    shouldUseDiffTranslation.lastCommitId!
+                );
+                
+                if (success) {
+                    this.outputChannel.appendLine("✅ Diff translation completed");
+                    return;
+                }
+                
+                // If diff translation fails, fallback to full translation based on config
+                if (config.diffApply?.fallbackToFullTranslation) {
+                    this.outputChannel.appendLine("⚠️ Diff translation failed, falling back to full translation");
+                } else {
+                    throw new Error("Diff translation failed and fallback mechanism is not enabled");
+                }
+            } catch (error) {
+                this.outputChannel.appendLine(`❌ Error during diff translation: ${error}`);
+                if (config.diffApply?.fallbackToFullTranslation) {
+                    this.outputChannel.appendLine("⚠️ Falling back to full translation");
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        // Start translation (full translation mode)
         this.outputChannel.appendLine("🔄 Starting file content translation...");
         const content = fs.readFileSync(sourcePath, "utf8");
         const startTime = Date.now();
@@ -574,6 +613,229 @@ export class FileProcessor {
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             this.outputChannel.appendLine(`❌ Failed to translate: ${errorMessage}`);
             throw error;
+        }
+    }
+
+    /**
+     * Determine whether to use diff translation
+     */
+    private async shouldUseDifferentialTranslation(
+        sourcePath: string, 
+        targetLang: SupportedLanguage, 
+        config: any
+    ): Promise<{ useDiff: boolean; lastCommitId?: string }> {
+        // Check if diff apply is enabled
+        if (!config.diffApply?.enabled) {
+            return { useDiff: false };
+        }
+
+        try {
+            // Check if differential translation is needed
+            const needsDiff = await this.translationDb.needsDiffTranslation(sourcePath, targetLang);
+              if (!needsDiff.needsDiff) {
+                return { useDiff: false };
+            }
+
+            // Get the last translation commit ID
+            const lastCommitId = await this.translationDb.getLastTranslationCommitId(sourcePath, targetLang);
+            
+            if (!lastCommitId) {
+                // If there is no last translation record, do not use diff translation
+                return { useDiff: false };
+            }
+
+            return { 
+                useDiff: true, 
+                lastCommitId 
+            };
+        } catch (error) {
+            this.outputChannel.appendLine(`⚠️ Diff detection failed: ${error}`);
+            return { useDiff: false };
+        }
+    }
+
+    /**
+     * Handle diff translation
+     */
+    private async handleDifferentialTranslation(
+        sourcePath: string,
+        targetPath: string,
+        sourceLang: SupportedLanguage,
+        targetLang: SupportedLanguage,
+        lastCommitId: string
+    ): Promise<boolean> {
+        try {
+            const config = getConfiguration();            // Get file diff information
+            const diffResult = await this.diffAnalyzer.getDiffInfo(
+                sourcePath,
+                lastCommitId,
+                config.diffApply?.strategy || 'auto'
+            );
+
+            if (!diffResult.hasChanges || diffResult.changedLines.length === 0) {
+                this.outputChannel.appendLine("📋 No valid file differences detected");
+                return false;
+            }
+
+            this.outputChannel.appendLine(`🔍 Detected ${diffResult.changedLines.length} diff blocks`);
+
+            // Read current source and target file content
+            const sourceContent = fs.readFileSync(sourcePath, 'utf8');
+            let targetContent = '';
+            
+            // If target file exists, read its content
+            if (fs.existsSync(targetPath)) {
+                targetContent = fs.readFileSync(targetPath, 'utf8');
+            }            // Extract the differences that need translation
+            const diffTexts: string[] = [];
+            const sourceLines = sourceContent.split('\n');
+            
+            for (const change of diffResult.changedLines) {
+                if (change.changeType === 'added' || change.changeType === 'modified') {
+                    // Extract the changed line content
+                    const lineIndex = Math.max(0, change.lineNumber - 1);
+                    const changedText = change.newContent;
+                    
+                    if (changedText.trim()) {
+                        diffTexts.push(changedText);
+                    }
+                }
+            }
+
+            if (diffTexts.length === 0) {
+                this.outputChannel.appendLine("📋 No differences need translation");
+                return false;
+            }
+
+            // Translate the differences
+            this.outputChannel.appendLine(`🔤 Starting translation of ${diffTexts.length} diff segments`);
+            const translatedTexts: string[] = [];
+
+            for (let i = 0; i < diffTexts.length; i++) {
+                const text = diffTexts[i];
+                this.checkCancellation();
+                
+                this.outputChannel.appendLine(`🔤 Translating segment ${i + 1}/${diffTexts.length}`);
+                
+                const [returnCode, translatedText] = await this.translatorService.translateContent(
+                    text,
+                    sourceLang,
+                    targetLang,
+                    sourcePath,
+                    this.cancellationToken
+                );
+
+                if (returnCode === AI_RETURN_CODE.OK) {
+                    translatedTexts.push(translatedText);
+                } else if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                    // If no translation is needed, use the original
+                    translatedTexts.push(text);
+                } else {
+                    this.outputChannel.appendLine(`❌ Translation of segment ${i + 1} failed`);
+                    return false;
+                }
+            }            // Apply translation results to target file
+            const success = await this.applyTranslationDiff(
+                sourcePath,
+                targetPath,
+                sourceContent,
+                targetContent,
+                diffResult.changedLines,
+                translatedTexts
+            );            if (success) {
+                // Update commit ID in translation database
+                // We can use git API to get the current HEAD commit ID
+                try {
+                    const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(sourcePath));
+                    if (workspaceFolder) {
+                        const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+                        if (gitExtension) {
+                            const git = gitExtension.getAPI(1);
+                            const repository = git.getRepository(workspaceFolder.uri);
+                            if (repository && repository.state.HEAD?.commit) {
+                                await this.translationDb.updateTranslationCommitId(
+                                    sourcePath,
+                                    targetLang,
+                                    repository.state.HEAD.commit
+                                );
+                            }
+                        }
+                    }
+                } catch (error) {
+                    this.outputChannel.appendLine(`⚠️ Failed to update commit ID: ${error}`);
+                }
+                
+                this.outputChannel.appendLine("✅ Diff translation applied successfully");
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            this.outputChannel.appendLine(`❌ Diff translation processing failed: ${error}`);
+            return false;
+        }
+    }    /**
+     * Apply translation diff to target file
+     */
+    private async applyTranslationDiff(
+        sourcePath: string,
+        targetPath: string,
+        sourceContent: string,
+        targetContent: string,
+        changedLines: Array<{
+            lineNumber: number;
+            oldContent: string;
+            newContent: string;
+            changeType: 'added' | 'deleted' | 'modified';
+        }>,
+        translatedTexts: string[]
+    ): Promise<boolean> {
+        try {
+            // If target file does not exist, create the directory first
+            const targetDir = path.dirname(targetPath);
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+
+            let resultContent = targetContent;
+            const sourceLines = sourceContent.split('\n');
+            let targetLines = targetContent ? targetContent.split('\n') : [...sourceLines];
+            
+            let translatedIndex = 0;
+
+            // Process changes in reverse order to avoid line number offset issues
+            const sortedChanges = [...changedLines].sort((a, b) => b.lineNumber - a.lineNumber);
+
+            for (const change of sortedChanges) {
+                if (change.changeType === 'added' || change.changeType === 'modified') {
+                    const translatedText = translatedTexts[translatedIndex++];
+                    const translatedLines = translatedText.split('\n');
+                    
+                    const lineIndex = Math.max(0, change.lineNumber - 1);
+                    
+                    // Replace the corresponding line in the target file
+                    if (change.changeType === 'modified') {
+                        targetLines[lineIndex] = translatedLines[0] || '';
+                    } else if (change.changeType === 'added') {
+                        targetLines.splice(lineIndex, 0, translatedLines[0] || '');
+                    }
+                } else if (change.changeType === 'deleted') {
+                    // Deleted lines should also be removed from the target file
+                    const lineIndex = Math.max(0, change.lineNumber - 1);
+                    if (lineIndex < targetLines.length) {
+                        targetLines.splice(lineIndex, 1);
+                    }
+                }
+            }
+
+            // Write to target file
+            const finalContent = targetLines.join('\n');
+            fs.writeFileSync(targetPath, finalContent, 'utf8');
+            
+            return true;
+        } catch (error) {
+            this.outputChannel.appendLine(`❌ Failed to apply diff: ${error}`);
+            return false;
         }
     }
 }

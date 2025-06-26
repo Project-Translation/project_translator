@@ -1,5 +1,5 @@
 {
-    "projectTranslator.currentVendor": "openrouter",
+    "projectTranslator.currentVendor": "siliconflow",
     "projectTranslator.vendors": [
         {
             "name": "gemini",
@@ -15,7 +15,7 @@
             "name": "grok",
             "apiEndpoint": "https://api.x.ai/v1",
             "apiKeyEnvVarName": "GROK_API_KEY",
-            "model": "grok-3-mini-fast",
+            "model": "grok-3-mini",
             "rpm": 20,
             "maxTokensPerSegment": 1500,
             "timeout": 30,
@@ -46,7 +46,7 @@
             "name": "siliconflow",
             "apiEndpoint": "https://api.siliconflow.cn/v1",
             "apiKeyEnvVarName": "SILICONFLOW_API_KEY",
-            "model": "Qwen/Qwen3-30B-A3B",
+            "model": "Qwen/Qwen3-8B",
             "rpm": 20,
             "maxTokensPerSegment": 3000,
             "timeout": 30,
@@ -56,7 +56,7 @@
             "name": "openrouter",
             "apiEndpoint": "https://openrouter.ai/api/v1",
             "apiKeyEnvVarName": "OPENROUTER_API_KEY",
-            "model": "qwen/qwen3-235b-a22b:free",
+            "model": "qwen/qwen3-14b:free",
             "rpm": 0,
             "maxTokensPerSegment": 10000,
             "timeout": 30,
@@ -103,37 +103,56 @@
         }
     ],
     "projectTranslator.specifiedFiles": [
+        // {
+        //     "sourceFile": {
+        //         "path": "structure/md/should_skip.md",
+        //         "lang": "en-us"
+        //     },
+        //     "targetFiles": [
+        //         {
+        //             "path": "i18n/md/should_skip.zh-cn.md",
+        //             "lang": "zh-cn"
+        //         },
+        //         {
+        //             "path": "i18n/md/should_skip.zh-hk.md",
+        //             "lang": "zh-hk"
+        //         }
+        //     ]
+        // },
+        // {
+        //     "sourceFile": {
+        //         "path": "structure/md/should_translate.md",
+        //         "lang": "en-us"
+        //     },
+        //     "targetFiles": [
+        //         {
+        //             "path": "i18n/md/should_translate.zh-cn.md",
+        //             "lang": "zh-cn"
+        //         },
+        //         {
+        //             "path": "i18n/md/should_translate.zh-hk.md",
+        //             "lang": "zh-hk"
+        //         }
+        //     ]
+        // },
         {
             "sourceFile": {
-                "path": "structure/md/should_skip.md",
+                "path": "translate_source.json",
                 "lang": "en-us"
             },
             "targetFiles": [
                 {
-                    "path": "i18n/md/should_skip.zh-cn.md",
+                    "path": "translate_source_zh-cn.json",
                     "lang": "zh-cn"
-                },
-                {
-                    "path": "i18n/md/should_skip.zh-hk.md",
-                    "lang": "zh-hk"
                 }
             ]
-        },
-        {
-            "sourceFile": {
-                "path": "structure/md/should_translate.md",
-                "lang": "en-us"
-            },
-            "targetFiles": [
-                {
-                    "path": "i18n/md/should_translate.zh-cn.md",
-                    "lang": "zh-cn"
-                },
-                {
-                    "path": "i18n/md/should_translate.zh-hk.md",
-                    "lang": "zh-hk"
-                }
-            ]
-        },
-    ]
+        }
+    ],
+    "projectTranslator.diffApply": {
+        "enabled": true,
+        "strategy": "auto",
+        "granularity": "line",
+        "contextLines": 3,
+        "fallbackToFullTranslation": false
+    }
 }

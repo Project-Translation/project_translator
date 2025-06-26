@@ -40,5 +40,17 @@
   "config.copyOnly.extensions.description": "Liste von Dateierweiterungen, die kopiert, aber nicht übersetzt werden sollen",
   "config.ignore.description": "Dateien und Pfade, die vollständig ignoriert werden sollen (weder kopiert noch übersetzt)",
   "config.ignore.paths.description": "Liste von Pfadmustern (Glob-Syntax) für Dateien, die vollständig ignoriert werden sollen",
-  "config.ignore.extensions.description": "Liste von Dateierweiterungen, die vollständig ignoriert werden sollen"
+  "config.ignore.extensions.description": "Liste von Dateierweiterungen, die vollständig ignoriert werden sollen",
+  "config.diffApply.description": "Git diff-basierte differentielle Übersetzungskonfiguration",
+  "config.diffApply.enabled.description": "Differentielle Übersetzung basierend auf Git-Änderungen aktivieren (Standard: false)",  
+  "config.diffApply.strategy.description": "Strategie zur Erkennung von Dateiunterschieden: 'auto' (automatisch), 'vscode-api' (VS Code Git API), 'git-command' (Git-Befehlszeile)",
+  "config.diffApply.granularity.description": "Granularität der Unterschiedserkennung: 'line' (Zeilenebene), 'block' (Blockebene), 'semantic' (semantische Ebene)",
+  "config.diffApply.contextLines.description": "Anzahl der Kontextzeilen um Änderungen (Standard: 3)",
+  "config.diffApply.fallbackToFullTranslation.description": "Bei Fehlschlagen der differentiellen Übersetzung auf vollständige Übersetzung zurückgreifen (Standard: true)",
+  "config.diffApply.strategy.auto.description": "Wählt automatisch die beste Strategie (empfohlen)",
+  "config.diffApply.strategy.vscode-api.description": "Verwendet die integrierte Git-API von VS Code für Diffs (schnell, aber möglicherweise unvollständig)",
+  "config.diffApply.strategy.git-command.description": "Führt den Befehl 'git diff' direkt aus, um Unterschiede zu erhalten (am genauesten, aber möglicherweise langsamer)",
+  "config.diffApply.granularity.line.description": "Erkennt Unterschiede auf Zeilenebene",
+  "config.diffApply.granularity.block.description": "Erkennt Unterschiede auf Codeblock-Ebene (experimentell)",
+  "config.diffApply.granularity.semantic.description": "Erkennt Unterschiede auf semantischer Ebene (experimentell, erfordert intelligentere Modelle)"
 }

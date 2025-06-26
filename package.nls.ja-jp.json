@@ -40,5 +40,17 @@
   "config.copyOnly.extensions.description": "翻訳せずにコピーすべきファイル拡張子のリスト",
   "config.ignore.description": "完全に無視すべきファイルとパス (コピーも翻訳もせず)",
   "config.ignore.paths.description": "完全に無視すべきファイルのパスパターン (glob 構文) のリスト",
-  "config.ignore.extensions.description": "完全に無視すべきファイル拡張子のリスト"
+  "config.ignore.extensions.description": "完全に無視すべきファイル拡張子のリスト",
+  "config.diffApply.description": "Git diff に基づく差分翻訳の設定",
+  "config.diffApply.enabled.description": "Git 変更に基づく差分翻訳を有効にする（デフォルト：false）",
+  "config.diffApply.strategy.description": "ファイル差分の検出戦略：'auto'（自動）、'vscode-api'（VS Code Git API）、'git-command'（Git コマンドライン）",
+  "config.diffApply.granularity.description": "差分検出の粒度：'line'（行レベル）、'block'（ブロックレベル）、'semantic'（セマンティックレベル）",
+  "config.diffApply.contextLines.description": "変更周辺に含めるコンテキスト行数（デフォルト：3）",
+  "config.diffApply.fallbackToFullTranslation.description": "差分翻訳が失敗した場合に完全翻訳にフォールバックするか（デフォルト：true）",
+  "config.diffApply.strategy.auto.description": "最適な戦略を自動的に選択します（推奨）",
+  "config.diffApply.strategy.vscode-api.description": "VS Code の組み込み Git API を使用して差分を取得します（高速ですが、不完全な場合があります）",
+  "config.diffApply.strategy.git-command.description": "git diff コマンドを直接実行して差分を取得します（最も正確ですが、少し遅い場合があります）",
+  "config.diffApply.granularity.line.description": "行単位で差分を検出します",
+  "config.diffApply.granularity.block.description": "コードブロック単位で差分を検出します（実験的）",
+  "config.diffApply.granularity.semantic.description": "セマンティック単位で差分を検出します（実験的、よりスマートなモデルが必要）"
 }

@@ -518,4 +518,152 @@ export class TranslationDatabase {
 
     return { translate_datetime, src_hash, src_commit_id };
   }
+
+  /**
+   * Get the commit ID of the last translation
+   * @param sourcePath Source file path
+   * @param targetLang Target language
+   * @returns The commit ID at the last translation, or an empty string if not found
+   */
+  public async getLastTranslationCommitId(
+    sourcePath: string,
+    targetLang: SupportedLanguage
+  ): Promise<string> {
+    const relativeSourcePath = this.getRelativePath(sourcePath, true);
+    // Ensure cache exists
+    if (!this.translationCache.has(targetLang)) {
+      await this.loadCacheForLanguage(targetLang);
+    }
+
+    const translationRecord = this.translationCache.get(targetLang) || {};
+    const fileRecord = translationRecord[relativeSourcePath];
+
+    if (fileRecord && fileRecord.src_commit_id) {
+      this.outputChannel.appendLine(
+        `📋 Found last translation commit ID: ${fileRecord.src_commit_id.substring(0, 8)}... (${targetLang})`
+      );
+      return fileRecord.src_commit_id;
+    }
+
+    this.outputChannel.appendLine(
+      `📋 No previous translation record found: ${relativeSourcePath} (${targetLang})`
+    );
+    return "";
+  }
+
+  /**
+   * Check if the file needs diff translation
+   * @param sourcePath Source file path
+   * @param targetLang Target language
+   * @returns Result of whether diff translation is needed
+   */
+  public async needsDiffTranslation(
+    sourcePath: string,
+    targetLang: SupportedLanguage
+  ): Promise<{
+    needsDiff: boolean;
+    lastCommitId: string;
+    hasTranslationRecord: boolean;
+    reason: string;
+  }> {
+    const relativeSourcePath = this.getRelativePath(sourcePath, true);
+    // Ensure cache exists
+    if (!this.translationCache.has(targetLang)) {
+      await this.loadCacheForLanguage(targetLang);
+    }
+
+    const translationRecord = this.translationCache.get(targetLang) || {};
+    const fileRecord = translationRecord[relativeSourcePath];
+
+    // If there is no translation record, diff translation is not needed
+    if (!fileRecord) {
+      return {
+        needsDiff: false,
+        lastCommitId: "",
+        hasTranslationRecord: false,
+        reason: "No translation record, full translation needed"
+      };
+    }
+
+    // Get current file's commit info
+    const { commitId: currentCommitId } = await this.getGitCommitInfo(sourcePath);
+    const lastCommitId = fileRecord.src_commit_id;
+
+    // If there is no git info, fallback to hash comparison
+    if (!currentCommitId || !lastCommitId) {
+      const currentHash = this.calculateFileHash(sourcePath);
+      const hashChanged = currentHash !== fileRecord.src_hash;
+      
+      return {
+        needsDiff: false, // 没有git信息时不使用差异翻译
+        lastCommitId: lastCommitId,
+        hasTranslationRecord: true,
+        reason: hashChanged ? "File has changed but no git info, full translation needed" : "File not changed"
+      };
+    }
+
+    // Compare commit IDs
+    const commitChanged = currentCommitId !== lastCommitId;
+    
+    if (!commitChanged) {
+      return {
+        needsDiff: false,
+        lastCommitId: lastCommitId,
+        hasTranslationRecord: true,
+        reason: "File not changed since last translation"
+      };
+    }
+
+    return {
+      needsDiff: true,
+      lastCommitId: lastCommitId,
+      hasTranslationRecord: true,
+      reason: "File has changed, diff translation can be used"
+    };
+  }
+
+  /**
+   * Update the commit info in the translation record
+   * @param sourcePath Source file path
+   * @param targetLang Target language
+   * @param newCommitId New commit ID (optional, if not provided will get current commit)
+   */
+  public async updateTranslationCommitId(
+    sourcePath: string,
+    targetLang: SupportedLanguage,
+    newCommitId?: string
+  ): Promise<void> {
+    const relativeSourcePath = this.getRelativePath(sourcePath, true);
+    // Ensure cache exists
+    if (!this.translationCache.has(targetLang)) {
+      await this.loadCacheForLanguage(targetLang);
+    }
+
+    const translationRecord = this.translationCache.get(targetLang) || {};
+    
+    // Get or use provided commit ID
+    const commitId = newCommitId || (await this.getGitCommitInfo(sourcePath)).commitId;
+    
+    // Update existing record or create new record
+    if (translationRecord[relativeSourcePath]) {
+      translationRecord[relativeSourcePath].src_commit_id = commitId;
+      this.outputChannel.appendLine(
+        `🔄 Updated translation record commit ID: ${commitId.substring(0, 8)}... (${targetLang})`
+      );
+    } else {
+      // If there is no existing record, create a new full record
+      const currentFileInfo = await this.getCurrentFileInfo(sourcePath);
+      currentFileInfo.src_commit_id = commitId;
+      translationRecord[relativeSourcePath] = currentFileInfo;
+      this.outputChannel.appendLine(
+        `➕ Created new translation record: ${commitId.substring(0, 8)}... (${targetLang})`
+      );
+    }
+
+    // Save to cache
+    this.translationCache.set(targetLang, translationRecord);
+    
+    // Save to file
+    await this.saveCacheForLanguage(targetLang);
+  }
 }

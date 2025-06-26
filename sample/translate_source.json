@@ -1,0 +1,11 @@
+{
+  "description.description": "Project Translator",
+  "configuration.title": "Project Translator",
+  "command.translateFolders": "Translate Folders",
+  "command.translateProject": "Translate Project",
+  "nothing": "no need do anything",
+  "command.translateFiles": "Translate Files",
+  "command.pauseTranslation": "Pause Translation",
+  "command.resumeTranslation": "Resume Translation",
+  "command.stopTranslation": "Awesome Translation",
+}

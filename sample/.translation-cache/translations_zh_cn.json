@@ -8,5 +8,10 @@
     "translate_datetime": "2025-05-28:17:21",
     "src_hash": "7d7246af9876796f9c53502a42ab1c90",
     "src_commit_id": "107fe10e59cb889d9321fec338ea15b4ffc98bd9"
+  },
+  "translate_source.json": {
+    "translate_datetime": "2025-06-26:14:16",
+    "src_hash": "902b33c60d078b2fe4d1b6a896254bc3",
+    "src_commit_id": "13ff82342aaa895b11d81605345783fec9fe57d2"
   }
 }

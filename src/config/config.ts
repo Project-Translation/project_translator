@@ -5,6 +5,7 @@ import {
   SpecifiedFolder,
   CopyOnlyConfig,
   IgnoreConfig,
+  DiffApplyConfig,
 } from "../types/types";
 import * as path from "path";
 import * as fs from "fs";
@@ -38,6 +39,7 @@ export interface Config {
   systemPrompts?: string[]; // System prompts for translation
   userPrompts?: string[]; // User prompts for translation
   segmentationMarkers?: Record<string, string[]>; // Segmentation markers configured by file type
+  diffApply?: DiffApplyConfig; // Configuration for diff apply functionality
 }
 
 /**
@@ -96,8 +98,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
     // Get all projectTranslator settings from VSCode configuration
     // This will get the effective configuration considering user, remote, and workspace settings with proper priority
     // Priority order: workspace > remote > user
-    const config = vscode.workspace.getConfiguration("projectTranslator");
-    // Define all projectTranslator setting keys that should be exported
+    const config = vscode.workspace.getConfiguration("projectTranslator"); // Define all projectTranslator setting keys that should be exported
     // Note: enableMetrics is intentionally excluded as it should remain hidden
     const settingKeys = [
       "currentVendor",
@@ -110,6 +111,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       "systemPrompts",
       "userPrompts",
       "segmentationMarkers",
+      "diffApply",
     ];
 
     // Extract settings and remove the projectTranslator prefix
@@ -183,6 +185,7 @@ export function getConfiguration(): Config {
       systemPrompts: config.get("systemPrompts"),
       userPrompts: config.get("userPrompts"),
       segmentationMarkers: config.get("segmentationMarkers"),
+      diffApply: config.get("diffApply"),
     };
   } // Extract and normalize configuration data
   const copyOnly = configData.copyOnly;
@@ -193,6 +196,15 @@ export function getConfiguration(): Config {
   const specifiedFolders = configData.specifiedFolders;
   const translationIntervalDays = configData.translationIntervalDays || 1;
   const segmentationMarkers = configData.segmentationMarkers;
+
+  // Get diffApply configuration with default values
+  const diffApply = configData.diffApply || {
+    enabled: false,
+    strategy: "auto" as const,
+    granularity: "line" as const,
+    contextLines: 3,
+    fallbackToFullTranslation: true,
+  };
 
   // Get prompts, fallback to defaults if not present
   let systemPrompts = configData.systemPrompts;
@@ -241,7 +253,6 @@ export function getConfiguration(): Config {
   if (currentVendor.streamMode == null) {
     currentVendor.streamMode = true;
   }
-
   // Return consistent Config structure regardless of source
   return {
     copyOnly,
@@ -255,6 +266,7 @@ export function getConfiguration(): Config {
     systemPrompts,
     userPrompts,
     segmentationMarkers,
+    diffApply,
   };
 }
 
@@ -268,10 +280,10 @@ function resolvePrompts(prompts: string[]): string[] {
 
   for (const prompt of prompts) {
     // Check if the prompt is a file path (contains path separators and has file extension)
-    if (prompt.includes('/') || prompt.includes('\\') || path.extname(prompt)) {
+    if (prompt.includes("/") || prompt.includes("\\") || path.extname(prompt)) {
       try {
         let filePath = prompt;
-        
+
         // If it's a relative path, resolve it relative to workspace root
         if (!path.isAbsolute(filePath)) {
           const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -283,7 +295,7 @@ function resolvePrompts(prompts: string[]): string[] {
 
         // Check if file exists and read its content
         if (fs.existsSync(filePath)) {
-          const fileContent = fs.readFileSync(filePath, 'utf-8');
+          const fileContent = fs.readFileSync(filePath, "utf-8");
           resolvedPrompts.push(fileContent.trim());
         } else {
           // If file doesn't exist, treat the string as the prompt content itself

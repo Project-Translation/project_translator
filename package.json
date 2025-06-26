@@ -668,6 +668,67 @@
           "default": true,
           "description": "%config.enableMetrics.description%",
           "order": 13
+        },
+        "projectTranslator.diffApply": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "%config.diffApply.enabled.description%"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "vscode-api",
+                "git-command"
+              ],
+              "enumDescriptions": [
+                "%config.diffApply.strategy.auto.description%",
+                "%config.diffApply.strategy.vscode-api.description%",
+                "%config.diffApply.strategy.git-command.description%"
+              ],
+              "default": "auto",
+              "description": "%config.diffApply.strategy.description%"
+            },
+            "granularity": {
+              "type": "string",
+              "enum": [
+                "line",
+                "block",
+                "semantic"
+              ],
+              "enumDescriptions": [
+                "%config.diffApply.granularity.line.description%",
+                "%config.diffApply.granularity.block.description%",
+                "%config.diffApply.granularity.semantic.description%"
+              ],
+              "default": "line",
+              "description": "%config.diffApply.granularity.description%"
+            },
+            "contextLines": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10,
+              "default": 3,
+              "description": "%config.diffApply.contextLines.description%"
+            },
+            "fallbackToFullTranslation": {
+              "type": "boolean",
+              "default": true,
+              "description": "%config.diffApply.fallbackToFullTranslation.description%"
+            }
+          },
+          "default": {
+            "enabled": false,
+            "strategy": "auto",
+            "granularity": "line",
+            "contextLines": 3,
+            "fallbackToFullTranslation": true
+          },
+          "description": "%config.diffApply.description%",
+          "order": 14
         }
       }
     }
@@ -679,6 +740,8 @@
   "scripts": {
     "build": "npm run esbuild-base -- --production",
     "compile": "npm run esbuild-base",
+    "compile-tsc": "tsc -p ./",
+    "watch-tsc": "tsc -watch -p ./",
     "watch": "npm run esbuild-base -- --watch",
     "esbuild-base": "node esbuild.config.js",
     "lint": "eslint src --ext ts",
