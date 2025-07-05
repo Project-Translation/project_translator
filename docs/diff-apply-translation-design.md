@@ -1,29 +1,29 @@
-# Diff Apply Translation - 技术设计文档
+# Diff Apply Translation - Technical Design Document
 
-## 概述
+## Overview
 
-Diff Apply Translation 是 Project Translator 扩展的一项高级功能，它通过差异化更新机制实现精确、高效的翻译更新。本文档详细说明了该功能的技术设计和实现原理。
+Diff Apply Translation is an advanced feature of the Project Translator extension that enables precise and efficient translation updates through a differential update mechanism. This document details the technical design and implementation principles of this feature.
 
-## 核心概念
+## Core Concepts
 
-### 差异化翻译
+### Differential Translation
 
-传统翻译方法通常是将整个文件内容发送给翻译服务，然后用翻译结果完全替换目标文件。这种方法存在以下问题：
+Traditional translation methods typically send the entire file content to a translation service and then completely replace the target file with the translation results. This method has the following issues:
 
-1. 对于大型文件，消耗大量 API token
-2. 难以保持文件格式和结构
-3. 对于已部分翻译的文件，会重复翻译已翻译内容
-4. 版本控制系统中难以追踪具体变更
+1. Consumes a large number of API tokens for large files
+2. Difficult to maintain file format and structure
+3. For partially translated files, already translated content is re-translated
+4. Difficult to track specific changes in version control systems
 
-Diff Apply Translation 通过以下方式解决这些问题：
+Diff Apply Translation solves these problems by:
 
-1. 仅发送需要翻译的源文件和目标文件内容
-2. 要求 AI 生成精确的差异操作（增加、删除、更新）
-3. 在目标文件上精确应用这些操作
+1. Sending only the source and target file content that needs to be translated
+2. Requiring the AI to generate precise differential operations (additions, deletions, updates)
+3. Applying these operations precisely to the target file
 
-## 系统架构
+## System Architecture
 
-### 组件关系图
+### Component Relationship Diagram
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -36,34 +36,34 @@ Diff Apply Translation 通过以下方式解决这些问题：
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
-### 核心组件
+### Core Components
 
-1. **FileProcessor**: 处理文件翻译流程，决定是使用标准翻译还是差异化翻译
-2. **TranslatorService**: 提供翻译服务接口，包括标准翻译和差异化翻译
-3. **DiffApplyService**: 专门处理差异化翻译的服务，包括创建请求、解析响应和应用差异
-4. **DiffApplyRequest**: 差异化翻译请求的数据结构
-5. **DiffApplyResponse**: 差异化翻译响应的数据结构
+1. **FileProcessor**: Handles the file translation process, deciding whether to use standard or differential translation
+2. **TranslatorService**: Provides translation service interfaces, including standard and differential translation
+3. **DiffApplyService**: A service specifically for differential translation, including creating requests, parsing responses, and applying diffs
+4. **DiffApplyRequest**: Data structure for differential translation requests
+5. **DiffApplyResponse**: Data structure for differential translation responses
 
-## 数据流
+## Data Flow
 
-### 差异化翻译流程
+### Differential Translation Process
 
-1. **请求创建**:
-   - 读取源文件和目标文件内容
-   - 创建包含两个文件内容和语言信息的 `DiffApplyRequest`
+1. **Request Creation**:
+   - Reads source and target file content
+   - Creates a `DiffApplyRequest` containing the content and language information of both files
 
-2. **翻译处理**:
-   - 将请求发送给 AI 服务
-   - AI 分析两个文件的差异
-   - AI 生成精确的差异操作列表
+2. **Translation Processing**:
+   - Sends the request to the AI service
+   - AI analyzes the differences between the two files
+   - AI generates a precise list of differential operations
 
-3. **差异应用**:
-   - 解析 AI 返回的差异操作
-   - 验证操作的有效性和安全性
-   - 在目标文件上应用这些操作
-   - 生成更新后的文件内容
+3. **Diff Application**:
+   - Parses the differential operations returned by the AI
+   - Validates the effectiveness and security of the operations
+   - Applies these operations to the target file
+   - Generates the updated file content
 
-## 数据结构
+## Data Structures
 
 ### DiffApplyRequest
 
@@ -110,129 +110,129 @@ type DiffOperation =
   | { type: 'delete'; lineNumber: number };
 ```
 
-## AI 提示设计
+## AI Prompt Design
 
-为了获得高质量的差异操作，我们设计了专门的 AI 提示模板：
+To obtain high-quality differential operations, we designed a specialized AI prompt template:
 
 ```
-你是一个专业的翻译助手，擅长精确的文件翻译。
+You are a professional translation assistant, skilled in precise file translation.
 
-我将提供两个文件：
-1. 源文件（${sourceLanguage}）
-2. 目标文件（${targetLanguage}）
+I will provide two files:
+1. Source file (${sourceLanguage})
+2. Target file (${targetLanguage})
 
-目标文件可能已经部分翻译。你的任务是：
-1. 分析源文件和目标文件
-2. 识别目标文件中需要翻译或更新的部分
-3. 生成精确的差异操作，使目标文件成为源文件的完整翻译版本
+The target file may be partially translated. Your task is to:
+1. Analyze the source and target files
+2. Identify parts in the target file that need translation or updating
+3. Generate precise differential operations to make the target file a complete translated version of the source file
 
-请遵循以下规则：
-- 保持代码块、标记和格式不变
-- 只翻译自然语言文本
-- 生成最少量的操作以实现完整翻译
-- 返回 JSON 格式的差异操作列表
+Please follow these rules:
+- Keep code blocks, tags, and formatting unchanged
+- Translate only natural language text
+- Generate the minimum number of operations to achieve complete translation
+- Return the differential operations list in JSON format
 
-源文件内容：
+Source file content:
 ${sourceContent}
 
-目标文件内容：
+Target file content:
 ${targetContent}
 
-请返回以下 JSON 格式的响应：
+Please return the response in the following JSON format:
 {
   "status": "success",
   "operations": [
-    { "type": "update", "lineNumber": 行号, "content": "更新后的内容" },
-    { "type": "insert", "lineNumber": 行号, "content": "插入的内容" },
-    { "type": "delete", "lineNumber": 行号 }
+    { "type": "update", "lineNumber": line_number, "content": "updated_content" },
+    { "type": "insert", "lineNumber": line_number, "content": "inserted_content" },
+    { "type": "delete", "lineNumber": line_number }
   ],
   "metadata": {
-    "totalOperations": 操作总数,
-    "processingTime": 处理时间(毫秒)
+    "totalOperations": total_operations,
+    "processingTime": processing_time_ms
   }
 }
 ```
 
-## 验证机制
+## Validation Mechanism
 
-为确保差异操作的安全性和有效性，我们实现了多级验证：
+To ensure the security and effectiveness of differential operations, we implemented multi-level validation:
 
-### 验证级别
+### Validation Levels
 
-1. **严格 (strict)**:
-   - 验证所有操作的行号是否在有效范围内
-   - 验证操作后的文件长度变化是否合理
-   - 验证操作是否会导致文件结构破坏
-   - 限制单个文件的最大操作数
+1. **Strict**:
+   - Validates whether all operation line numbers are within a valid range
+   - Validates whether the file length change after operation is reasonable
+   - Validates whether the operation will cause file structure damage
+   - Limits the maximum number of operations per single file
 
-2. **普通 (normal)**:
-   - 验证所有操作的行号是否在有效范围内
-   - 限制单个文件的最大操作数
+2. **Normal**:
+   - Validates whether all operation line numbers are within a valid range
+   - Limits the maximum number of operations per single file
 
-3. **宽松 (loose)**:
-   - 基本验证操作的有效性
-   - 允许更大范围的操作
+3. **Loose**:
+   - Basic validation of operation effectiveness
+   - Allows a wider range of operations
 
-## 错误处理
+## Error Handling
 
-系统设计了完善的错误处理机制：
+The system is designed with a comprehensive error handling mechanism:
 
-1. **请求创建错误**:
-   - 文件读取失败
-   - 文件编码问题
+1. **Request Creation Errors**:
+   - File read failure
+   - File encoding issues
 
-2. **AI 响应错误**:
-   - 响应格式错误
-   - 响应内容不完整
+2. **AI Response Errors**:
+   - Response format error
+   - Incomplete response content
 
-3. **差异应用错误**:
-   - 操作验证失败
-   - 文件写入失败
+3. **Diff Application Errors**:
+   - Operation validation failure
+   - File write failure
 
-对于所有错误，系统会记录详细日志并提供回退机制，确保在差异化翻译失败时可以回退到标准翻译方法。
+For all errors, the system logs detailed information and provides fallback mechanisms to ensure that in case of differential translation failure, it can revert to the standard translation method.
 
-## 性能优化
+## Performance Optimization
 
-### Token 使用优化
+### Token Usage Optimization
 
-差异化翻译显著减少了 API token 使用：
+Differential translation significantly reduces API token usage:
 
-- 只发送必要的文件内容
-- 只返回差异操作，而非完整翻译
-- 对于大型文件，节省可达 70-90% 的 token
+- Sends only necessary file content
+- Returns only differential operations, not full translations
+- For large files, savings can be up to 70-90% of tokens
 
-### 处理速度优化
+### Processing Speed Optimization
 
-- 并行处理多个差异操作
-- 缓存中间结果
-- 优化文件读写操作
+- Parallel processing of multiple differential operations
+- Caching intermediate results
+- Optimizing file read/write operations
 
-## 安全考虑
+## Security Considerations
 
-### 文件备份
+### File Backup
 
-系统自动创建目标文件的备份，格式为 `{filename}.backup.{timestamp}`，确保在操作失败时可以恢复原始文件。
+The system automatically creates backups of target files in the format `{filename}.backup.{timestamp}`, ensuring that the original file can be restored in case of operation failure.
 
-### 操作限制
+### Operation Limits
 
-通过配置 `maxOperationsPerFile` 限制单个文件的最大操作数，防止恶意或错误的大量操作。
+By configuring `maxOperationsPerFile`, the maximum number of operations for a single file is limited, preventing malicious or erroneous large-scale operations.
 
-## 扩展性
+## Extensibility
 
-系统设计考虑了未来扩展：
+The system design considers future extensibility:
 
-1. **支持更多操作类型**:
-   - 块级操作
-   - 格式化操作
+1. **Support for More Operation Types**:
+   - Block-level operations
+   - Formatting operations
 
-2. **集成更多 AI 模型**:
-   - 支持不同的 AI 提供商
-   - 适配不同的模型特性
+2. **Integration of More AI Models**:
+   - Support for different AI providers
+   - Adaptation to different model characteristics
 
-3. **增强用户界面**:
-   - 可视化差异预览
-   - 操作确认界面
+3. **Enhanced User Interface**:
+   - Visual diff preview
+   - Operation confirmation interface
 
-## 结论
+## Conclusion
 
-Diff Apply Translation 通过精确的差异化更新机制，显著提高了翻译效率和质量，特别适合大型项目和持续更新的文档。该功能的实现充分考虑了性能、安全性和用户体验，为 Project Translator 扩展提供了强大的高级翻译能力。
+Diff Apply Translation significantly improves translation efficiency and quality through its precise differential update mechanism, especially suitable for large projects and continuously updated documents. The implementation of this feature fully considers performance, security, and user experience, providing powerful advanced translation capabilities for the Project Translator extension.
