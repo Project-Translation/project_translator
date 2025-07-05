@@ -1,6 +1,6 @@
 {
-    "extension.activated": "تم تنشيط امتداد مترجم المشروع الآن!",
-    "status.translation.paused": "الترجمة مؤجلة",
-    "status.translation.resumed": "الترجمة مستأنفة",
-    "status.translation.stopped": "الترجمة متوقفة"
+    "extension.activated": "تم تفعيل ملحق Project Translator الآن!",
+    "status.translation.paused": "تم إيقاف الترجمة مؤقتًا",
+    "status.translation.resumed": "تم استئناف الترجمة",
+    "status.translation.stopped": "تم إيقاف الترجمة"
 }

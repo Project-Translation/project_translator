@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import OpenAI from "openai";
 import { getConfiguration } from "../config/config";
 import { SupportedLanguage } from "../translationDatabase";
+import { logMessage } from "../extension";
+import { DiffApplyRequest, DiffApplyResponse } from "../types/types";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -38,25 +40,25 @@ export class TranslatorService {
     const { currentVendor } = getConfiguration();
     const { apiEndpoint, apiKey, model, timeout } = currentVendor;
     if (!apiKey) {
-      this.outputChannel.appendLine(
+      logMessage(
         "❌ API key is not set in the vendor configuration"
       );
       throw new Error("API key is not set in the vendor configuration");
     }
     if (!apiEndpoint) {
-      this.outputChannel.appendLine(
+      logMessage(
         "❌ API endpoint is not set in the vendor configuration"
       );
       throw new Error("API endpoint is not set in the vendor configuration");
     }
     if (!model) {
-      this.outputChannel.appendLine(
+      logMessage(
         "❌ Model is not set in the vendor configuration"
       );
       throw new Error("Model is not set in the vendor configuration");
     }
 
-    this.outputChannel.appendLine(
+    logMessage(
       `🔑 Using vendor API endpoint: ${apiEndpoint}`
     );
     const config: ConstructorParameters<typeof OpenAI>[0] = {
@@ -65,7 +67,7 @@ export class TranslatorService {
     };
 
     const timeoutMs = timeout ? timeout * 1000 : 30000;
-    this.outputChannel.appendLine(
+    logMessage(
       `⏱️ API request timeout setting: ${
         timeout || 30
       } seconds (${timeoutMs}ms)`
@@ -86,7 +88,7 @@ export class TranslatorService {
   ): Promise<[string, string]> {
     if (!this.openaiClient) {
       const error = "OpenAI client not initialized";
-      this.outputChannel.appendLine(`❌ ${error}`);
+      logMessage(`❌ ${error}`);
       throw new Error(error);
     }
 
@@ -94,12 +96,12 @@ export class TranslatorService {
       getConfiguration();
     const { model, rpm, temperature, streamMode } = currentVendor;
 
-    this.outputChannel.appendLine(`🤖 Using model: ${model}`);
-    this.outputChannel.appendLine(`🌐 Target language: ${targetLang}`);
-    this.outputChannel.appendLine(`🎲 Temperature: ${temperature}`);
+    logMessage(`🤖 Using model: ${model}`);
+    logMessage(`🌐 Target language: ${targetLang}`);
+    logMessage(`🎲 Temperature: ${temperature}`);
 
     if (streamMode) {
-      this.outputChannel.appendLine(`🔄 Stream mode enabled`);
+      logMessage(`🔄 Stream mode enabled`);
     } // Wait for RPM limit if needed
     if (rpm && rpm > 0) {
       await this.handleRpmLimit(currentVendorName, rpm, cancellationToken);
@@ -132,7 +134,7 @@ export class TranslatorService {
     ];
 
     try {
-      this.outputChannel.appendLine("📤 Sending translation request...");
+      logMessage("📤 Sending translation request...");
 
       // Use stream mode if enabled and progressCallback is provided
       if (streamMode && progressCallback) {
@@ -161,7 +163,7 @@ export class TranslatorService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      this.outputChannel.appendLine(`❌ Translation failed: ${errorMessage}`);
+      logMessage(`❌ Translation failed: ${errorMessage}`);
       throw error;
     }
   }
@@ -184,7 +186,7 @@ export class TranslatorService {
     
     // Record start time for API request
     const startTime = Date.now();
-    this.outputChannel.appendLine(`⏱️ Starting OpenAI API request at ${new Date(startTime).toISOString()}`);
+    logMessage(`⏱️ Starting OpenAI API request at ${new Date(startTime).toISOString()}`);
 
     const requestPayload = {
       model: model,
@@ -194,8 +196,8 @@ export class TranslatorService {
 
     // Debug: Log request payload
     if (debug) {
-      this.outputChannel.appendLine(`🐛 [DEBUG] OpenAI API Request:`);
-      this.outputChannel.appendLine(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
+      logMessage(`🐛 [DEBUG] OpenAI API Request:`);
+      logMessage(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
     }
 
     const response = await this.openaiClient.chat.completions.create(requestPayload);
@@ -203,12 +205,12 @@ export class TranslatorService {
     // Record end time and calculate duration
     const endTime = Date.now();
     const duration = endTime - startTime;
-    this.outputChannel.appendLine(`⏱️ OpenAI API request completed in ${duration}ms (${(duration / 1000).toFixed(2)}s)`);
+    logMessage(`⏱️ OpenAI API request completed in ${duration}ms (${(duration / 1000).toFixed(2)}s)`);
 
     // Debug: Log response
     if (debug) {
-      this.outputChannel.appendLine(`🐛 [DEBUG] OpenAI API Response:`);
-      this.outputChannel.appendLine(`🐛 [DEBUG] ${JSON.stringify(response, null, 2)}`);
+      logMessage(`🐛 [DEBUG] OpenAI API Response:`);
+      logMessage(`🐛 [DEBUG] ${JSON.stringify(response, null, 2)}`);
     }
 
     // Update the timestamp regardless of translation status
@@ -216,7 +218,7 @@ export class TranslatorService {
 
     const inputTokens = response.usage?.prompt_tokens || 0;
     const outputTokens = response.usage?.completion_tokens || 0;
-    this.outputChannel.appendLine(
+    logMessage(
       `📥 Translation request completed (input: ${inputTokens} tokens, output: ${outputTokens} tokens)`
     );
 
@@ -233,7 +235,7 @@ export class TranslatorService {
 
     // Check if the response contains the NO_NEED_TRANSLATE return code
     if (translatedContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE)) {
-      this.outputChannel.appendLine(
+      logMessage(
         `🔄 AI indicated no translation needed for this file, skipping translation`
       );
       return [AI_RETURN_CODE.NO_NEED_TRANSLATE, originalContent]; // Return the original content unchanged
@@ -260,7 +262,7 @@ export class TranslatorService {
     // Get debug configuration
     const { debug } = getConfiguration();
     
-    this.outputChannel.appendLine(`🔄 Starting streaming translation...`);
+    logMessage(`🔄 Starting streaming translation...`);
     let fullContent = "";
     let foundNoNeedTranslate = false;
 
@@ -269,7 +271,7 @@ export class TranslatorService {
 
     // Record start time for streaming API request
     const startTime = Date.now();
-    this.outputChannel.appendLine(`⏱️ Starting OpenAI streaming API request at ${new Date(startTime).toISOString()}`);
+    logMessage(`⏱️ Starting OpenAI streaming API request at ${new Date(startTime).toISOString()}`);
 
     const requestPayload = {
       model: model,
@@ -280,8 +282,8 @@ export class TranslatorService {
 
     // Debug: Log request payload
     if (debug) {
-      this.outputChannel.appendLine(`🐛 [DEBUG] OpenAI Streaming API Request:`);
-      this.outputChannel.appendLine(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
+      logMessage(`🐛 [DEBUG] OpenAI Streaming API Request:`);
+      logMessage(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
     }
 
     const stream = await this.openaiClient.chat.completions.create(requestPayload) as any;
@@ -302,7 +304,7 @@ export class TranslatorService {
 
     for await (const chunk of stream) {
       if (cancellationToken?.isCancellationRequested) {
-        this.outputChannel.appendLine("⛔ Translation cancelled");
+        logMessage("⛔ Translation cancelled");
         throw new vscode.CancellationError();
       }
 
@@ -326,7 +328,7 @@ export class TranslatorService {
             fullContent.includes(uuidFirstPart))
         ) {
           foundNoNeedTranslate = true;
-          this.outputChannel.appendLine(
+          logMessage(
             `🔄 AI indicated no translation needed (in stream)`
           );
           // Since NO_NEED_TRANSLATE was detected, we won't pass anything to the progress callback
@@ -364,7 +366,7 @@ export class TranslatorService {
             }
 
             foundNoNeedTranslate = true;
-            this.outputChannel.appendLine(
+            logMessage(
               `🔄 AI indicated no translation needed (in chunk)`
             );
             // We'll handle the direct file copy in the FileProcessor
@@ -380,17 +382,17 @@ export class TranslatorService {
     // Record end time and calculate duration for streaming
     const endTime = Date.now();
     const duration = endTime - startTime;
-    this.outputChannel.appendLine(
+    logMessage(
       `📥 Streaming translation completed in ${duration}ms (${(duration / 1000).toFixed(2)}s) (estimated input: ~${estimatedInputTokens} tokens, estimated output: ~${estimatedOutputTokens} tokens)`
     );
-    this.outputChannel.appendLine(`⏱️ OpenAI streaming API request total duration: ${duration}ms`);
+    logMessage(`⏱️ OpenAI streaming API request total duration: ${duration}ms`);
 
     // Debug: Log complete streaming response
     if (debug) {
-      this.outputChannel.appendLine(`🐛 [DEBUG] Complete Streaming Response Content:`);
-      this.outputChannel.appendLine(`🐛 [DEBUG] ${fullContent}`);
+      logMessage(`🐛 [DEBUG] Complete Streaming Response Content:`);
+      logMessage(`🐛 [DEBUG] ${fullContent}`);
       if (rawStreamChunks.length > 0) {
-        this.outputChannel.appendLine(`🐛 [DEBUG] Total Stream Chunks: ${rawStreamChunks.length}`);
+        logMessage(`🐛 [DEBUG] Total Stream Chunks: ${rawStreamChunks.length}`);
       }
     }
 
@@ -409,7 +411,7 @@ export class TranslatorService {
       fullContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
       fullContent.includes(uuidFirstPart)
     ) {
-      this.outputChannel.appendLine(
+      logMessage(
         `🔄 AI indicated no translation needed for this file, skipping translation`
       );
       return [AI_RETURN_CODE.NO_NEED_TRANSLATE, originalContent];
@@ -429,7 +431,7 @@ export class TranslatorService {
     const timeToWait = Math.max(0, minInterval - (now - lastRequestTime));
 
     if (timeToWait > 0) {
-      this.outputChannel.appendLine(
+      logMessage(
         `⏳ Waiting for API rate limit... (${(timeToWait / 1000).toFixed(
           1
         )} seconds)`
@@ -439,7 +441,7 @@ export class TranslatorService {
       let waitedTime = 0;
       while (waitedTime < timeToWait) {
         if (cancellationToken?.isCancellationRequested) {
-          this.outputChannel.appendLine(
+          logMessage(
             "⛔ Cancel request detected, stopping API rate limit wait"
           );
           throw new vscode.CancellationError();
@@ -505,9 +507,9 @@ export class TranslatorService {
       };
 
       fs.writeFileSync(filePath, JSON.stringify(responseData, null, 2), "utf8");
-      this.outputChannel.appendLine(`💾 Saved diff raw response to: ${fileName}`);
+      logMessage(`💾 Saved diff raw response to: ${fileName}`);
     } catch (error) {
-      this.outputChannel.appendLine(`⚠️ Failed to save diff raw response: ${error}`);
+      logMessage(`⚠️ Failed to save diff raw response: ${error}`);
     }
   }
 
@@ -549,9 +551,317 @@ export class TranslatorService {
       };
 
       fs.writeFileSync(filePath, JSON.stringify(responseData, null, 2), "utf8");
-      this.outputChannel.appendLine(`💾 Saved diff stream raw response to: ${fileName}`);
+      logMessage(`💾 Saved diff stream raw response to: ${fileName}`);
     } catch (error) {
-      this.outputChannel.appendLine(`⚠️ Failed to save diff stream raw response: ${error}`);
+      logMessage(`⚠️ Failed to save diff stream raw response: ${error}`);
     }
+  }
+
+  /**
+   * Perform diff apply translation
+   */
+  public async translateWithDiffApply(
+    request: DiffApplyRequest,
+    cancellationToken?: vscode.CancellationToken,
+    progressCallback?: TranslationProgressCallback
+  ): Promise<[string, DiffApplyResponse]> {
+    if (!this.openaiClient) {
+      const error = "OpenAI client not initialized";
+      logMessage(`❌ ${error}`);
+      throw new Error(error);
+    }
+
+    const { currentVendorName, currentVendor } = getConfiguration();
+    const { model, rpm, temperature, streamMode } = currentVendor;
+
+    logMessage(`🤖 Using diff apply translation with model: ${model}`);
+    logMessage(`🌐 Source: ${request.source_language} → Target: ${request.target_language}`);
+
+    // Wait for RPM limit if needed
+    if (rpm && rpm > 0) {
+      await this.handleRpmLimit(currentVendorName, rpm, cancellationToken);
+    }
+
+    // Load diff apply system prompt
+    const diffApplyPrompt = await this.loadDiffApplyPrompt();
+    
+    const messages = [
+      {
+        role: "system" as const,
+        content: diffApplyPrompt,
+      },
+      {
+        role: "user" as const,
+        content: `Please analyze the following documents and generate diff operations to update the target document.
+
+Source Language: ${request.source_language}
+Target Language: ${request.target_language}
+
+Source Document (${request.source_document.path}):
+\`\`\`
+${request.source_document.content}
+\`\`\`
+
+Target Document (${request.target_document.path}):
+\`\`\`
+${request.target_document.content}
+\`\`\`
+
+Please return a JSON response with the diff operations needed to update the target document.`,
+      },
+    ];
+
+    try {
+      logMessage("📤 Sending diff apply translation request...");
+
+      // Use stream mode if enabled and progressCallback is provided
+      if (streamMode && progressCallback) {
+        return await this.streamDiffApplyTranslation(
+          messages,
+          model || "",
+          temperature,
+          currentVendorName,
+          progressCallback,
+          cancellationToken
+        );
+      } else {
+        return await this.standardDiffApplyTranslation(
+          messages,
+          model || "",
+          temperature,
+          currentVendorName
+        );
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logMessage(`❌ Diff apply translation failed: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Standard diff apply translation
+   */
+  private async standardDiffApplyTranslation(
+    messages: Array<{ role: string; content: string }>,
+    model: string,
+    temperature: number | undefined,
+    currentVendorName: string
+  ): Promise<[string, DiffApplyResponse]> {
+    if (!this.openaiClient) {
+      throw new Error("OpenAI client not initialized");
+    }
+
+    const { debug } = getConfiguration();
+    const startTime = Date.now();
+    logMessage(`⏱️ Starting diff apply API request at ${new Date(startTime).toISOString()}`);
+
+    const requestPayload = {
+      model: model,
+      messages: messages as OpenAI.ChatCompletionMessageParam[],
+      temperature: temperature,
+    };
+
+    if (debug) {
+      logMessage(`🐛 [DEBUG] Diff Apply API Request:`);
+      logMessage(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
+    }
+
+    const response = await this.openaiClient.chat.completions.create(requestPayload);
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    logMessage(`⏱️ Diff apply API request completed in ${duration}ms (${(duration / 1000).toFixed(2)}s)`);
+
+    if (debug) {
+      logMessage(`🐛 [DEBUG] Diff Apply API Response:`);
+      logMessage(`🐛 [DEBUG] ${JSON.stringify(response, null, 2)}`);
+    }
+
+    vendorLastRequest.set(currentVendorName, Date.now());
+
+    const inputTokens = response.usage?.prompt_tokens || 0;
+    const outputTokens = response.usage?.completion_tokens || 0;
+    logMessage(
+      `📥 Diff apply request completed (input: ${inputTokens} tokens, output: ${outputTokens} tokens)`
+    );
+
+    this.projectTotalInputTokens += inputTokens;
+    this.projectTotalOutputTokens += outputTokens;
+
+    const rawResponse = response.choices[0]?.message?.content || "";
+    
+    // Parse the response to extract diff operations
+    const diffResponse = this.parseDiffApplyResponse(rawResponse);
+    
+    return [AI_RETURN_CODE.OK, diffResponse];
+  }
+
+  /**
+   * Stream diff apply translation
+   */
+  private async streamDiffApplyTranslation(
+    messages: Array<{ role: string; content: string }>,
+    model: string,
+    temperature: number | undefined,
+    currentVendorName: string,
+    progressCallback: TranslationProgressCallback,
+    cancellationToken?: vscode.CancellationToken
+  ): Promise<[string, DiffApplyResponse]> {
+    if (!this.openaiClient) {
+      throw new Error("OpenAI client not initialized");
+    }
+
+    const { debug } = getConfiguration();
+    logMessage(`🔄 Starting streaming diff apply translation...`);
+    let fullContent = "";
+
+    const startTime = Date.now();
+    logMessage(`⏱️ Starting diff apply streaming API request at ${new Date(startTime).toISOString()}`);
+
+    const requestPayload = {
+      model: model,
+      messages: messages as OpenAI.ChatCompletionMessageParam[],
+      temperature: temperature,
+      stream: true,
+    };
+
+    if (debug) {
+      logMessage(`🐛 [DEBUG] Diff Apply Streaming API Request:`);
+      logMessage(`🐛 [DEBUG] ${JSON.stringify(requestPayload, null, 2)}`);
+    }
+
+    const stream = await this.openaiClient.chat.completions.create(requestPayload) as any;
+    vendorLastRequest.set(currentVendorName, Date.now());
+
+    let estimatedInputTokens = 0;
+    let estimatedOutputTokens = 0;
+
+    // Estimate input tokens
+    for (const message of messages) {
+      estimatedInputTokens += Math.ceil(message.content.length / 4);
+    }
+
+    for await (const chunk of stream) {
+      if (cancellationToken?.isCancellationRequested) {
+        logMessage("⛔ Diff apply translation cancelled");
+        throw new vscode.CancellationError();
+      }
+
+      const content = chunk.choices[0]?.delta?.content || "";
+      if (content) {
+        fullContent += content;
+        progressCallback(content);
+        estimatedOutputTokens += Math.ceil(content.length / 4);
+      }
+    }
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    logMessage(
+      `📥 Streaming diff apply translation completed in ${duration}ms (${(duration / 1000).toFixed(2)}s) (estimated input: ~${estimatedInputTokens} tokens, estimated output: ~${estimatedOutputTokens} tokens)`
+    );
+
+    if (debug) {
+      logMessage(`🐛 [DEBUG] Complete Diff Apply Streaming Response:`);
+      logMessage(`🐛 [DEBUG] ${fullContent}`);
+    }
+
+    this.projectTotalInputTokens += estimatedInputTokens;
+    this.projectTotalOutputTokens += estimatedOutputTokens;
+
+    // Parse the response to extract diff operations
+    const diffResponse = this.parseDiffApplyResponse(fullContent);
+    
+    return [AI_RETURN_CODE.OK, diffResponse];
+  }
+
+  /**
+   * Parse AI response to extract diff operations
+   */
+  private parseDiffApplyResponse(aiResponse: string): DiffApplyResponse {
+    try {
+      // Try to extract JSON from the response
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return {
+          status: 'error',
+          error_message: 'No valid JSON found in AI response'
+        };
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]) as DiffApplyResponse;
+      
+      // Basic validation
+      if (!parsed.status || !['success', 'error', 'no_changes'].includes(parsed.status)) {
+        return {
+          status: 'error',
+          error_message: 'Invalid response status from AI'
+        };
+      }
+
+      return parsed;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return {
+        status: 'error',
+        error_message: `Failed to parse AI response: ${errorMessage}`
+      };
+    }
+  }
+
+  /**
+   * Load diff apply system prompt
+   */
+  private async loadDiffApplyPrompt(): Promise<string> {
+    try {
+      const promptPath = path.join(__dirname, '../../prompts/diff-apply-system-prompt.md');
+      if (fs.existsSync(promptPath)) {
+        return fs.readFileSync(promptPath, 'utf-8');
+      } else {
+        // Fallback to embedded prompt
+        return this.getDefaultDiffApplyPrompt();
+      }
+    } catch (error) {
+      logMessage(`⚠️ Failed to load diff apply prompt, using default: ${error}`);
+      return this.getDefaultDiffApplyPrompt();
+    }
+  }
+
+  /**
+   * Get default diff apply prompt
+   */
+  private getDefaultDiffApplyPrompt(): string {
+    return `你是一个专业的文档差异分析和翻译AI。你的任务是比较源语言文档和目标语言文档，识别需要更新的部分，并生成精确的操作指令。
+
+## 输出格式要求
+
+你必须返回有效的JSON格式，结构如下：
+
+{
+  "status": "success|error|no_changes",
+  "operations": [
+    {
+      "type": "update|insert|delete",
+      "line_number": 数字,
+      "old_content": "原内容(仅update操作需要)",
+      "new_content": "新内容(仅update操作需要)",
+      "content": "内容(仅insert/delete操作需要)"
+    }
+  ],
+  "metadata": {
+    "total_operations": 数字,
+    "estimated_changes": "minor|major|extensive"
+  }
+}
+
+## 操作类型说明
+
+1. update: 修改现有行的内容
+2. insert: 插入新的行
+3. delete: 删除现有行
+
+确保操作的准确性和原子性。`;
   }
 }

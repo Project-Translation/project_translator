@@ -67,44 +67,44 @@ export interface IgnoreConfig {
     extensions: string[];
 }
 
-// Diff apply strategy options
-export type DiffStrategy = 'auto' | 'vscode-api' | 'git-command';
-
-// Diff granularity options
-export type DiffGranularity = 'line' | 'block' | 'semantic';
-
-// Configuration interface for diff apply functionality
-export interface DiffApplyConfig {
-    enabled: boolean;                    // Enable differential translation (default: false)
-    strategy: DiffStrategy;              // Diff detection strategy (default: 'auto')
-    granularity: DiffGranularity;        // Diff granularity (default: 'line')
-    contextLines: number;                // Number of context lines (default: 3)
-    fallbackToFullTranslation: boolean;  // Fallback to full translation on failure (default: true)
+// Diff Apply Translation Types
+export interface DiffOperation {
+    type: 'update' | 'insert' | 'delete';
+    line_number: number;
+    old_content?: string;
+    new_content?: string;
+    content?: string;
 }
 
-// Diff information interface
-export interface DiffInfo {
-    hasChanges: boolean;
-    changedLines: {
-        lineNumber: number;
-        oldContent: string;
-        newContent: string;
-        changeType: 'added' | 'deleted' | 'modified';
-    }[];
-    contextLines: {
-        lineNumber: number;
+export interface DiffApplyRequest {
+    operation: 'diff_apply_translation';
+    source_language: SupportedLanguage;
+    target_language: SupportedLanguage;
+    source_document: {
+        path: string;
         content: string;
-    }[];
+    };
+    target_document: {
+        path: string;
+        content: string;
+    };
 }
 
-// Translation diff result interface
-export interface TranslationDiffResult {
-    success: boolean;
-    translatedChanges: {
-        lineNumber: number;
-        translatedContent: string;
-        changeType: 'added' | 'deleted' | 'modified';
-    }[];
-    error?: string;
+export interface DiffApplyResponse {
+    status: 'success' | 'error' | 'no_changes';
+    operations?: DiffOperation[];
+    error_message?: string;
+    metadata?: {
+        totalOperations: number;
+        processingTime: number;
+        estimated_changes?: 'minor' | 'major' | 'extensive';
+    };
+}
+
+export interface DiffApplyConfig {
+    enabled: boolean;
+    validationLevel: 'strict' | 'normal' | 'loose';
+    autoBackup: boolean;
+    maxOperationsPerFile: number;
 }
 

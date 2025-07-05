@@ -8,13 +8,7 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "js/ts.implicitProjectConfig.checkJs": true,
     "projectTranslator.currentVendor": "siliconflow",
-    "projectTranslator.diffApply": {
-        "enabled": true,
-        "strategy": "auto",
-        "granularity": "line",
-        "contextLines": 3,
-        "fallbackToFullTranslation": false
-    },
+    
     "projectTranslator.specifiedFiles": [
         {
             "sourceFile": {

@@ -90,6 +90,13 @@ Current translations in progress: [View Issues](https://github.com/Project-Trans
   - Support for pause/resume/stop translation
   - Automatic maintenance of target folder structure
   - Incremental translation to avoid duplicate work
+- 🔄 Advanced Diff Apply Translation
+  - **Precise Updates**: Only translate content that has actually changed
+  - **Line-by-line Control**: Maintain exact formatting and structure
+  - **Incremental Translation**: Perfect for maintaining translated documentation
+  - **Version Control Friendly**: Generates minimal, targeted changes
+  - **Cost Efficient**: Reduces API calls by translating only differences
+  - **Auto Backup**: Automatically creates backup files before applying changes
 
 ## Installation
 
@@ -116,6 +123,12 @@ The extension supports the following configuration options:
       ]
     }
   ],
+  "projectTranslator.diffApply": {
+    "enabled": true,
+    "validationLevel": "normal",
+    "autoBackup": true,
+    "maxOperationsPerFile": 100
+  },
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
@@ -160,6 +173,8 @@ Key configuration details:
 | `projectTranslator.systemPrompts`           | System prompt array for guiding the translation process                                        |
 | `projectTranslator.userPrompts`             | User-defined prompt array, these prompts will be added after system prompts during translation |
 | `projectTranslator.segmentationMarkers`     | Segmentation markers configured by file type, supports regular expressions                     |
+| `projectTranslator.debug`                   | Enable debug mode to log all API requests and responses to output channel (default: false)    |
+| `projectTranslator.logFile`                 | Configuration for debug log files (see [Log File Feature](./docs/log-file-feature.md))        |
 
 ## Usage
 
@@ -203,6 +218,22 @@ The esbuild configuration:
 
 - Bundles all TypeScript files into a single `out/extension.js`
 - Excludes VS Code API (marked as external)
+
+## Advanced Features
+
+### Diff Apply Translation
+
+For detailed information about the advanced Diff Apply translation mode, see the [Diff Apply Usage Guide](./docs/diff-apply-usage.md).
+
+This feature enables:
+- Precise line-by-line translation updates
+- Reduced API costs for large files
+- Better version control integration
+- Preserved document formatting
+
+### Design Documentation
+
+For technical details about the diff apply implementation, see the [Diff Apply Translation Design](./docs/diff-apply-translation-design.md).
 - Generates source maps for development builds
 - Minifies code for production builds
 - Provides problem matcher integration for VS Code

@@ -1,56 +1,17 @@
 {
-  "../code/project_translator/sample-dist/md/should_skip.md": {
-    "timestamp": 1744000343822,
-    "hash": "824184cde709ab724cb1cbfab53491c4"
-  },
-  "../code/project_translator/sample-dist/md/should_translate.md": {
-    "timestamp": 1744000358711,
-    "hash": "7d7246af9876796f9c53502a42ab1c90"
-  },
-  "../test/code/project_translator/l10n/bundle.l10n.json": {
-    "timestamp": 1744000370503,
-    "hash": "8bdb32c28edeaf63d8736b7133890909"
-  },
-  "test/code/project_translator/package.nls.json": {
-    "timestamp": 1744000440751,
-    "hash": "41636e41ccbb792e07a7b223919a4746"
-  },
-  "test/code/project_translator/README.md": {
-    "timestamp": 1744000595273,
-    "hash": "7fa5e44a503b05add029671e6aa924ad"
-  },
-  "md/should_skip.md": {
-    "timestamp": 0,
-    "hash": "824184cde709ab724cb1cbfab53491c4"
-  },
-  "md/should_translate.md": {
-    "timestamp": 0,
-    "hash": "7d7246af9876796f9c53502a42ab1c90"
-  },
   "../l10n/bundle.l10n.json": {
-    "translate_datetime": "2025-05-28:12:42",
+    "translate_datetime": "2025-06-30:17:11",
     "src_hash": "8bdb32c28edeaf63d8736b7133890909",
-    "src_commit_id": "",
-    
+    "src_commit_id": "384ac4333203d061d8d94908b3a0461b84c66f3b"
   },
   "../package.nls.json": {
-    "translate_datetime": "2025-05-28:12:47",
-    "src_hash": "600543f526656f2b1d0fff1a94602325",
-    "src_commit_id": "",
-    
+    "translate_datetime": "2025-06-30:17:20",
+    "src_hash": "6c63f6ad9a651aed55ebc61c04bd1484",
+    "src_commit_id": "9cf44ee25bea56598875df92ebdbba9b355afa63"
   },
   "../README.md": {
-    "translate_datetime": "2025-05-28:13:08",
-    "src_hash": "ac4ecfe0e6af8dd6fc1ecc91ad834a2e",
-    "src_commit_id": "",
-    
-  },
-  "structure/md/should_skip.md": {
-    "timestamp": 1748068667973,
-    "hash": "824184cde709ab724cb1cbfab53491c4"
-  },
-  "structure/md/should_translate.md": {
-    "timestamp": 1748069912639,
-    "hash": "7d7246af9876796f9c53502a42ab1c90"
+    "translate_datetime": "2025-06-30:17:30",
+    "src_hash": "b874a0d75e169adb295d73a168b52f84",
+    "src_commit_id": "1450ec266ab542e374d0181ac5e9fa05428a813f"
   }
 }

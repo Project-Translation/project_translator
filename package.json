@@ -2,7 +2,7 @@
   "name": "project-translator",
   "displayName": "Project Translator",
   "description": "%description.description%",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "publisher": "techfetch-dev",
   "icon": "resources/project-translator.png",
   "engines": {
@@ -161,6 +161,43 @@
           "default": false,
           "description": "Enable debug mode to log all OpenAI API requests and responses to output channel",
           "order": 3
+        },
+        "projectTranslator.logFile": {
+          "type": "object",
+          "default": {
+            "enabled": false,
+            "path": "",
+            "maxSizeKB": 10240,
+            "maxFiles": 5
+          },
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable writing debug logs to file when debug mode is active"
+            },
+            "path": {
+              "type": "string",
+              "default": "",
+              "description": "Custom path for log files (leave empty to use default: workspace/.vscode/project-translator-logs)"
+            },
+            "maxSizeKB": {
+              "type": "number",
+              "default": 10240,
+              "minimum": 1024,
+              "maximum": 102400,
+              "description": "Maximum size of each log file in KB (1MB - 100MB)"
+            },
+            "maxFiles": {
+              "type": "number",
+              "default": 5,
+              "minimum": 1,
+              "maximum": 20,
+              "description": "Maximum number of log files to keep (1-20)"
+            }
+          },
+          "description": "Configuration for debug log files",
+          "order": 4
         },
         "projectTranslator.specifiedFiles": {
           "type": "array",
@@ -329,7 +366,7 @@
           },
           "default": [],
           "description": "%config.specifiedFiles.description%",
-          "order": 4
+          "order": 5
         },
         "projectTranslator.specifiedFolders": {
           "type": "array",
@@ -498,13 +535,13 @@
           },
           "default": [],
           "description": "%config.specifiedFolders.description%",
-          "order": 5
+          "order": 6
         },
         "projectTranslator.translationIntervalDays": {
           "type": "number",
-          "default": 7,
+          "default": -1,
           "description": "%config.translationIntervalDays.description%",
-          "order": 6
+          "order": 7
         },
         "projectTranslator.copyOnly": {
           "type": "object",
@@ -535,7 +572,7 @@
             ]
           },
           "description": "%config.copyOnly.description%",
-          "order": 7
+          "order": 8
         },
         "projectTranslator.ignore": {
           "type": "object",
@@ -576,7 +613,7 @@
             "extensions": []
           },
           "description": "%config.ignore.description%",
-          "order": 8
+          "order": 9
         },
         "projectTranslator.systemPrompts": {
           "type": "array",
@@ -585,7 +622,7 @@
           },
           "default": [],
           "description": "%config.systemPrompts.description%",
-          "order": 9
+          "order": 10
         },
         "projectTranslator.userPrompts": {
           "type": "array",
@@ -594,7 +631,7 @@
           },
           "default": [],
           "description": "%config.userPrompts.description%",
-          "order": 10
+          "order": 11
         },
         "projectTranslator.segmentationMarkers": {
           "type": "object",
@@ -667,7 +704,7 @@
             ]
           },
           "description": "%config.segmentationMarkers.description%",
-          "order": 11
+          "order": 12
         },
         "projectTranslator.enableMetrics": {
           "type": "boolean",
@@ -683,58 +720,33 @@
               "default": false,
               "description": "%config.diffApply.enabled.description%"
             },
-            "strategy": {
+            "validationLevel": {
               "type": "string",
-              "enum": [
-                "auto",
-                "vscode-api",
-                "git-command"
-              ],
-              "enumDescriptions": [
-                "%config.diffApply.strategy.auto.description%",
-                "%config.diffApply.strategy.vscode-api.description%",
-                "%config.diffApply.strategy.git-command.description%"
-              ],
-              "default": "auto",
-              "description": "%config.diffApply.strategy.description%"
+              "enum": ["strict", "normal", "loose"],
+              "default": "normal",
+              "description": "%config.diffApply.validationLevel.description%"
             },
-            "granularity": {
-              "type": "string",
-              "enum": [
-                "line",
-                "block",
-                "semantic"
-              ],
-              "enumDescriptions": [
-                "%config.diffApply.granularity.line.description%",
-                "%config.diffApply.granularity.block.description%",
-                "%config.diffApply.granularity.semantic.description%"
-              ],
-              "default": "line",
-              "description": "%config.diffApply.granularity.description%"
-            },
-            "contextLines": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10,
-              "default": 3,
-              "description": "%config.diffApply.contextLines.description%"
-            },
-            "fallbackToFullTranslation": {
+            "autoBackup": {
               "type": "boolean",
               "default": true,
-              "description": "%config.diffApply.fallbackToFullTranslation.description%"
+              "description": "%config.diffApply.autoBackup.description%"
+            },
+            "maxOperationsPerFile": {
+              "type": "number",
+              "default": 100,
+              "minimum": 1,
+              "maximum": 1000,
+              "description": "%config.diffApply.maxOperationsPerFile.description%"
             }
           },
           "default": {
             "enabled": false,
-            "strategy": "auto",
-            "granularity": "line",
-            "contextLines": 3,
-            "fallbackToFullTranslation": true
+            "validationLevel": "normal",
+            "autoBackup": true,
+            "maxOperationsPerFile": 100
           },
           "description": "%config.diffApply.description%",
-          "order": 12
+          "order": 14
         }
       }
     }

@@ -1,6 +1,7 @@
 import axios from "axios";
 import * as vscode from "vscode";
 import * as path from "path";
+import { logMessage } from "../extension";
 
 // Define an interface for generic data objects
 interface DataObject {
@@ -21,7 +22,7 @@ export class AnalyticsService {
 
     // Improved debug mode detection to ensure correct identification during F5 debugging
     this.isDebugMode = this.detectDebugMode();
-    this.outputChannel.appendLine(`🔍 Debug mode: ${this.isDebugMode}`);
+    logMessage(`🔍 Debug mode: ${this.isDebugMode}`);
   }
 
   /**
@@ -85,7 +86,7 @@ export class AnalyticsService {
 
     if (!metricsEnabled) {
       if (this.isDebugMode) {
-        this.outputChannel.appendLine("📊 Metrics collection is disabled");
+        logMessage("📊 Metrics collection is disabled");
       }
       return;
     }
@@ -127,8 +128,8 @@ export class AnalyticsService {
       };
 
       if (this.isDebugMode) {
-        this.outputChannel.appendLine(`📤 Sending data to: ${url}`);
-        this.outputChannel.appendLine(
+        logMessage(`📤 Sending data to: ${url}`);
+        logMessage(
           `📦 Data payload: ${JSON.stringify(payload, null, 2)}`
         );
       }
@@ -136,7 +137,7 @@ export class AnalyticsService {
       await axios.post(url, payload);
 
       if (this.isDebugMode) {
-        this.outputChannel.appendLine(
+        logMessage(
           `📤 Usage data sent successfully to ${
             this.isDebugMode ? "debug" : "production"
           } endpoint`
@@ -146,7 +147,7 @@ export class AnalyticsService {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
       if (this.isDebugMode) {
-        this.outputChannel.appendLine(
+        logMessage(
           `⚠️ Failed to send usage data: ${errorMessage}`
         );
       }

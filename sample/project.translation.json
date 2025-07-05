@@ -1,33 +1,42 @@
 {
-    "projectTranslator.currentVendor": "openrouter",
-    "projectTranslator.vendors": [
+    "debug": true,
+    "vendors": [
         {
-            "name": "openrouter", // 每日免费次数
+            "name": "openrouter",
             "apiEndpoint": "https://openrouter.ai/api/v1",
             "apiKeyEnvVarName": "OPENROUTER_API_KEY",
             "model": "deepseek/deepseek-chat:free",
             "rpm": 0,
             "maxTokensPerSegment": 10000,
-            "timeout": 30,
+            "timeout": 60,
             "streamMode": true
         },
         {
-            "name": "modelscope", // 每日免费次数
+            "name": "modelscope",
             "apiEndpoint": "https://api-inference.modelscope.cn/v1/",
             "apiKeyEnvVarName": "MODELSCOPE_SDK_TOKEN",
-            "model": "Qwen/Qwen3-30B-A3B",
+            "model": "Qwen/Qwen3-235B-A22B",
             "rpm": 0,
             "maxTokensPerSegment": 10000,
-            "timeout": 30,
+            "timeout": 60,
             "streamMode": true
         }
     ],
-    "projectTranslator.translationIntervalDays": -1,
-    "projectTranslator.userPrompts": [
-        "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
-        "2. './readmes/' in the sentences should replace with './'",
-    ],
-    "projectTranslator.specifiedFiles": [
+    "currentVendor": "modelscope",
+    "enableMetrics": true,
+    "logFile": {
+        "enabled": false,
+        "path": "",
+        "maxSizeKB": 10240,
+        "maxFiles": 5
+    },
+    "diffApply": {
+        "enabled": false,
+        "validationLevel": "normal",
+        "autoBackup": true,
+        "maxOperationsPerFile": 100
+    },
+    "specifiedFiles": [
         {
             "sourceFile": {
                 "path": "../l10n/bundle.l10n.json",
@@ -172,5 +181,91 @@
                 }
             ]
         }
-    ]
+    ],
+    "specifiedFolders": [],
+    "translationIntervalDays": -1,
+    "copyOnly": {
+        "paths": [],
+        "extensions": [
+            ".svg"
+        ]
+    },
+    "ignore": {
+        "paths": [
+            "**/node_modules/**",
+            "**/.git/**",
+            "**/.github/**",
+            "**/.vscode/**",
+            "**/.nuxt/**",
+            "**/.next/**"
+        ],
+        "extensions": []
+    },
+    "systemPrompts": [],
+    "userPrompts": [
+        "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
+        "2. './readmes/' in the sentences should replace with './'"
+    ],
+    "segmentationMarkers": {
+        "markdown": [
+            "^#\\s",
+            "^##\\s",
+            "^###\\s"
+        ],
+        "html": [
+            "^<h1[^>]*>",
+            "^<h2[^>]*>",
+            "^<h3[^>]*>"
+        ],
+        "javascript": [
+            "^function\\s+\\w+\\(",
+            "^class\\s+\\w+"
+        ],
+        "typescript": [
+            "^function\\s+\\w+\\(",
+            "^class\\s+\\w+",
+            "^interface\\s+\\w+"
+        ],
+        "python": [
+            "^def\\s+\\w+\\(",
+            "^class\\s+\\w+"
+        ],
+        "java": [
+            "^public\\s+(class|interface|enum)\\s+\\w+",
+            "^\\s*public\\s+\\w+\\s+\\w+\\("
+        ],
+        "go": [
+            "^func\\s+\\w+\\(",
+            "^type\\s+\\w+\\s+struct"
+        ],
+        "c#": [
+            "^public\\s+(class|interface|enum)\\s+\\w+",
+            "^\\s*public\\s+\\w+\\s+\\w+\\("
+        ],
+        "php": [
+            "^function\\s+\\w+\\(",
+            "^class\\s+\\w+"
+        ],
+        "ruby": [
+            "^def\\s+\\w+",
+            "^class\\s+\\w+"
+        ],
+        "rust": [
+            "^fn\\s+\\w+",
+            "^struct\\s+\\w+",
+            "^enum\\s+\\w+"
+        ],
+        "swift": [
+            "^func\\s+\\w+",
+            "^class\\s+\\w+",
+            "^struct\\s+\\w+"
+        ],
+        "kotlin": [
+            "^fun\\s+\\w+",
+            "^class\\s+\\w+"
+        ],
+        "plaintext": [
+            "^\\s*$"
+        ]
+    }
 }

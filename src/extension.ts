@@ -6,6 +6,7 @@ import { TranslatorService } from "./services/translatorService";
 import { AnalyticsService } from "./services/analytics";
 import { getConfiguration, exportSettingsToConfigFile } from "./config/config";
 import { DestFolder, SpecifiedFolder } from "./types/types";
+import { LogFileManager } from "./services/logFileManager";
 import * as fs from "fs";
 
 // Global state
@@ -14,11 +15,15 @@ let isPaused = false;
 let pauseResumeButton: vscode.StatusBarItem | undefined;
 let stopButton: vscode.StatusBarItem | undefined;
 let outputChannel: vscode.OutputChannel;
+let logFileManager: LogFileManager | null = null;
 let machineId: string | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
     outputChannel = vscode.window.createOutputChannel("Project Translator");
-    outputChannel.appendLine(vscode.l10n.t("extension.activated"));
+    logMessage(vscode.l10n.t("extension.activated"));
+
+    // Initialize log file manager
+    await initializeLogFileManager();
 
     // Initialize machine ID
     machineId = await AnalyticsService.getMachineId();
@@ -26,6 +31,24 @@ export async function activate(context: vscode.ExtensionContext) {
     // Register commands
     const commands = registerCommands();
     context.subscriptions.push(...commands);
+
+    // Listen for configuration changes
+    const configChangeListener = vscode.workspace.onDidChangeConfiguration(async (event) => {
+        if (event.affectsConfiguration('projectTranslator.logFile') || 
+            event.affectsConfiguration('projectTranslator.debug')) {
+            await initializeLogFileManager();
+        }
+    });
+    context.subscriptions.push(configChangeListener);
+
+    // Clean up on deactivation
+    context.subscriptions.push({
+        dispose: () => {
+            if (logFileManager) {
+                logFileManager.dispose();
+            }
+        }
+    });
 }
 
 function registerCommands(): vscode.Disposable[] {
@@ -34,7 +57,7 @@ function registerCommands(): vscode.Disposable[] {
         "extension.pauseTranslation",
         () => {
             isPaused = true;
-            outputChannel.appendLine(vscode.l10n.t("status.translation.paused"));
+            logMessage(vscode.l10n.t("status.translation.paused"));
             vscode.window.showInformationMessage(vscode.l10n.t("status.translation.paused"));
             updatePauseResumeButton();
         }
@@ -45,7 +68,7 @@ function registerCommands(): vscode.Disposable[] {
         "extension.resumeTranslation",
         () => {
             isPaused = false;
-            outputChannel.appendLine(vscode.l10n.t("status.translation.resumed"));
+            logMessage(vscode.l10n.t("status.translation.resumed"));
             vscode.window.showInformationMessage(vscode.l10n.t("status.translation.resumed"));
             updatePauseResumeButton();
         }
@@ -56,7 +79,7 @@ function registerCommands(): vscode.Disposable[] {
         "extension.stopTranslation",
         () => {
             // We no longer need to set isStopped, VS Code will trigger cancellation
-            outputChannel.appendLine(vscode.l10n.t("status.translation.stopped"));
+            logMessage(vscode.l10n.t("status.translation.stopped"));
             vscode.window.showInformationMessage(vscode.l10n.t("status.translation.stopped"));
         }
     );
@@ -115,9 +138,9 @@ async function handletranslateFolders() {
         // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
-        outputChannel.appendLine("==========================================");
-        outputChannel.appendLine("Starting folders translation task");
-        outputChannel.appendLine("==========================================\n");
+        logMessage("==========================================");
+		logMessage("Starting folders translation task");
+		logMessage("==========================================\n");
 
         const workspace = vscode.workspace.workspaceFolders?.[0];
         if (!workspace) {
@@ -171,11 +194,11 @@ async function handletranslateFolders() {
                         const targetFolders = folderGroup.targetFolders;
 
                         if (!sourceFolder?.path || !sourceFolder?.lang || !targetFolders?.length) {
-                            outputChannel.appendLine(`⚠️ Skipping invalid folder group configuration`);
+                            logMessage(`⚠️ Skipping invalid folder group configuration`);
                             continue;
                         }
 
-                        outputChannel.appendLine(`\n📂 Processing source folder: ${sourceFolder.path}`);
+                        logMessage(`\n📂 Processing source folder: ${sourceFolder.path}`);
 
                         // Use absolute path for source folder
                         if (!path.isAbsolute(sourceFolder.path)) {
@@ -215,7 +238,7 @@ async function handletranslateFolders() {
                         const currentStats = fileProcessor.getProcessingStats();
                         const totalProcessed = currentStats.processedFiles + currentStats.skippedFiles;
                         
-                        outputChannel.appendLine("⛔ Translation cancelled by user");
+                        logMessage("⛔ Translation cancelled by user");
                         vscode.window.showInformationMessage(`Folders translation cancelled! (${totalProcessed} files processed)`);
                         return;
                     }
@@ -234,7 +257,7 @@ async function handletranslateFolders() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Translation failed: ${errorMessage}`);
-        outputChannel.appendLine(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`);
     } finally {
         cleanup();
     }
@@ -245,9 +268,9 @@ async function handleTranslateFiles() {
         // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
-        outputChannel.appendLine("==========================================");
-        outputChannel.appendLine("Starting files translation task");
-        outputChannel.appendLine("==========================================\n");
+        logMessage("==========================================");
+		logMessage("Starting files translation task");
+		logMessage("==========================================\n");
 
         const workspace = vscode.workspace.workspaceFolders?.[0];
         if (!workspace) {
@@ -293,7 +316,7 @@ async function handleTranslateFiles() {
             }
         }
         
-        outputChannel.appendLine(`📊 Found ${totalFiles} files to translate`);
+        logMessage(`📊 Found ${totalFiles} files to translate`);
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -312,11 +335,11 @@ async function handleTranslateFiles() {
                     const targetFiles = fileGroup.targetFiles;
                     
                     if (!sourceFile || !sourceFile.path || !targetFiles || targetFiles.length === 0) {
-                        outputChannel.appendLine(`⚠️ Skipping invalid file group configuration`);
+                        logMessage(`⚠️ Skipping invalid file group configuration`);
                         continue;
                     }
                     
-                    outputChannel.appendLine(`\n📄 Processing source file: ${sourceFile.path}`);
+                    logMessage(`\n📄 Processing source file: ${sourceFile.path}`);
                     
                     // Set source directory and language for this file
                     const sourceDir = path.dirname(sourceFile.path);
@@ -345,7 +368,7 @@ async function handleTranslateFiles() {
                 vscode.window.showInformationMessage(`Files translation completed! (${processedFiles}/${totalFiles} files)`);
             } catch (error) {
                 if (error instanceof vscode.CancellationError) {
-                    outputChannel.appendLine("⛔ Translation cancelled by user");
+                    logMessage("⛔ Translation cancelled by user");
                     vscode.window.showInformationMessage(`Files translation cancelled! (${processedFiles}/${totalFiles} files translated)`);
                     return;
                 }
@@ -363,7 +386,7 @@ async function handleTranslateFiles() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Files translation failed: ${errorMessage}`);
-        outputChannel.appendLine(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`);
     } finally {
         cleanup();
     }
@@ -374,9 +397,9 @@ async function handleTranslateProject() {
         // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
-        outputChannel.appendLine("==========================================");
-        outputChannel.appendLine("Starting project translation");
-        outputChannel.appendLine("==========================================\n");
+        logMessage("==========================================");
+		logMessage("Starting project translation");
+		logMessage("==========================================\n");
 
         const workspace = vscode.workspace.workspaceFolders?.[0];
         if (!workspace) {
@@ -419,7 +442,7 @@ async function handleTranslateProject() {
             vscode.window.showInformationMessage("Project translation completed!");
         } catch (error) {
             if (error instanceof vscode.CancellationError) {
-                outputChannel.appendLine("⛔ Translation cancelled by user");
+                logMessage("⛔ Translation cancelled by user");
                 vscode.window.showInformationMessage("Project translation cancelled!");
                 return;
             }
@@ -429,7 +452,7 @@ async function handleTranslateProject() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Translation failed: ${errorMessage}`);
-        outputChannel.appendLine(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`);
     } finally {
         cleanup();
     }
@@ -475,7 +498,7 @@ async function handleAddFileToSettings(fileUri: vscode.Uri) {
             entry.sourceFile.path === relativePath);
 
         if (existingEntry) {
-            outputChannel.appendLine(`File already exists in translation settings: ${relativePath}`);
+            logMessage(`File already exists in translation settings: ${relativePath}`);
             vscode.window.showInformationMessage(`File already exists in translation settings: ${relativePath}`);
             return;
         }
@@ -501,12 +524,12 @@ async function handleAddFileToSettings(fileUri: vscode.Uri) {
         await config.update("specifiedFiles", specifiedFiles, vscode.ConfigurationTarget.Workspace);
 
         // Show success message
-        outputChannel.appendLine(`Added file to translation settings: ${relativePath} → ${targetPath}`);
+        logMessage(`Added file to translation settings: ${relativePath} → ${targetPath}`);
         vscode.window.showInformationMessage(`Added file to translation settings: ${relativePath} → ${targetPath}`);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Failed to add file to translation settings: ${errorMessage}`);
-        outputChannel.appendLine(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`);
     }
 }
 
@@ -550,7 +573,7 @@ async function handleAddFolderToSettings(folderUri: vscode.Uri) {
             entry.sourceFolder.path === relativePath);
 
         if (existingEntry) {
-            outputChannel.appendLine(`Folder already exists in translation settings: ${relativePath}`);
+            logMessage(`Folder already exists in translation settings: ${relativePath}`);
             vscode.window.showInformationMessage(`Folder already exists in translation settings: ${relativePath}`);
             return;
         }
@@ -576,12 +599,12 @@ async function handleAddFolderToSettings(folderUri: vscode.Uri) {
         await config.update("specifiedFolders", specifiedFolders, vscode.ConfigurationTarget.Workspace);
 
         // Show success message
-        outputChannel.appendLine(`Added folder to translation settings: ${relativePath} → ${targetPath}`);
+        logMessage(`Added folder to translation settings: ${relativePath} → ${targetPath}`);
         vscode.window.showInformationMessage(`Added folder to translation settings: ${relativePath} → ${targetPath}`);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Failed to add folder to translation settings: ${errorMessage}`);
-        outputChannel.appendLine(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`);
     }
 }
 
@@ -631,31 +654,102 @@ function outputSummary(startTime: number, fileProcessor: FileProcessor, translat
     const stats = fileProcessor.getProcessingStats();
     const tokenCounts = translatorService.getTokenCounts();
 
-    outputChannel.appendLine("\n==========================================");
-    outputChannel.appendLine("Translation Task Summary");
-    outputChannel.appendLine("==========================================");
-    outputChannel.appendLine(`✅ Translated files: ${stats.processedFiles}`);
-    outputChannel.appendLine(`⏭️ Skipped files: ${stats.skippedFiles}`);
-    outputChannel.appendLine(`❌ Failed files: ${stats.failedFiles}`);
+    logMessage("\n==========================================");
+    logMessage("Translation Task Summary");
+    logMessage("==========================================");
+    logMessage(`✅ Translated files: ${stats.processedFiles}`);
+    logMessage(`⏭️ Skipped files: ${stats.skippedFiles}`);
+    logMessage(`❌ Failed files: ${stats.failedFiles}`);
 
     if (stats.failedFiles > 0 && stats.failedPaths.length > 0) {
-        outputChannel.appendLine("\n❌ Failed files list:");
+        logMessage("\n❌ Failed files list:");
         stats.failedPaths.forEach((filePath, index) => {
-            outputChannel.appendLine(`   ${index + 1}. ${filePath}`);
+            logMessage(`   ${index + 1}. ${filePath}`);
         });
-        outputChannel.appendLine("");
+        logMessage("");
     }
 
-    outputChannel.appendLine(`⌛ Total time: ${totalTimeInSeconds} seconds`);
-    outputChannel.appendLine(`📊 Total tokens consumed:`);
-    outputChannel.appendLine(`   - Input: ${tokenCounts.inputTokens.toLocaleString()} tokens`);
-    outputChannel.appendLine(`   - Output: ${tokenCounts.outputTokens.toLocaleString()} tokens`);
-    outputChannel.appendLine(`   - Total: ${tokenCounts.totalTokens.toLocaleString()} tokens`);
+    logMessage(`⌛ Total time: ${totalTimeInSeconds} seconds`);
+    logMessage(`📊 Total tokens consumed:`);
+    logMessage(`   - Input: ${tokenCounts.inputTokens.toLocaleString()} tokens`);
+    logMessage(`   - Output: ${tokenCounts.outputTokens.toLocaleString()} tokens`);
+    logMessage(`   - Total: ${tokenCounts.totalTokens.toLocaleString()} tokens`);
 
     const tokensPerMinute = Math.round(tokenCounts.totalTokens / (Number(totalTimeInSeconds) / 60));
     if (!isNaN(tokensPerMinute) && isFinite(tokensPerMinute)) {
-        outputChannel.appendLine(`   - Processing speed: ${tokensPerMinute.toLocaleString()} tokens/minute`);
+        logMessage(`   - Processing speed: ${tokensPerMinute.toLocaleString()} tokens/minute`);
     }
+}
+
+/**
+ * Initialize or update the log file manager based on current configuration
+ */
+async function initializeLogFileManager(): Promise<void> {
+    try {
+        const config = await getConfiguration();
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        const workspaceRoot = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : undefined;
+
+        if (config.debug && config.logFile && config.logFile.enabled) {
+            if (logFileManager) {
+                // Update existing manager
+                logFileManager.updateConfig(config.logFile, workspaceRoot);
+            } else {
+                // Create new manager
+                logFileManager = new LogFileManager(config.logFile, workspaceRoot);
+            }
+            
+            // Log initialization
+            const logDir = logFileManager.getLogDirectory();
+            logMessage(`Debug log file enabled: ${logFileManager.getCurrentLogFile()}`);
+            logFileManager.writeLog(`=== Project Translator Debug Session Started ===`);
+            logFileManager.writeLog(`Log directory: ${logDir}`);
+            logFileManager.writeLog(`Configuration: ${JSON.stringify(config.logFile, null, 2)}`);
+        } else {
+            // Disable logging
+            if (logFileManager) {
+                logFileManager.writeLog(`=== Project Translator Debug Session Ended ===`);
+                logFileManager.dispose();
+                logFileManager = null;
+            }
+        }
+    } catch (error) {
+        logMessage(`Failed to initialize log file manager: ${error}`);
+    }
+}
+
+/**
+ * Enhanced logging function that outputs to both outputChannel and log file
+ * @param message The message to log
+ * @param level Log level (info, warn, error)
+ */
+export function logMessage(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
+    // Always output to outputChannel if it exists
+    const timestamp = new Date().toISOString();
+    const formattedMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+    
+    if (outputChannel && outputChannel.appendLine) {
+        outputChannel.appendLine(formattedMessage);
+    }
+
+    // Also write to log file if debug mode and log file are enabled
+    if (logFileManager) {
+        logFileManager.writeLog(`[${level.toUpperCase()}] ${message}`);
+    }
+}
+
+/**
+ * Get the output channel for external use
+ */
+export function getOutputChannel(): vscode.OutputChannel {
+    return outputChannel;
+}
+
+/**
+ * Get the log file manager for external use
+ */
+export function getLogFileManager(): LogFileManager | null {
+    return logFileManager;
 }
 
 async function sendAnalytics(analyticsService: AnalyticsService, fileProcessor: FileProcessor, translatorService: TranslatorService) {
@@ -665,7 +759,7 @@ async function sendAnalytics(analyticsService: AnalyticsService, fileProcessor: 
 
 function cleanup() {
     translationDb?.close().catch((error) => {
-        outputChannel.appendLine(`Error closing database: ${error}`);
+        logMessage(`Error closing database: ${error}`);
     });
     translationDb = null;
 

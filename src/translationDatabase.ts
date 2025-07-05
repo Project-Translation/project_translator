@@ -1,11 +1,10 @@
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
 import * as crypto from "crypto";
 import * as vscode from "vscode";
-import { exec } from "child_process";
-import { promisify } from "util";
 import { SpecifiedFolder } from "./types/types";
 import { getConfiguration } from "./config/config";
+import { logMessage } from "./extension";
 
 // Example language codes, but system now accepts any string with length < 10
 export const SUPPORTED_LANGUAGES = [
@@ -33,7 +32,6 @@ interface TranslationRecord {
   [sourcePath: string]: {
     translate_datetime: string;
     src_hash: string;
-    src_commit_id: string;
   };
 }
 
@@ -58,12 +56,12 @@ export class TranslationDatabase {
     });
   }
   private async initCache() {
-    this.outputChannel.appendLine("🗂️ Initializing translation cache...");
+    logMessage("🗂️ Initializing translation cache...");
 
     // Create the cache directory if it doesn't exist
     if (!fs.existsSync(this.translationCacheDir)) {
       fs.mkdirSync(this.translationCacheDir, { recursive: true });
-      this.outputChannel.appendLine(
+      logMessage(
         `📁 Created cache directory: ${this.translationCacheDir}`
       );
     }
@@ -81,12 +79,13 @@ export class TranslationDatabase {
         (folder: { lang: SupportedLanguage }) => {
           if (folder.lang && isValidLanguage(folder.lang)) {
             configuredLanguages.add(folder.lang);
-            this.outputChannel.appendLine(
+            logMessage(
               `🌐 Found configured language: ${folder.lang}`
             );
           } else if (folder.lang) {
-            this.outputChannel.appendLine(
-              `⚠️ Invalid language code: ${folder.lang}`
+            logMessage(
+              `⚠️ Invalid language code: ${folder.lang}`,
+              'warn'
             );
             vscode.window.showWarningMessage(
               `Invalid language code "${folder.lang}". Language codes must be non-empty strings with less than 10 characters.`
@@ -98,13 +97,14 @@ export class TranslationDatabase {
 
     // Load translation caches for configured languages
     if (configuredLanguages.size > 0) {
-      this.outputChannel.appendLine(
+      logMessage(
         `📦 Loading caches for ${configuredLanguages.size} languages...`
       );
       const loadCachePromises = Array.from(configuredLanguages).map((lang) =>
         this.loadCacheForLanguage(lang).catch((err) => {
-          this.outputChannel.appendLine(
-            `❌ Failed to load cache for language ${lang}: ${err}`
+          logMessage(
+            `❌ Failed to load cache for language ${lang}: ${err}`,
+            'error'
           );
           vscode.window.showErrorMessage(
             `Failed to load cache for language ${lang}: ${err}`
@@ -112,12 +112,13 @@ export class TranslationDatabase {
         })
       );
       await Promise.all(loadCachePromises);
-      this.outputChannel.appendLine(
+      logMessage(
         "✅ Translation cache initialization completed"
       );
     } else {
-      this.outputChannel.appendLine(
-        "⚠️ No valid target languages found in configuration"
+      logMessage(
+        "⚠️ No valid target languages found in configuration",
+        'warn'
       );
       vscode.window.showWarningMessage(
         "No valid target languages found in configuration"
@@ -126,8 +127,9 @@ export class TranslationDatabase {
   } // Helper method to load or initialize a translation cache for a specific language
   private async loadCacheForLanguage(lang: SupportedLanguage): Promise<void> {
     if (!isValidLanguage(lang)) {
-      this.outputChannel.appendLine(
-        `⚠️ Cannot create cache for invalid language code "${lang}"`
+      logMessage(
+        `⚠️ Cannot create cache for invalid language code "${lang}"`,
+        'warn'
       );
       vscode.window.showWarningMessage(
         `Cannot create cache for invalid language code "${lang}"`
@@ -148,22 +150,23 @@ export class TranslationDatabase {
         const cache = JSON.parse(cacheContent) as TranslationRecord;
         this.translationCache.set(lang, cache);
         const recordCount = Object.keys(cache).length;
-        this.outputChannel.appendLine(
+        logMessage(
           `📄 Loaded cache for ${lang}: ${recordCount} records from ${cacheFileName}`
         );
       } else {
         // Initialize with empty record if file doesn't exist
         this.translationCache.set(lang, {});
         await this.saveCacheForLanguage(lang);
-        this.outputChannel.appendLine(
+        logMessage(
           `📄 Created new cache file for ${lang}: ${cacheFileName}`
         );
       }
     } catch (error) {
       // If there's an error reading or parsing the file, start with an empty cache
       this.translationCache.set(lang, {});
-      this.outputChannel.appendLine(
-        `❌ Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`
+      logMessage(
+        `❌ Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`,
+        'error'
       );
       vscode.window.showWarningMessage(
         `Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`
@@ -191,12 +194,13 @@ export class TranslationDatabase {
       const recordCount = Object.keys(
         this.translationCache.get(lang) || {}
       ).length;
-      this.outputChannel.appendLine(
+      logMessage(
         `💾 Saved cache for ${lang}: ${recordCount} records to ${cacheFileName}`
       );
     } catch (error) {
-      this.outputChannel.appendLine(
-        `❌ Failed to save translation cache for ${lang}: ${error}`
+      logMessage(
+        `❌ Failed to save translation cache for ${lang}: ${error}`,
+        'error'
       );
       vscode.window.showErrorMessage(
         `Failed to save translation cache for ${lang}: ${error}`
@@ -225,7 +229,7 @@ export class TranslationDatabase {
 
     const normalizedPath = path.normalize(targetPath).replace(/\\/g, "/");
     this.targetRoots.set(normalizedPath, targetLang);
-    this.outputChannel.appendLine(
+    logMessage(
       `🎯 Set target root for ${targetLang}: ${normalizedPath}`
     );
   }
@@ -250,7 +254,7 @@ export class TranslationDatabase {
     targetLang: SupportedLanguage
   ): Promise<void> {
     const relativeSourcePath = this.getRelativePath(sourcePath, true);
-    this.outputChannel.appendLine(
+    logMessage(
       `🔄 Updating translation time for ${relativeSourcePath} (${targetLang})`
     );
 
@@ -273,7 +277,7 @@ export class TranslationDatabase {
 
     // Save to file
     await this.saveCacheForLanguage(targetLang);
-    this.outputChannel.appendLine(
+    logMessage(
       `✅ Updated translation record for ${relativeSourcePath}: hash=${fileInfo.src_hash.substring(
         0,
         8
@@ -285,7 +289,7 @@ export class TranslationDatabase {
     targetLang: SupportedLanguage
   ): Promise<void> {
     const relativeSourcePath = this.getRelativePath(sourcePath, true);
-    this.outputChannel.appendLine(
+    logMessage(
       `🕒 Setting last translation time for ${relativeSourcePath} (${targetLang})`
     );
 
@@ -308,7 +312,7 @@ export class TranslationDatabase {
 
     // Save to file
     await this.saveCacheForLanguage(targetLang);
-    this.outputChannel.appendLine(
+    logMessage(
       `✅ Set translation time for ${relativeSourcePath} at ${currentFileInfo.translate_datetime}`
     );
   }
@@ -318,13 +322,13 @@ export class TranslationDatabase {
     targetLang: SupportedLanguage
   ): Promise<boolean> {
     const relativeSourcePath = this.getRelativePath(sourcePath, true);
-    this.outputChannel.appendLine(
+    logMessage(
       `🤔 Evaluating if translation needed for ${relativeSourcePath} (${targetLang})`
     );
 
     // Always translate if target file doesn't exist
     if (!fs.existsSync(targetPath)) {
-      this.outputChannel.appendLine(
+      logMessage(
         `✅ Target file doesn't exist, translation needed`
       );
       return true;
@@ -345,7 +349,7 @@ export class TranslationDatabase {
 
       // If the source file has no record, it should be translated
       if (!translationRecord[relativeSourcePath]) {
-        this.outputChannel.appendLine(
+        logMessage(
           `✅ No translation record found, translation needed`
         );
         return true;
@@ -355,7 +359,7 @@ export class TranslationDatabase {
       const currentFileInfo = await this.getCurrentFileInfo(sourcePath);
       const cachedFileInfo = translationRecord[relativeSourcePath]; // Check if both conditions are met: hash changed and past interval
       const hashChanged = currentFileInfo.src_hash !== cachedFileInfo.src_hash;
-      this.outputChannel.appendLine(
+      logMessage(
         `📋 Checking translation necessity for ${relativeSourcePath}: hash changed=${hashChanged}`
       );
 
@@ -380,16 +384,16 @@ export class TranslationDatabase {
       }
       const daysSinceLastTranslation =
         (Date.now() - cachedTimestamp) / (1000 * 60 * 60 * 24);
-      const isPastInterval = daysSinceLastTranslation >= intervalDays;
+      const isPastInterval = daysSinceLastTranslation >= intervalDays && intervalDays > 0;
 
-      this.outputChannel.appendLine(
+      logMessage(
         `📊 Translation analysis: days since last=${daysSinceLastTranslation.toFixed(
           1
         )}, interval=${intervalDays}, past interval=${isPastInterval}`
       );
 
       const shouldTranslate = hashChanged || isPastInterval;
-      this.outputChannel.appendLine(
+      logMessage(
         `${shouldTranslate ? "✅" : "⏭️"} Translation decision: ${
           shouldTranslate ? "NEEDED" : "SKIP"
         } (hash changed: ${hashChanged}, past interval: ${isPastInterval})`
@@ -397,13 +401,13 @@ export class TranslationDatabase {
 
       return shouldTranslate;
     } catch (error) {
-      this.outputChannel.appendLine(`❌ Error in shouldTranslate: ${error}`);
+      logMessage(`❌ Error in shouldTranslate: ${error}`, 'error');
       vscode.window.showErrorMessage(`Error in shouldTranslate: ${error}`);
       return true; // If there's an error, proceed with translation
     }
   }
   public close(): Promise<void> {
-    this.outputChannel.appendLine("🔒 Closing translation database...");
+    logMessage("🔒 Closing translation database...");
 
     // Save all caches before closing
     const savePromises = Array.from(this.translationCache.keys()).map((lang) =>
@@ -413,7 +417,7 @@ export class TranslationDatabase {
     return Promise.all(savePromises).then(() => {
       // Clear the cache to free up memory
       this.translationCache.clear();
-      this.outputChannel.appendLine(
+      logMessage(
         "✅ Translation database closed successfully"
       );
     });
@@ -422,15 +426,16 @@ export class TranslationDatabase {
     try {
       const fileContent = fs.readFileSync(filePath);
       const hash = crypto.createHash("md5").update(fileContent).digest("hex");
-      this.outputChannel.appendLine(
+      logMessage(
         `🔍 Calculated file hash for ${path.basename(
           filePath
         )}: ${hash.substring(0, 8)}...`
       );
       return hash;
     } catch (error) {
-      this.outputChannel.appendLine(
-        `❌ Error calculating hash for ${filePath}: ${error}`
+      logMessage(
+        `❌ Error calculating hash for ${filePath}: ${error}`,
+        'error'
       );
       throw error;
     }
@@ -445,254 +450,22 @@ export class TranslationDatabase {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${year}-${month}-${day}:${hours}:${minutes}`;
   }
-  private async getGitCommitInfo(
-    filePath: string
-  ): Promise<{ commitId: string }> {
-    try {
-      // Get the git extension
-      const gitExtension = vscode.extensions.getExtension("vscode.git");
-      if (!gitExtension) {
-        this.outputChannel.appendLine(
-          "📡 Git extension not found, skipping commit info"
-        );
-        return { commitId: "" };
-      }
 
-      // Ensure the git extension is activated
-      if (!gitExtension.isActive) {
-        await gitExtension.activate();
-      }
-
-      const git = gitExtension.exports.getAPI(1);
-      if (!git) {
-        this.outputChannel.appendLine(
-          "📡 Git API not available, skipping commit info"
-        );
-        return { commitId: "" };
-      }
-
-      // Find the repository that contains this file
-      const fileUri = vscode.Uri.file(filePath);
-      const repository = git.getRepository(fileUri);
-      if (!repository) {
-        this.outputChannel.appendLine(
-          `📡 No git repository found for ${path.basename(filePath)}`
-        );
-        return { commitId: "" };
-      } // Get the relative path from repository root
-      const relativePath = path.relative(repository.rootUri.fsPath, filePath);
-
-      // Get the last commit that modified this specific file
-      try {
-        // Use git log to get the last commit for this specific file
-        const execAsync = promisify(exec);
-        
-        const gitCommand = `git log -1 --format="%H" -- "${relativePath}"`;
-        const { stdout } = await execAsync(gitCommand, { cwd: repository.rootUri.fsPath });
-        
-        const commitId = stdout.trim();
-        if (!commitId) {
-          this.outputChannel.appendLine(
-            `📡 No commits found for file ${path.basename(filePath)}`
-          );
-          return { commitId: "" };
-        }
-        
-        this.outputChannel.appendLine(
-          `📡 Last commit for ${path.basename(
-            filePath
-          )}: ${commitId.substring(0, 8)}...`
-        );
-        
-        return { commitId };
-      } catch (gitError) {
-        this.outputChannel.appendLine(
-          `📡 Failed to get file-specific commit, falling back to HEAD: ${gitError}`
-        );
-        
-        // Fallback to HEAD commit if git log fails
-        const head = repository.state.HEAD;
-        if (!head || !head.commit) {
-          this.outputChannel.appendLine("📡 No HEAD commit found in repository");
-          return { commitId: "" };
-        }
-        
-        const commitId = head.commit;
-        this.outputChannel.appendLine(
-          `📡 Using HEAD commit for ${path.basename(
-            filePath
-          )}: ${commitId.substring(0, 8)}...`
-        );
-        
-        return { commitId };
-      }
-    } catch (error) {
-      // If there's any error with git operations, return empty values
-      this.outputChannel.appendLine(
-        `❌ Error getting git info for ${path.basename(filePath)}: ${error}`
-      );
-      return { commitId: "" };
-    }
-  }
 
   private async getCurrentFileInfo(sourcePath: string): Promise<{
     translate_datetime: string;
     src_hash: string;
-    src_commit_id: string;
   }> {
     const timestamp = Date.now();
     const translate_datetime = this.formatDateTime(timestamp);
     const src_hash = this.calculateFileHash(sourcePath);
-    const { commitId: src_commit_id } = await this.getGitCommitInfo(sourcePath);
 
-    return { translate_datetime, src_hash, src_commit_id };
+    return { translate_datetime, src_hash };
   }
 
-  /**
-   * Get the commit ID of the last translation
-   * @param sourcePath Source file path
-   * @param targetLang Target language
-   * @returns The commit ID at the last translation, or an empty string if not found
-   */
-  public async getLastTranslationCommitId(
-    sourcePath: string,
-    targetLang: SupportedLanguage
-  ): Promise<string> {
-    const relativeSourcePath = this.getRelativePath(sourcePath, true);
-    // Ensure cache exists
-    if (!this.translationCache.has(targetLang)) {
-      await this.loadCacheForLanguage(targetLang);
-    }
 
-    const translationRecord = this.translationCache.get(targetLang) || {};
-    const fileRecord = translationRecord[relativeSourcePath];
 
-    if (fileRecord && fileRecord.src_commit_id) {
-      this.outputChannel.appendLine(
-        `📋 Found last translation commit ID: ${fileRecord.src_commit_id.substring(0, 8)}... (${targetLang})`
-      );
-      return fileRecord.src_commit_id;
-    }
 
-    this.outputChannel.appendLine(
-      `📋 No previous translation record found: ${relativeSourcePath} (${targetLang})`
-    );
-    return "";
-  }
 
-  /**
-   * Check if the file needs diff translation
-   * @param sourcePath Source file path
-   * @param targetLang Target language
-   * @returns Result of whether diff translation is needed
-   */
-  public async needsDiffTranslation(
-    sourcePath: string,
-    targetLang: SupportedLanguage
-  ): Promise<{
-    needsDiff: boolean;
-    lastCommitId: string;
-    hasTranslationRecord: boolean;
-    reason: string;
-  }> {
-    const relativeSourcePath = this.getRelativePath(sourcePath, true);
-    // Ensure cache exists
-    if (!this.translationCache.has(targetLang)) {
-      await this.loadCacheForLanguage(targetLang);
-    }
 
-    const translationRecord = this.translationCache.get(targetLang) || {};
-    const fileRecord = translationRecord[relativeSourcePath];
-
-    // If there is no translation record, diff translation is not needed
-    if (!fileRecord) {
-      return {
-        needsDiff: false,
-        lastCommitId: "",
-        hasTranslationRecord: false,
-        reason: "No translation record, full translation needed"
-      };
-    }
-
-    // Get current file's commit info
-    const { commitId: currentCommitId } = await this.getGitCommitInfo(sourcePath);
-    const lastCommitId = fileRecord.src_commit_id;
-
-    // If there is no git info, fallback to hash comparison
-    if (!currentCommitId || !lastCommitId) {
-      const currentHash = this.calculateFileHash(sourcePath);
-      const hashChanged = currentHash !== fileRecord.src_hash;
-      
-      return {
-        needsDiff: false, // 没有git信息时不使用差异翻译
-        lastCommitId: lastCommitId,
-        hasTranslationRecord: true,
-        reason: hashChanged ? "File has changed but no git info, full translation needed" : "File not changed"
-      };
-    }
-
-    // Compare commit IDs
-    const commitChanged = currentCommitId !== lastCommitId;
-    
-    if (!commitChanged) {
-      return {
-        needsDiff: false,
-        lastCommitId: lastCommitId,
-        hasTranslationRecord: true,
-        reason: "File not changed since last translation"
-      };
-    }
-
-    return {
-      needsDiff: true,
-      lastCommitId: lastCommitId,
-      hasTranslationRecord: true,
-      reason: "File has changed, diff translation can be used"
-    };
-  }
-
-  /**
-   * Update the commit info in the translation record
-   * @param sourcePath Source file path
-   * @param targetLang Target language
-   * @param newCommitId New commit ID (optional, if not provided will get current commit)
-   */
-  public async updateTranslationCommitId(
-    sourcePath: string,
-    targetLang: SupportedLanguage,
-    newCommitId?: string
-  ): Promise<void> {
-    const relativeSourcePath = this.getRelativePath(sourcePath, true);
-    // Ensure cache exists
-    if (!this.translationCache.has(targetLang)) {
-      await this.loadCacheForLanguage(targetLang);
-    }
-
-    const translationRecord = this.translationCache.get(targetLang) || {};
-    
-    // Get or use provided commit ID
-    const commitId = newCommitId || (await this.getGitCommitInfo(sourcePath)).commitId;
-    
-    // Update existing record or create new record
-    if (translationRecord[relativeSourcePath]) {
-      translationRecord[relativeSourcePath].src_commit_id = commitId;
-      this.outputChannel.appendLine(
-        `🔄 Updated translation record commit ID: ${commitId.substring(0, 8)}... (${targetLang})`
-      );
-    } else {
-      // If there is no existing record, create a new full record
-      const currentFileInfo = await this.getCurrentFileInfo(sourcePath);
-      currentFileInfo.src_commit_id = commitId;
-      translationRecord[relativeSourcePath] = currentFileInfo;
-      this.outputChannel.appendLine(
-        `➕ Created new translation record: ${commitId.substring(0, 8)}... (${targetLang})`
-      );
-    }
-
-    // Save to cache
-    this.translationCache.set(targetLang, translationRecord);
-    
-    // Save to file
-    await this.saveCacheForLanguage(targetLang);
-  }
 }

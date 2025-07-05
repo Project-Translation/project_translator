@@ -1,6 +1,6 @@
 {
-    "extension.activated": "Project Translator 拡張機能が今アクティブになりました！",
-    "status.translation.paused": "翻訳を一時停止",
-    "status.translation.resumed": "翻訳を再開",
-    "status.translation.stopped": "翻訳を停止"
+    "extension.activated": "プロジェクト翻訳エクステンションが有効になりました！",
+    "status.translation.paused": "翻訳が一時停止されました",
+    "status.translation.resumed": "翻訳が再開されました",
+    "status.translation.stopped": "翻訳が停止されました"
 }

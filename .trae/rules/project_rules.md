@@ -1,1 +1,4 @@
-- 这是一个正在开发中的vscode插件, 没有明确说明情况下, 不需要考虑前向兼容性.
+- This is a VS Code extension under development; forward compatibility does not need to be considered unless explicitly stated.
+- Always comment and log in English.
+- Git commit message should be in English.
+- Regarding language pack processing, only English language packs need to be handled.

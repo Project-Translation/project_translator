@@ -114,8 +114,18 @@ export interface Config {
   systemPrompts?: string[]; // System prompts for translation
   userPrompts?: string[]; // User prompts for translation
   segmentationMarkers?: Record<string, string[]>; // Segmentation markers configured by file type
-  diffApply?: DiffApplyConfig; // Configuration for diff apply functionality
+
   debug?: boolean; // Enable debug mode to log API requests and responses
+  logFile?: LogFileConfig; // Configuration for debug log file output
+  diffApply?: DiffApplyConfig; // Configuration for diff apply translation mode
+}
+
+// Configuration interface for log file functionality
+export interface LogFileConfig {
+  enabled: boolean; // Enable writing logs to file when debug mode is on
+  path?: string; // Custom log file path (optional, defaults to workspace/.translation-logs/)
+  maxSizeKB?: number; // Maximum log file size in KB before rotation (default: 10240 = 10MB)
+  maxFiles?: number; // Maximum number of log files to keep (default: 5)
 }
 
 /**
@@ -177,9 +187,12 @@ export async function exportSettingsToConfigFile(): Promise<void> {
     const config = vscode.workspace.getConfiguration("projectTranslator"); // Define all projectTranslator setting keys that should be exported
     // Note: enableMetrics is intentionally excluded as it should remain hidden
     const settingKeys = [
-      "currentVendor",
       "vendors",
+      "destFolders",
+      "enableMetrics",
       "debug",
+      "logFile",
+      "diffApply",
       "specifiedFiles",
       "specifiedFolders",
       "translationIntervalDays",
@@ -188,7 +201,6 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       "systemPrompts",
       "userPrompts",
       "segmentationMarkers",
-      "diffApply",
     ];
 
     // Extract settings and remove the projectTranslator prefix
@@ -262,8 +274,10 @@ export function getConfiguration(): Config {
       systemPrompts: config.get("systemPrompts"),
       userPrompts: config.get("userPrompts"),
       segmentationMarkers: config.get("segmentationMarkers"),
-      diffApply: config.get("diffApply"),
+
       debug: config.get("debug"),
+      logFile: config.get("logFile"),
+      diffApply: config.get("diffApply"),
     };
   } // Extract and normalize configuration data
   const copyOnly = configData.copyOnly;
@@ -276,14 +290,22 @@ export function getConfiguration(): Config {
   const segmentationMarkers = configData.segmentationMarkers;
   const debug = configData.debug || false;
 
+  // Get logFile configuration with default values
+  const logFile = configData.logFile || {
+    enabled: false,
+    maxSizeKB: 10240, // 10MB
+    maxFiles: 5,
+  };
+
   // Get diffApply configuration with default values
   const diffApply = configData.diffApply || {
     enabled: false,
-    strategy: "auto" as const,
-    granularity: "line" as const,
-    contextLines: 3,
-    fallbackToFullTranslation: true,
+    validationLevel: "normal",
+    autoBackup: true,
+    maxOperationsPerFile: 100,
   };
+
+
 
   // Get prompts, fallback to defaults if not present
   let systemPrompts = configData.systemPrompts;
@@ -345,8 +367,9 @@ export function getConfiguration(): Config {
     systemPrompts,
     userPrompts,
     segmentationMarkers,
-    diffApply,
     debug,
+    logFile,
+    diffApply,
   };
 }
 
