@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.10.3",
+    "version": "0.10.4",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "engines": {
@@ -242,7 +242,7 @@
                                             "vi-vn",
                                             "zh-cn",
                                             "zh-hk",
-                                            "zh-tw" 
+                                            "zh-tw"
                                         ],
                                         "enumDescriptions": [
                                             "English (United States)",
@@ -324,7 +324,7 @@
                                                 "vi-vn",
                                                 "zh-cn",
                                                 "zh-hk",
-                                                "zh-tw" 
+                                                "zh-tw"
                                             ],
                                             "enumDescriptions": [
                                                 "English (United States)",
@@ -419,7 +419,7 @@
                                             "vi-vn",
                                             "zh-cn",
                                             "zh-hk",
-                                            "zh-tw" 
+                                            "zh-tw"
                                         ],
                                         "enumDescriptions": [
                                             "English (United States)",
@@ -501,7 +501,7 @@
                                                 "vi-vn",
                                                 "zh-cn",
                                                 "zh-hk",
-                                                "zh-tw" 
+                                                "zh-tw"
                                             ],
                                             "enumDescriptions": [
                                                 "English (United States)",
