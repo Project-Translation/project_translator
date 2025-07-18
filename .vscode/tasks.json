@@ -149,6 +149,23 @@
             "dependsOn": "test-compile",
             "problemMatcher": [],
             "detail": "Run all tests"
+        },
+        {
+            "label": "convert-svg-to-png",
+            "type": "shell",
+            "command": "rsvg-convert",
+            "args": [
+                "-w",
+                "128",
+                "-h",
+                "128",
+                "${workspaceFolder}/resources/project-translator.svg",
+                "-o",
+                "${workspaceFolder}/resources/project-translator.png"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Convert SVG icon to PNG format (128x128)"
         }
     ]
 }

@@ -5,6 +5,30 @@
     "version": "0.10.6",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
+    "categories": [
+        "Other",
+        "Machine Learning"
+    ],
+    "keywords": [
+        "translation",
+        "localization",
+        "i18n",
+        "internationalization",
+        "multi-language",
+        "ai",
+        "openai",
+        "gpt",
+        "project",
+        "folder",
+        "file",
+        "batch",
+        "automation",
+        "documentation",
+        "markdown",
+        "json",
+        "xml",
+        "language-model-tools"
+    ],
     "engines": {
         "vscode": "^1.75.0"
     },
