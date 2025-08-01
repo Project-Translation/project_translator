@@ -188,11 +188,19 @@ export class TranslatorService {
     const startTime = Date.now();
     logMessage(`⏱️ Starting OpenAI API request at ${new Date(startTime).toISOString()}`);
 
-    const requestPayload = {
+    const { currentVendor } = getConfiguration();
+    const { top_p } = currentVendor;
+
+    const requestPayload: any = {
       model: model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: temperature,
     };
+
+    // Add top_p to request if it's set
+    if (top_p !== undefined) {
+      requestPayload.top_p = top_p;
+    }
 
     // Debug: Log request payload
     if (debug) {
@@ -273,12 +281,20 @@ export class TranslatorService {
     const startTime = Date.now();
     logMessage(`⏱️ Starting OpenAI streaming API request at ${new Date(startTime).toISOString()}`);
 
-    const requestPayload = {
+    const { currentVendor } = getConfiguration();
+    const { top_p } = currentVendor;
+
+    const requestPayload: any = {
       model: model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: temperature,
       stream: true,
     };
+
+    // Add top_p to request if it's set
+    if (top_p !== undefined) {
+      requestPayload.top_p = top_p;
+    }
 
     // Debug: Log request payload
     if (debug) {
@@ -657,11 +673,19 @@ Please return a JSON response with the diff operations needed to update the targ
     const startTime = Date.now();
     logMessage(`⏱️ Starting diff apply API request at ${new Date(startTime).toISOString()}`);
 
-    const requestPayload = {
+    const { currentVendor } = getConfiguration();
+    const { top_p } = currentVendor;
+
+    const requestPayload: any = {
       model: model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: temperature,
     };
+
+    // Add top_p to request if it's set
+    if (top_p !== undefined) {
+      requestPayload.top_p = top_p;
+    }
 
     if (debug) {
       logMessage(`🐛 [DEBUG] Diff Apply API Request:`);
@@ -720,12 +744,20 @@ Please return a JSON response with the diff operations needed to update the targ
     const startTime = Date.now();
     logMessage(`⏱️ Starting diff apply streaming API request at ${new Date(startTime).toISOString()}`);
 
-    const requestPayload = {
+    const { currentVendor } = getConfiguration();
+    const { top_p } = currentVendor;
+
+    const requestPayload: any = {
       model: model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: temperature,
       stream: true,
     };
+
+    // Add top_p to request if it's set
+    if (top_p !== undefined) {
+      requestPayload.top_p = top_p;
+    }
 
     if (debug) {
       logMessage(`🐛 [DEBUG] Diff Apply Streaming API Request:`);

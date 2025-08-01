@@ -75,13 +75,9 @@ const DEFAULT_SYSTEM_PROMPT = `你是一个专业翻译 AI，严格遵守以下�
 
 输入示例(Markdown)：
 
-\`\`\`markdown
----
-title: Sample Document
-draft: true
----
+\`\`\`
 
-- [ ] Sample Task
+
 \`\`\`
 
 输出: 727d2eb8-8683-42bd-a1d0-f604fcd82163`;
@@ -348,6 +344,11 @@ export function getConfiguration(): Config {
   // Set default temperature to 0 if not specified or is null/undefined
   if (currentVendor.temperature == null) {
     currentVendor.temperature = 0;
+  }
+
+  // Set default top_p to 0.95 if not specified or is null/undefined
+  if (currentVendor.top_p == null) {
+    currentVendor.top_p = 0.95;
   }
 
   // Set default streamMode to true if not specified or is null/undefined

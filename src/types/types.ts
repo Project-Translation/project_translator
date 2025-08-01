@@ -14,6 +14,7 @@ export interface VendorConfig {
     maxTokensPerSegment?: number;
     timeout?: number;
     temperature?: number;
+    top_p?: number;
     streamMode?: boolean;
 }
 

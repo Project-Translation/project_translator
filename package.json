@@ -151,6 +151,13 @@
                                 "maximum": 2,
                                 "default": 0
                             },
+                            "top_p": {
+                                "type": "number",
+                                "description": "Controls diversity via nucleus sampling: 0.95 is a good default value",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "default": 0.95
+                            },
                             "streamMode": {
                                 "type": "boolean",
                                 "description": "%config.vendor.streamMode.description%",
@@ -165,15 +172,16 @@
                     },
                     "default": [
                         {
-                            "name": "grok",
-                            "apiEndpoint": "https://api.x.ai/v1",
+                            "name": "gemini",
+                            "apiEndpoint": "https://generativelanguage.googleapis.com/v1beta",
                             "apiKey": "",
                             "apiKeyEnvVarName": "",
-                            "model": "grok-2",
+                            "model": "gemini-2.5-flash",
                             "rpm": 20,
-                            "maxTokensPerSegment": 1500,
+                            "maxTokensPerSegment": 5000,
                             "timeout": 30,
                             "temperature": 0,
+                            "top_p": 0.95,
                             "streamMode": true
                         }
                     ],
