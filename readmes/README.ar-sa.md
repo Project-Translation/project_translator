@@ -1,126 +1,130 @@
-# مشروع المترجم
+# Project Translator
 
-ملحق لـ VSCode: أداة سهلة الاستخدام لتحويل مشاريع البرمجة إلى عدة لغات.
+A VSCode extension: An easy-to-use tool for multi-language localization of projects.
 
-## أمثلة
+## Available Translations
 
-| المشروع                                                                             | المستودع الأصلي                                                                                       | الوصف                                                                                                                                                               | النجوم | العلامات                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+The extension supports translation to these languages:
+
+- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
+- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
+- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
+- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
+- [Français (fr-fr)](./readmes/README.fr-fr.md)
+- [Deutsch (de-de)](./readmes/README.de-de.md)
+- [Español (es-es)](./readmes/README.es-es.md)
+- [Português (pt-br)](./readmes/README.pt-br.md)
+- [Русский (ru-ru)](./readmes/README.ru-ru.md)
+- [العربية (ar-sa)](./readmes/README.ar-sa.md)
+- [العربية (ar-ae)](./readmes/README.ar-ae.md)
+- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+
+## Samples
+
+| Project                                                                             | Original Repository                                                                                       | Description                                                                                                                                                               | Stars | Tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :الألعاب النارية: منصة تفاعلية عبر الإنترنت تصور الخوارزميات من الشيفرة                                                                                               | 47301 | [`الخوارزمية`](https://github.com/topics/algorithm), [`الرسوم المتحركة`](https://github.com/topics/animation), [`بنية البيانات`](https://github.com/topics/data-structure), [`التصور`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :كرة البلور: تصوير الخوارزميات                                                                                                                                    | 401   | لا يوجد                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | وكيل ترميز مستقل في بيئة التطوير الخاصة بك، قادر على إنشاء/تحرير الملفات، تنفيذ الأوامر، استخدام المتصفح، والمزيد بإذنك في كل خطوة من الخطوات. | 39572 | لا يوجد                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | وثائق كورسور المفتوحة المصدر                                                                                                                                        | 309   | لا يوجد                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go بالنموذج                                                                                                                                                             | 7523  | لا يوجد                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [مرآة] موقع go.dev و golang.org                                                                                                                       | 402   | لا يوجد                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ مشاركة ورقة ملخص سريعة للمراجعات التي يحتاجها المطورون.                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`ورقة ملخص`](https://github.com/topics/cheatsheet), [`ورق ملخص`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`الemarkdown`](https://github.com/topics/markdown), [`بايثون`](https://github.com/topics/python), [`المصدر`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`مقتطفات`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
-| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | أدلة الأسلوب للمشاريع مفتوحة المصدر التي تعود أصولها إلى جوجل                                                                                                                   | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`دليل الأسلوب`](https://github.com/topics/style-guide), [`دليل الأسلوب`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | الوثائق العامة لبرنامج Visual Studio Code                                                                                                                               | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:Interactive Online Platform that Visualizes Algorithms from Code                                                                                               | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:Algorithm Visualizations                                                                                                                                    | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | Autonomous coding agent right in your IDE, capable of creating/editing files, executing commands, using the browser, and more with your permission every step of the way. | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Cursor's Open Source Documentation                                                                                                                                        | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go by Example                                                                                                                                                             | 7523  | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [mirror] Home of the go.dev and golang.org websites                                                                                                                       | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ Share quick reference cheat sheet for developers.                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
+| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | Style guides for Google-originated open-source projects                                                                                                                   | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | Public documentation for Visual Studio Code                                                                                                                               | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
-## طلب ترجمة مشروع
+## Requesting Project Translation
 
-إذا كنت ترغب في المساهمة بترجمة أو تحتاج إلى ترجمة مشروع:
+If you want to contribute a translation or need a project to be translated:
 
-1. قم بإنشاء قضية باستخدام القالب التالي:
+1. Create an issue using the following template:
 
 ```md
-**المشروع**: [project_url]
-**اللغة المستهدفة**: [target_lang]
-**الوصف**: وصف مختصر لماذا ستكون هذه الترجمة ذات قيمة
+**Project**: [project_url]
+**Target Language**: [target_lang]
+**Description**: Brief description of why this translation would be valuable
 ```
 
-2. سير العمل:
+2. Workflow:
 
 ```mermaid
 sequenceDiagram
-  المساهم->>مشروع المترجم: إنشاء قضية ترجمة
-  مشروع المترجم->>المجتمع: مراجعة القضية
-  المجتمع-->>المستفيد: الموافقة/التعليق
-  المساهم->>مشروع جديد: البدء بالترجمة
-  المساهم->>مشروع جديد: تقديم الترجمة إلى المشروع الجديد
-  المساهم->>مشروع المترجم: إنشاء طلب سحب (Pull Request)، تعديل README.Samples
-  مشروع المترجم-->>مشروع المترجم: مراجعة & دمج
+  Contributor->>Project Translator: Create translation issue
+  Project Translator->>Community: Review issue
+  Community-->>Contributor: Approve/Comment
+  Contributor->>New Project: Start translation
+  Contributor->>New Project: Submit to New Project
+  Contributor->>Project Translator: Create Pull Request, modify README.Samples
+  Project Translator-->>Project Translator: Review & Merge
 ```
 
-3. بعد دمج الطلب، سيتم إضافة الترجمة إلى قسم الأمثلة.
+3. After the PR is merged, the translation will be added to the Samples section.
 
-الترجمات قيد التقدم: [عرض القضايا](https://github.com/Project-Translation/project_translator/issues)
+Current translations in progress: [View Issues](https://github.com/Project-Translation/project_translator/issues)
 
-## المزايا
+## Features
 
-- 📁 دعم ترجمة على مستوى المجلدات
-  - ترجمة كامل مجلدات المشروع إلى عدة لغات
-  - الحفاظ على هيكل المجلدات الأصلي
-  - دعم الترجمة التكرارية للمجلدات الفرعية
-  - الكشف التلقائي عن المحتوى القابل للترجمة
-  - معالجة دفعات لتحسين الترجمة على نطاق واسع
-- 📄 دعم ترجمة على مستوى الملفات
-  - ترجمة ملفات فردية إلى عدة لغات
-  - الحفاظ على هيكل الملفات وتنسيقها
-  - دعم الوضعين: ترجمة المجلدات والملفات
-- 💡 ترجمة ذكية باستخدام الذكاء الاصطناعي
-  - الحفاظ تلقائيًا على سلامة بنية الشيفرة
-  - ترجمة تعليقات الشيفرة فقط، الحفاظ على المنطق
-  - الحفاظ على تنسيقات JSON/XML وبنى البيانات الأخرى
-  - جودة ترجمة وثائق تقنية متخصصة
-- ⚙️ إعدادات مرنة
-  - تكوين مجلد المصدر والمجلدات المستهدفة المتعددة
-  - دعم فترات تخصيص ترجمة الملفات
-  - تحديد أنواع الملفات التي يجب تجاهلها
-  - دعم خيارات متعددة لنموذج الذكاء الاصطناعي
-- 🚀 عمليات سهلة الاستخدام
-  - عرض تقدم الترجمة في الوقت الفعلي
-  - دعم الإيقاف المؤقت/استئناف/إيقاف الترجمة
-  - الحفاظ التلقائي على هيكل مجلد الهدف
-  - ترجمة تدريجية لتجنب العمل المتكرر
-- 🔄 ترجمة متقدمة باستخدام المقارنة
-  - **تحديثات دقيقة**: ترجمة المحتوى الذي تغير فعليًا فقط
-  - **تحكم سطري**: الحفاظ على التنسيق والبنية بدقة
-  - **ترجمة تدريجية**: مثالية للحفاظ على الوثائق المترجمة
-  - **صديق لتحكم الإصدارات**: إنشاء تغييرات دقيقة ومحددة
-  - **كفاءة مالية**: يقلل من استدعاءات الواجهة البرمجية من خلال ترجمة الاختلافات فقط
-  - **نسخ احتياطي تلقائي**: إنشاء ملفات احتياطية قبل تطبيق التغييرات تلقائيًا
+- 📁 Folder-level Translation Support
+  - Translate entire project folders to multiple languages
+  - Maintain original folder structure and hierarchy
+  - Support for recursive translation of subfolders
+  - Automatic detection of translatable content
+  - Batch processing for efficient large-scale translations
+- 📄 File-level Translation Support
+  - Translate individual files to multiple languages
+  - Preserve original file structure and formatting
+  - Support for both folder and file translation modes
+- 💡 Smart Translation with AI
+  - Automatically maintains code structure integrity
+  - Only translates code comments, preserves code logic
+  - Maintains JSON/XML and other data structure formats
+  - Professional technical documentation translation quality
+- ⚙️ Flexible Configuration
+  - Configure source folder and multiple target folders
+  - Support for custom file translation intervals
+  - Set specific file types to ignore
+  - Support for multiple AI model options
+- 🚀 User-Friendly Operations
+  - Real-time translation progress display
+  - Support for pause/resume/stop translation
+  - Automatic maintenance of target folder structure
+  - Incremental translation to avoid duplicate work
 
-## التثبيت
+## Installation
 
-1. ابحث عن "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" في متجر امتدادات VS Code
-2. انقر على تثبيت
+1. Search for "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" in VS Code extension marketplace
+2. Click install
 
-## الإعداد
+## Configuration
 
-الامتداد يدعم الخيارات التالية للإعداد:
+The extension supports the following configuration options:
 
 ```json
 {
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "مسار المجلد المصدر",
-        "lang": "رمز اللغة المصدر"
+        "path": "Source folder path",
+        "lang": "Source language code"
       },
       "targetFolders": [
         {
-          "path": "مسار المجلد المستهدف",
-          "lang": "رمز اللغة المستهدفة"
+          "path": "Target folder path",
+          "lang": "Target language code"
         }
       ]
     }
   ],
-  "projectTranslator.diffApply": {
-    "enabled": true,
-    "validationLevel": "normal",
-    "autoBackup": true,
-    "maxOperationsPerFile": 100
-  },
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "مسار الملف المصدر",
-        "lang": "رمز اللغة المصدر"
+        "path": "Source file path",
+        "lang": "Source language code"
       },
       "targetFiles": [
         {
-          "path": "مسار الملف المستهدف",
-          "lang": "رمز اللغة المستهدفة"
+          "path": "Target file path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -129,10 +133,11 @@ sequenceDiagram
   "projectTranslator.vendors": [
     {
       "name": "openai",
-      "apiEndpoint": "عنوان واجهة برمجة التطبيقات",
-      "apiKey": "مفتاح المصادقة لواجهة برمجة التطبيقات",
-      "model": "اسم النموذج المستخدم",
-      "rpm": "الحد الأقصى للطلبات في الدقيقة",
+      "apiEndpoint": "API endpoint URL",
+      "apiKey": "API authentication key",
+      "apiKeyEnvVarName": "Environment variable name for API key",
+      "model": "Model name to use",
+      "rpm": "Maximum requests per minute",
       "maxTokensPerSegment": 4096,
       "timeout": 30,
       "temperature": 0.0
@@ -141,91 +146,153 @@ sequenceDiagram
 }
 ```
 
-تفاصيل الإعداد الرئيسية:
+Key configuration details:
 
-| خيار الإعداد                        | الوصف                                                                                    |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`        | عدة مجلدات مصدر مع مجلدات الهدف المقابلة لها لإجراء الترجمة           |
-| `projectTranslator.specifiedFiles`          | عدة ملفات مصدر مع ملفات الهدف المقابلة لها لإجراء الترجمة               |
-| `projectTranslator.translationIntervalDays` | فترة الترجمة بال أيام (الافتراضي 7 أيام)                                                  |
-| `projectTranslator.copyOnly`                | ملفات لنسخها دون ترجمة (مع مصفوفات `paths` و `extensions`)                         |
-| `projectTranslator.ignore`                  | ملفات تتجاهل تمامًا (مع مصفوفات `paths` و `extensions`)                              |
-| `projectTranslator.currentVendor`           | مزود واجهة برمجة التطبيقات الحالي قيد الاستخدام                                                                      |
-| `projectTranslator.vendors`                 | قائمة إعدادات مزوّد واجهة برمجة التطبيقات                                                                  |
-| `projectTranslator.systemPrompts`           | مصفوفة التعليمات النظام لدليل عملية الترجمة                                        |
-| `projectTranslator.userPrompts`             | مصفوفة التعليمات المعرفة من قبل المستخدم، سيتم إضافتها بعد تعليمات النظام أثناء الترجمة |
-| `projectTranslator.segmentationMarkers`     | علامات التجزئة المُكوَّنة حسب نوع الملف، تدعم التعبيرات العادية                     |
-| `projectTranslator.debug`                   | تفعيل وضع التصحيح لتسجيل جميع طلبات واستجابات واجهة برمجة التطبيقات في قناة الإخراج (الافتراضي: false)    |
-| `projectTranslator.logFile`                 | إعدادات ملفات السجل (اطلع على [مزايا ملف السجل](./docs/log-file-feature.md))        |
+| خيار التهيئة                                | الوصف                                                                                     |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`        | مجلدات مصدر متعددة مع مجلدات الوجهة المقابلة لها للترجمة                                   |
+| `projectTranslator.specifiedFiles`          | ملفات مصدر متعددة مع ملفات الوجهة المقابلة لها للترجمة                                     |
+| `projectTranslator.translationIntervalDays` | الفاصل الزمني للترجمة بال أيام (القيمة الافتراضية 7 أيام)                                  |
+| `projectTranslator.copyOnly`                | الملفات التي سيتم نسخها دون ترجمة (مع مصفوفتي `paths` و`extensions`)                      |
+| `projectTranslator.ignore`                  | الملفات التي يتم تجاهلها تمامًا (مع مصفوفتي `paths` و`extensions`)                         |
+| `projectTranslator.skipFrontMatterMarkers`  | تخطي الملفات استنادًا إلى علامات الـ front matter (مع `enabled` ومصفوفة `markers`)         |
+| `projectTranslator.currentVendor`           | مزوّد واجهة برمجة التطبيقات الحالي المستخدم                                                |
+| `projectTranslator.vendors`                 | قائمة تهيئة مزوّدي واجهة برمجة التطبيقات (يمكن استخدام مفتاح API مباشرة أو `apiKeyEnvVarName` للمتغيرات البيئية) |
+| `projectTranslator.systemPrompts`           | مصفوفة الأوامر النظامية لتوجيه عملية الترجمة                                               |
+| `projectTranslator.userPrompts`             | مصفوفة الأوامر المحددة من قبل المستخدم، تُضاف هذه الأوامر بعد الأوامر النظامية أثناء الترجمة |
+| `projectTranslator.segmentationMarkers`     | علامات التقسيم المُعدّة حسب نوع الملف، وتُدعم التعبيرات المنتظمة                          |
+| `projectTranslator.debug`                   | تفعيل وضع التصحيح لتسجيل جميع طلبات وردود واجهة برمجة التطبيقات إلى قناة الإخراج (القيمة الافتراضية: false) |
+| `projectTranslator.logFile`                 | تهيئة ملفات سجل التصحيح (انظر [ميزة ملف السجل](./docs/log-file-feature.md))               |
 
 ## الاستخدام
 
 1. افتح لوحة الأوامر (Ctrl+Shift+P / Cmd+Shift+P)
-2. اكتب "Translate Project" وحدد الأمر
-3. إذا لم يتم تكوين مجلد المصدر، سيظهر مربع حوار لاختيار المجلد
+2. اكتب "ترجمة المشروع" وحدد الأمر
+3. إذا لم يتم تهيئة مجلد المصدر، ستظهر نافذة اختيار المجلد
 4. انتظر حتى تكتمل الترجمة
 
 أثناء الترجمة:
 
-- يمكن إيقاف الترجمة مؤقتًا أو استئنافها عبر أزرار شريط الحالة
+- يمكن إيقاف الترجمة مؤقتًا / استئنافها عبر أزرار شريط الحالة
 - يمكن إيقاف عملية الترجمة في أي وقت
-- تقدم الترجمة المعروض في منطقة الإشعارات
-- السجلات التفصيلية المعروضة في لوحة الإخراج
+- يتم عرض تقدم الترجمة في منطقة الإشعارات
+- تظهر السجلات التفصيلية في لوحة المخرجات
 
 ## التطوير
 
 ### نظام البناء
 
-يستخدم هذا الملحق esbuild لإنشاء الحزم بسرعة والتطوير:
+يستخدم هذا الامتداد esbuild للحزم السريعة والتطوير:
 
-#### النصوص المتوفرة
+#### النصوص المتاحة
 
-- `npm run build` - إنشاء إصدار إنتاج مع التضمين
-- `npm run compile` - إنشاء إصدار تطوير
-- `npm run watch` - وضع المراقبة للتطوير
+- `npm run build` - بناء للإنتاج مع التصغير
+- `npm run compile` - بناء للتطوير
+- `npm run watch` - الوضع المراقب للتطوير
 - `npm test` - تشغيل الاختبارات
 
 #### مهام VS Code
 
-- **البناء** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - تجميع الملحق للإنتاج
-- **المراقبة** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - وضع التطوير مع إعادة البناء التلقائية
+- **Build** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - يُجمّع الامتداد للإنتاج
+- **Watch** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - وضع التطوير مع إعادة البناء التلقائية
 
-### إعداد التطوير
+### إعدادات التطوير
 
-1. استنساخ المستودع
-2. قم بتشغيل `npm install` لتثبيت الاعتمادات
-3. اضغط `F5` لبدء التصحيح أو تشغيل مهمة "watch" للتطوير
+1. قم بنسخ المستودع
+2. قم بتشغيل `npm install` لتثبيت التبعيات
+3. اضغط `F5` لبدء التصحيح أو قم بتشغيل مهمة "watch" للتطوير
 
-تكوين esbuild:
+تهيئة esbuild:
 
-- يجمع كل ملفات TypeScript في ملف واحد `out/extension.js`
-- يستبعد واجهة برمجة التطبيقات الخاصة بـ VS Code (محددة كمكوّن خارجي)
+- يُجمّع جميع ملفات TypeScript في ملف واحد `out/extension.js`
+- يستثني واجهة برمجة تطبيقات VS Code (مُعلّم كمحتوى خارجي)
 
-## المزايا المتقدمة
+## الميزات المتقدمة
 
-### ترجمة باستخدام المقارنة
+### استخدام المتغيرات البيئية لمفاتيح API
 
-للحصول على معلومات مفصلة حول وضع الترجمة المتقدم باستخدام المقارنة، راجع [دليل استخدام الترجمة باستخدام المقارنة](./docs/diff-apply-usage.md).
+يدعم Project Translator استخدام المتغيرات البيئية لمفاتيح API، وهي طريقة أكثر أمانًا من تخزين المفاتيح مباشرة في ملفات التهيئة:
 
-تتيح هذه الميزة:
-- تحديثات دقيقة سطر بسطر
-- تقليل التكاليف المتعلقة بواجهة برمجة التطبيقات للملفات الكبيرة
-- تكامل أفضل مع التحكم بالإصدارات
-- الحفاظ على تنسيق الوثيقة
+1. قم بتهيئة المزوّد الخاص بك باستخدام الخاصية `apiKeyEnvVarName`:
 
-### الوثائق التقنية
+```json
+{
+  "projectTranslator.vendors": [
+    {
+      "name": "openai",
+      "apiEndpoint": "https://api.openai.com/v1",
+      "apiKeyEnvVarName": "OPENAI_API_KEY",
+      "model": "gpt-4"
+    },
+    {
+      "name": "openrouter",
+      "apiEndpoint": "https://openrouter.ai/api/v1",
+      "apiKeyEnvVarName": "OPENROUTER_API_KEY",
+      "model": "anthropic/claude-3-opus"
+    }
+  ]
+}
+```
 
-للحصول على تفاصيل تقنية حول تنفيذ المقارنة، راجع [تصميم ترجمة المقارنة](./docs/diff-apply-translation-design.md).
-- إنشاء خرائط مصدر للإصدارات التنموية
-- تضمين الشيفرة للإصدارات الإنتاجية
-- توفير دمج معالج مشاكل VS Code
+2. قم بتعيين المتغير البيئي في نظامك:
+   - في ويندوز: `set OPENAI_API_KEY=your_api_key`
+   - في ماك أو إس/لينكس: `export OPENAI_API_KEY=your_api_key`
 
-## الملاحظات
+3. عندما يعمل الامتداد، فإنه سيقوم بما يلي:
+   - التحقق أولًا مما إذا تم توفير `apiKey` مباشرة في التهيئة
+   - إذا لم يكن متوفرًا، فسيبحث عن المتغير البيئي المحدد بواسطة `apiKeyEnvVarName`
 
-- تأكد من وجود حصص كافية في واجهة برمجة التطبيقات
-- يُوصى باختباره أولًا مع مشاريع صغيرة
-- استخدم مفاتيح واجهة برمجة التطبيقات المخصصة وقم بإزالتها بعد الانتهاء
+تُبقي هذه الطريقة مفاتيح API الخاصة بك خارج ملفات التهيئة وأنظمة التحكم بالإصدار.
 
-## الرخصة
+### تخطي الترجمة استنادًا إلى الـ Front Matter
 
-[الرخصة](LICENSE)
+يمكن لـ Project Translator تخطي ترجمة ملفات Markdown استنادًا إلى بيانات الـ front matter الوصفية. وهذا مفيد للمستندات الأولية أو الملفات المعلمة بعدم الحاجة إلى الترجمة.
+
+لتمكين هذه الميزة، قم بتهيئة خيار `projectTranslator.skipFrontMatterMarkers`:
+
+```json
+{
+  "projectTranslator.skipFrontMatterMarkers": {
+    "enabled": true,
+    "markers": [
+      {
+        "key": "draft",
+        "value": "true"
+      },
+      {
+        "key": "translate",
+        "value": "false"
+      }
+    ]
+  }
+}
+```
+
+مع هذا الإعداد، سيتم تخطي أي ملف Markdown يحتوي على front matter يحتوي على `draft: true` أو `translate: false` أثناء الترجمة، وسيتم نسخه مباشرة إلى الموقع الهدف.
+
+مثال على ملف Markdown سيتم تخطيه:
+```
+---
+draft: true
+title: "مستند أولي"
+---
+
+هذا المستند هو مسودة ولا ينبغي ترجمته.
+```
+
+
+### توثيق التصميم
+
+- يُولّد خرائط المصدر للبناءات الخاصة بالتطوير
+- يُصغّر الكود للبناءات الخاصة بالإنتاج
+- يوفر دمجًا مع problem matcher في VS Code
+
+## ملاحظات
+
+- تأكد من توفر رصيد كافٍ لاستخدام واجهة برمجة التطبيقات
+- يُوصى بالاختبار مع مشاريع صغيرة أولًا
+- استخدم مفاتيح API مخصصة واحذفها بعد الانتهاء
+
+## الترخيص
+
+[الترخيص](LICENSE)

@@ -1,7 +1,14 @@
 {
   "package.nls.json": {
-    "translate_datetime": "2025-06-26:16:16",
-    "src_hash": "12fe816cdc98e49f5d1c93a54807662a",
-    "src_commit_id": "2da0fd6caa096f637df4907b8fc546bb619ce180"
+    "translate_datetime": "2025-08-05:18:18",
+    "src_hash": "66974ec984b77ba13573d8bd36c97015"
+  },
+  "l10n/bundle.l10n.json": {
+    "translate_datetime": "2025-08-05:18:16",
+    "src_hash": "8bdb32c28edeaf63d8736b7133890909"
+  },
+  "README.md": {
+    "translate_datetime": "2025-08-05:18:26",
+    "src_hash": "87963322d7c37d117f0cb26b9690806a"
   }
 }

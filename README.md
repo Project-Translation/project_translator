@@ -2,7 +2,6 @@
 
 A VSCode extension: An easy-to-use tool for multi-language localization of projects.
 
-<!--
 ## Available Translations
 
 The extension supports translation to these languages:
@@ -18,7 +17,7 @@ The extension supports translation to these languages:
 - [Русский (ru-ru)](./readmes/README.ru-ru.md)
 - [العربية (ar-sa)](./readmes/README.ar-sa.md)
 - [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md) -->
+- [العربية (ar-eg)](./readmes/README.ar-eg.md)
 
 ## Samples
 
@@ -90,13 +89,6 @@ Current translations in progress: [View Issues](https://github.com/Project-Trans
   - Support for pause/resume/stop translation
   - Automatic maintenance of target folder structure
   - Incremental translation to avoid duplicate work
-- 🔄 Advanced Diff Apply Translation
-  - **Precise Updates**: Only translate content that has actually changed
-  - **Line-by-line Control**: Maintain exact formatting and structure
-  - **Incremental Translation**: Perfect for maintaining translated documentation
-  - **Version Control Friendly**: Generates minimal, targeted changes
-  - **Cost Efficient**: Reduces API calls by translating only differences
-  - **Auto Backup**: Automatically creates backup files before applying changes
 
 ## Installation
 
@@ -123,12 +115,6 @@ The extension supports the following configuration options:
       ]
     }
   ],
-  "projectTranslator.diffApply": {
-    "enabled": true,
-    "validationLevel": "normal",
-    "autoBackup": true,
-    "maxOperationsPerFile": 100
-  },
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
@@ -149,6 +135,7 @@ The extension supports the following configuration options:
       "name": "openai",
       "apiEndpoint": "API endpoint URL",
       "apiKey": "API authentication key",
+      "apiKeyEnvVarName": "Environment variable name for API key",
       "model": "Model name to use",
       "rpm": "Maximum requests per minute",
       "maxTokensPerSegment": 4096,
@@ -168,13 +155,14 @@ Key configuration details:
 | `projectTranslator.translationIntervalDays` | Translation interval in days (default 7 days)                                                  |
 | `projectTranslator.copyOnly`                | Files to copy but not translate (with `paths` and `extensions` arrays)                         |
 | `projectTranslator.ignore`                  | Files to ignore completely (with `paths` and `extensions` arrays)                              |
+| `projectTranslator.skipFrontMatterMarkers`  | Skip files based on front matter markers (with `enabled` and `markers` arrays)                 |
 | `projectTranslator.currentVendor`           | Current API vendor in use                                                                      |
-| `projectTranslator.vendors`                 | API vendor configuration list                                                                  |
+| `projectTranslator.vendors`                 | API vendor configuration list (can use apiKey directly or apiKeyEnvVarName for environment variables) |
 | `projectTranslator.systemPrompts`           | System prompt array for guiding the translation process                                        |
 | `projectTranslator.userPrompts`             | User-defined prompt array, these prompts will be added after system prompts during translation |
 | `projectTranslator.segmentationMarkers`     | Segmentation markers configured by file type, supports regular expressions                     |
-| `projectTranslator.debug`                   | Enable debug mode to log all API requests and responses to output channel (default: false)    |
-| `projectTranslator.logFile`                 | Configuration for debug log files (see [Log File Feature](./docs/log-file-feature.md))        |
+| `projectTranslator.debug`                   | Enable debug mode to log all API requests and responses to output channel (default: false)     |
+| `projectTranslator.logFile`                 | Configuration for debug log files (see [Log File Feature](./docs/log-file-feature.md))         |
 
 ## Usage
 
@@ -221,19 +209,80 @@ The esbuild configuration:
 
 ## Advanced Features
 
-### Diff Apply Translation
+### Using Environment Variables for API Keys
 
-For detailed information about the advanced Diff Apply translation mode, see the [Diff Apply Usage Guide](./docs/diff-apply-usage.md).
+Project Translator supports using environment variables for API keys, which is a more secure approach than storing API keys directly in configuration files:
 
-This feature enables:
-- Precise line-by-line translation updates
-- Reduced API costs for large files
-- Better version control integration
-- Preserved document formatting
+1. Configure your vendor with an `apiKeyEnvVarName` property:
+
+```json
+{
+  "projectTranslator.vendors": [
+    {
+      "name": "openai",
+      "apiEndpoint": "https://api.openai.com/v1",
+      "apiKeyEnvVarName": "OPENAI_API_KEY",
+      "model": "gpt-4"
+    },
+    {
+      "name": "openrouter",
+      "apiEndpoint": "https://openrouter.ai/api/v1",
+      "apiKeyEnvVarName": "OPENROUTER_API_KEY",
+      "model": "anthropic/claude-3-opus"
+    }
+  ]
+}
+```
+
+2. Set the environment variable in your system:
+   - On Windows: `set OPENAI_API_KEY=your_api_key`
+   - On macOS/Linux: `export OPENAI_API_KEY=your_api_key`
+
+3. When the extension runs, it will:
+   - First check if `apiKey` is provided directly in the configuration
+   - If not, it will look for the environment variable specified by `apiKeyEnvVarName`
+
+This approach keeps your API keys out of configuration files and version control systems.
+
+### Skip Translation Based on Front Matter
+
+Project Translator can skip translation of Markdown files based on their front matter metadata. This is useful for draft documents or files marked as not requiring translation.
+
+To enable this feature, configure the `projectTranslator.skipFrontMatterMarkers` option:
+
+```json
+{
+  "projectTranslator.skipFrontMatterMarkers": {
+    "enabled": true,
+    "markers": [
+      {
+        "key": "draft",
+        "value": "true"
+      },
+      {
+        "key": "translate",
+        "value": "false"
+      }
+    ]
+  }
+}
+```
+
+With this configuration, any Markdown file with front matter containing `draft: true` or `translate: false` will be skipped during translation and directly copied to the target location.
+
+Example Markdown file that would be skipped:
+```
+---
+draft: true
+title: "Draft Document"
+---
+
+This document is a draft and should not be translated.
+```
+
 
 ### Design Documentation
 
-For technical details about the diff apply implementation, see the [Diff Apply Translation Design](./docs/diff-apply-translation-design.md).
 - Generates source maps for development builds
 - Minifies code for production builds
 - Provides problem matcher integration for VS Code

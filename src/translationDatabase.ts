@@ -147,7 +147,7 @@ export class TranslationDatabase {
     try {
       if (fs.existsSync(cacheFilePath)) {
         const cacheContent = fs.readFileSync(cacheFilePath, "utf8");
-        const cache = JSON.parse(cacheContent) as TranslationRecord;
+        const cache = JSON.parse(cacheContent);
         this.translationCache.set(lang, cache);
         const recordCount = Object.keys(cache).length;
         logMessage(
@@ -175,6 +175,10 @@ export class TranslationDatabase {
   } // Helper method to save the cache for a specific language
   private async saveCacheForLanguage(lang: SupportedLanguage): Promise<void> {
     if (!isValidLanguage(lang)) {
+      logMessage(
+        `⚠️ Cannot save cache for invalid language code "${lang}"`,
+        'warn'
+      );
       return;
     }
 
@@ -185,15 +189,13 @@ export class TranslationDatabase {
     const cacheFilePath = path.join(this.translationCacheDir, cacheFileName);
 
     try {
-      const cacheContent = JSON.stringify(
-        this.translationCache.get(lang) || {},
-        null,
-        2
+      const cache = this.translationCache.get(lang) || {};
+      const cacheContent = JSON.stringify(cache, null, 2);
+      logMessage(
+        `💾 Writing cache content for ${lang} to ${cacheFilePath} with ${Object.keys(cache).length} records`
       );
       fs.writeFileSync(cacheFilePath, cacheContent, "utf8");
-      const recordCount = Object.keys(
-        this.translationCache.get(lang) || {}
-      ).length;
+      const recordCount = Object.keys(cache).length;
       logMessage(
         `💾 Saved cache for ${lang}: ${recordCount} records to ${cacheFileName}`
       );
@@ -260,20 +262,35 @@ export class TranslationDatabase {
 
     // Ensure cache exists for this language
     if (!this.translationCache.has(targetLang)) {
+      logMessage(
+        `🔍 Loading cache for language ${targetLang} as it doesn't exist yet`
+      );
       await this.loadCacheForLanguage(targetLang);
     }
 
     // Get the translation record for this language
     const translationRecord = this.translationCache.get(targetLang) || {};
+    logMessage(
+      `📋 Current translation records for ${targetLang}: ${Object.keys(translationRecord).length}`
+    );
 
     // Get current file info
     const fileInfo = await this.getCurrentFileInfo(sourcePath);
+    logMessage(
+      `📄 File info for ${relativeSourcePath}: ${JSON.stringify(fileInfo)}`
+    );
 
     // Update the record
     translationRecord[relativeSourcePath] = fileInfo;
+    logMessage(
+      `✏️ Updated record in memory for ${relativeSourcePath}`
+    );
 
     // Save back to the cache
     this.translationCache.set(targetLang, translationRecord);
+    logMessage(
+      `💾 Set translation record in memory cache for ${targetLang}`
+    );
 
     // Save to file
     await this.saveCacheForLanguage(targetLang);
@@ -410,9 +427,12 @@ export class TranslationDatabase {
     logMessage("🔒 Closing translation database...");
 
     // Save all caches before closing
-    const savePromises = Array.from(this.translationCache.keys()).map((lang) =>
-      this.saveCacheForLanguage(lang)
-    );
+    const languages = Array.from(this.translationCache.keys());
+    logMessage(`💾 Saving caches for ${languages.length} languages before closing`);
+    const savePromises = languages.map((lang) => {
+      logMessage(`💾 Saving cache for language: ${lang}`);
+      return this.saveCacheForLanguage(lang);
+    });
 
     return Promise.all(savePromises).then(() => {
       // Clear the cache to free up memory

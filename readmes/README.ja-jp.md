@@ -1,144 +1,130 @@
-# プロジェクト翻訳ツール
+# Project Translator
 
-VSCode拡張機能：プロジェクトの多言語ローカライズを簡単に行うツール。
+A VSCode extension: An easy-to-use tool for multi-language localization of projects.
 
-<!--
-## 利用可能な翻訳
+## Available Translations
 
-この拡張機能は以下の言語への翻訳をサポートしています：
+The extension supports translation to these languages:
 
-- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
-- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
-- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
-- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
-- [Français (fr-fr)](./readmes/README.fr-fr.md)
-- [Deutsch (de-de)](./readmes/README.de-de.md)
-- [Español (es-es)](./readmes/README.es-es.md)
-- [Português (pt-br)](./readmes/README.pt-br.md)
-- [Русский (ru-ru)](./readmes/README.ru-ru.md)
-- [العربية (ar-sa)](./readmes/README.ar-sa.md)
-- [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md) -->
+- [简体中文 (zh-cn)](./README.zh-cn.md)
+- [繁體中文 (zh-tw)](./README.zh-tw.md)
+- [日本語 (ja-jp)](./README.ja-jp.md)
+- [한국어 (ko-kr)](./README.ko-kr.md)
+- [Français (fr-fr)](./README.fr-fr.md)
+- [Deutsch (de-de)](./README.de-de.md)
+- [Español (es-es)](./README.es-es.md)
+- [Português (pt-br)](./README.pt-br.md)
+- [Русский (ru-ru)](./README.ru-ru.md)
+- [العربية (ar-sa)](./README.ar-sa.md)
+- [العربية (ar-ae)](./README.ar-ae.md)
+- [العربية (ar-eg)](./README.ar-eg.md)
 
-## サンプル
+## Samples
 
-| プロジェクト                                                                             | オリジナルリポジトリ                                                                                       | 説明                                                                                                                                                               | スター数 | タグ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Project                                                                             | Original Repository                                                                                       | Description                                                                                                                                                               | Stars | Tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:コードからアルゴリズムを視覚化するインタラクティブなオンラインプラットフォーム                                                                                               | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:アルゴリズムの視覚化                                                                                                                                    | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | IDE内で動作する自律的なコーディングエージェント。ファイルの作成/編集、コマンドの実行、ブラウザの使用などを許可されたステップごとに実行できます。 | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Cursorのオープンソースドキュメント                                                                                                                                        | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:Interactive Online Platform that Visualizes Algorithms from Code                                                                                               | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:Algorithm Visualizations                                                                                                                                    | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | Autonomous coding agent right in your IDE, capable of creating/editing files, executing commands, using the browser, and more with your permission every step of the way. | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Cursor's Open Source Documentation                                                                                                                                        | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go by Example                                                                                                                                                             | 7523  | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [ミラー] go.devとgolang.orgウェブサイトのホーム                                                                                                                       | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ 開発者向けのクイックリファレンスチートシートを共有します。                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
-| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | Google発祥のオープンソースプロジェクトのスタイルガイド                                                                                                                   | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | Visual Studio Codeの公開ドキュメント                                                                                                                               | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [mirror] Home of the go.dev and golang.org websites                                                                                                                       | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ Share quick reference cheat sheet for developers.                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
+| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | Style guides for Google-originated open-source projects                                                                                                                   | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | Public documentation for Visual Studio Code                                                                                                                               | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
-## プロジェクト翻訳のリクエスト
+## Requesting Project Translation
 
-翻訳を提供したい、またはプロジェクトを翻訳してほしい場合は：
+If you want to contribute a translation or need a project to be translated:
 
-1. 以下のテンプレートを使用してIssueを作成してください：
+1. Create an issue using the following template:
 
 ```md
-**プロジェクト**: [project_url]
-**ターゲット言語**: [target_lang]
-**説明**: この翻訳が価値ある理由の簡単な説明
+**Project**: [project_url]
+**Target Language**: [target_lang]
+**Description**: Brief description of why this translation would be valuable
 ```
 
-2. ワークフロー：
+2. Workflow:
 
 ```mermaid
 sequenceDiagram
-  Contributor->>Project Translator: 翻訳Issueを作成
-  Project Translator->>Community: Issueをレビュー
-  Community-->>Contributor: 承認/コメント
-  Contributor->>New Project: 翻訳を開始
-  Contributor->>New Project: 新プロジェクトに提出
-  Contributor->>Project Translator: プルリクエストを作成、README.Samplesを修正
-  Project Translator-->>Project Translator: レビュー＆マージ
+  Contributor->>Project Translator: Create translation issue
+  Project Translator->>Community: Review issue
+  Community-->>Contributor: Approve/Comment
+  Contributor->>New Project: Start translation
+  Contributor->>New Project: Submit to New Project
+  Contributor->>Project Translator: Create Pull Request, modify README.Samples
+  Project Translator-->>Project Translator: Review & Merge
 ```
 
-3. PRがマージされた後、翻訳はサンプルセクションに追加されます。
+3. After the PR is merged, the translation will be added to the Samples section.
 
-進行中の翻訳: [Issueを表示](https://github.com/Project-Translation/project_translator/issues)
+Current translations in progress: [View Issues](https://github.com/Project-Translation/project_translator/issues)
 
-## 機能
+## Features
 
-- 📁 フォルダレベル翻訳サポート
-  - プロジェクトフォルダ全体を複数言語に翻訳
-  - 元のフォルダ構造と階層を維持
-  - サブフォルダの再帰的翻訳をサポート
-  - 翻訳可能なコンテンツの自動検出
-  - 大規模翻訳のためのバッチ処理
-- 📄 ファイルレベル翻訳サポート
-  - 個々のファイルを複数言語に翻訳
-  - 元のファイル構造とフォーマットを維持
-  - フォルダとファイルの翻訳モードをサポート
-- 💡 AIによるスマート翻訳
-  - コード構造の整合性を自動的に維持
-  - コードコメントのみ翻訳、コードロジックは保持
-  - JSON/XMLなどのデータ構造フォーマットを維持
-  - プロフェッショナルな技術文書翻訳品質
-- ⚙️ 柔軟な設定
-  - ソースフォルダと複数のターゲットフォルダを設定
-  - カスタムファイル翻訳間隔をサポート
-  - 無視する特定のファイルタイプを設定
-  - 複数のAIモデルオプションをサポート
-- 🚀 ユーザーフレンドリーな操作
-  - リアルタイムの翻訳進捗表示
-  - 翻訳の一時停止/再開/停止をサポート
-  - ターゲットフォルダ構造を自動的に維持
-  - 重複作業を避けるための増分翻訳
-- 🔄 高度な差分適用翻訳
-  - **正確な更新**: 実際に変更されたコンテンツのみ翻訳
-  - **行単位の制御**: 正確なフォーマットと構造を維持
-  - **増分翻訳**: 翻訳されたドキュメントの維持に最適
-  - **バージョンコントロールに優しい**: 最小限のターゲット変更を生成
-  - **コスト効率**: 差分のみを翻訳することでAPIコールを削減
-  - **自動バックアップ**: 変更を適用する前に自動的にバックアップファイルを作成
+- 📁 Folder-level Translation Support
+  - Translate entire project folders to multiple languages
+  - Maintain original folder structure and hierarchy
+  - Support for recursive translation of subfolders
+  - Automatic detection of translatable content
+  - Batch processing for efficient large-scale translations
+- 📄 File-level Translation Support
+  - Translate individual files to multiple languages
+  - Preserve original file structure and formatting
+  - Support for both folder and file translation modes
+- 💡 Smart Translation with AI
+  - Automatically maintains code structure integrity
+  - Only translates code comments, preserves code logic
+  - Maintains JSON/XML and other data structure formats
+  - Professional technical documentation translation quality
+- ⚙️ Flexible Configuration
+  - Configure source folder and multiple target folders
+  - Support for custom file translation intervals
+  - Set specific file types to ignore
+  - Support for multiple AI model options
+- 🚀 User-Friendly Operations
+  - Real-time translation progress display
+  - Support for pause/resume/stop translation
+  - Automatic maintenance of target folder structure
+  - Incremental translation to avoid duplicate work
 
-## インストール
+## Installation
 
-1. VS Code拡張機能マーケットプレイスで"[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)"を検索
-2. インストールをクリック
+1. Search for "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" in VS Code extension marketplace
+2. Click install
 
-## 設定
+## Configuration
 
-この拡張機能は以下の設定オプションをサポートしています：
+The extension supports the following configuration options:
 
 ```json
 {
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "ソースフォルダのパス",
-        "lang": "ソース言語コード"
+        "path": "Source folder path",
+        "lang": "Source language code"
       },
       "targetFolders": [
         {
-          "path": "ターゲットフォルダのパス",
-          "lang": "ターゲット言語コード"
+          "path": "Target folder path",
+          "lang": "Target language code"
         }
       ]
     }
   ],
-  "projectTranslator.diffApply": {
-    "enabled": true,
-    "validationLevel": "normal",
-    "autoBackup": true,
-    "maxOperationsPerFile": 100
-  },
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "ソースファイルのパス",
-        "lang": "ソース言語コード"
+        "path": "Source file path",
+        "lang": "Source language code"
       },
       "targetFiles": [
         {
-          "path": "ターゲットファイルのパス",
-          "lang": "ターゲット言語コード"
+          "path": "Target file path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -147,10 +133,11 @@ sequenceDiagram
   "projectTranslator.vendors": [
     {
       "name": "openai",
-      "apiEndpoint": "APIエンドポイントURL",
-      "apiKey": "API認証キー",
-      "model": "使用するモデル名",
-      "rpm": "1分あたりの最大リクエスト数",
+      "apiEndpoint": "API endpoint URL",
+      "apiKey": "API authentication key",
+      "apiKeyEnvVarName": "Environment variable name for API key",
+      "model": "Model name to use",
+      "rpm": "Maximum requests per minute",
       "maxTokensPerSegment": 4096,
       "timeout": 30,
       "temperature": 0.0
@@ -159,89 +146,151 @@ sequenceDiagram
 }
 ```
 
-主な設定の詳細：
+Key configuration details:
 
-| 設定オプション                        | 説明                                                                                    |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`        | 翻訳用の複数のソースフォルダとそれに対応する宛先フォルダ           |
-| `projectTranslator.specifiedFiles`          | 翻訳用の複数のソースファイルとそれに対応する宛先ファイル               |
-| `projectTranslator.translationIntervalDays` | 翻訳間隔（デフォルト7日）                                                  |
-| `projectTranslator.copyOnly`                | 翻訳せずにコピーするファイル（`paths`と`extensions`配列）                         |
-| `projectTranslator.ignore`                  | 完全に無視するファイル（`paths`と`extensions`配列）                              |
-| `projectTranslator.currentVendor`           | 現在使用中のAPIベンダー                                                                      |
-| `projectTranslator.vendors`                 | APIベンダーの設定リスト                                                                  |
-| `projectTranslator.systemPrompts`           | 翻訳プロセスをガイドするシステムプロンプトの配列                                        |
-| `projectTranslator.userPrompts`             | ユーザー定義のプロンプト配列。これらのプロンプトは翻訳中にシステムプロンプトの後に追加されます |
-| `projectTranslator.segmentationMarkers`     | ファイルタイプごとに設定されたセグメンテーションマーカー。正規表現をサポート                     |
-| `projectTranslator.debug`                   | デバッグモードを有効にして、すべてのAPIリクエストとレスポンスを出力チャネルにログします（デフォルト: false）    |
-| `projectTranslator.logFile`                 | デバッグログファイルの設定（[ログファイル機能](./docs/log-file-feature.md)を参照）        |
+| 構成オプション                                | 説明                                                                                      |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`          | 翻訳用の複数のソースフォルダーと対応する宛先フォルダー                                      |
+| `projectTranslator.specifiedFiles`            | 翻訳用の複数のソースファイルと対応する宛先ファイル                                          |
+| `projectTranslator.translationIntervalDays`   | 翻訳間隔（日数）（デフォルト7日）                                                         |
+| `projectTranslator.copyOnly`                  | コピー対象だが翻訳対象外のファイル（`paths`および`extensions`配列付き）                    |
+| `projectTranslator.ignore`                    | 完全に無視するファイル（`paths`および`extensions`配列付き）                                |
+| `projectTranslator.skipFrontMatterMarkers`    | フロントマターのマーカーに基づいてファイルをスキップ（`enabled`および`markers`配列付き） |
+| `projectTranslator.currentVendor`             | 使用中の現在のAPIベンダー                                                                 |
+| `projectTranslator.vendors`                   | APIベンダーの構成リスト（apiKeyを直接使用、または環境変数用にapiKeyEnvVarNameを使用可能） |
+| `projectTranslator.systemPrompts`             | 翻訳プロセスをガイドするシステムプロンプト配列                                            |
+| `projectTranslator.userPrompts`               | ユーザー定義プロンプト配列。翻訳中にシステムプロンプトの後に追加される                    |
+| `projectTranslator.segmentationMarkers`       | ファイルタイプごとに構成されたセグメンテーションマーカー。正規表現をサポート              |
+| `projectTranslator.debug`                     | デバッグモードを有効化し、すべてのAPIリクエストと応答を出力チャンネルにログ出力（デフォルト：false） |
+| `projectTranslator.logFile`                   | デバッグログファイルの構成（[ログファイル機能](./docs/log-file-feature.md)を参照）       |
 
 ## 使用方法
 
 1. コマンドパレットを開く（Ctrl+Shift+P / Cmd+Shift+P）
-2. "Translate Project"と入力してコマンドを選択
-3. ソースフォルダが設定されていない場合、フォルダ選択ダイアログが表示されます
-4. 翻訳が完了するのを待つ
+2. 「Translate Project」と入力し、コマンドを選択
+3. ソースフォルダーが構成されていない場合、フォルダー選択ダイアログが表示される
+4. 翻訳が完了するまで待つ
 
 翻訳中：
 
-- ステータスバーのボタンで翻訳を一時停止/再開できます
-- いつでも翻訳プロセスを停止できます
-- 翻訳の進捗状況が通知領域に表示されます
-- 詳細なログが出力パネルに表示されます
+- ステータスバーのボタンから翻訳の一時停止／再開が可能
+- いつでも翻訳プロセスを停止できる
+- 翻訳の進捗状況は通知エリアに表示される
+- 詳細なログは出力パネルに表示される
 
 ## 開発
 
 ### ビルドシステム
 
-この拡張機能はesbuildを使用して高速なバンドルと開発を行います：
+この拡張機能は高速なバンドルと開発のためにesbuildを使用しています：
 
-#### 利用可能なスクリプト
+#### 使用可能なスクリプト
 
-- `npm run build` - ミニファイされたプロダクションビルド
-- `npm run compile` - 開発ビルド
+- `npm run build` - ミニファイ付きの本番ビルド
+- `npm run compile` - 開発用ビルド
 - `npm run watch` - 開発用のウォッチモード
-- `npm test` - テストを実行
+- `npm test` - テストの実行
 
 #### VS Codeタスク
 
-- **ビルド** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - プロダクション用に拡張機能をバンドル
-- **ウォッチ** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - 自動リビルド付きの開発モード
+- **Build**（Ctrl+Shift+P → 「タスク：タスクの実行」→ 「build」） - 本番用に拡張機能をバンドル
+- **Watch**（Ctrl+Shift+P → 「タスク：タスクの実行」→ 「watch」） - 自動再構築付きの開発モード
 
 ### 開発セットアップ
 
 1. リポジトリをクローン
-2. `npm install`を実行して依存関係をインストール
-3. `F5`を押してデバッグを開始するか、"watch"タスクを実行して開発を開始
+2. `npm install` を実行して依存関係をインストール
+3. デバッグを開始するには `F5` を押すか、開発用に「watch」タスクを実行
 
-esbuildの設定：
+esbuildの構成：
 
-- すべてのTypeScriptファイルを単一の`out/extension.js`にバンドル
-- VS Code APIを除外（外部としてマーク）
+- すべてのTypeScriptファイルを単一の `out/extension.js` にバンドル
+- VS Code APIを除外（externalとしてマーク）
 
 ## 高度な機能
 
-### 差分適用翻訳
+### APIキーに環境変数を使用
 
-高度な差分適用翻訳モードの詳細については、[差分適用使用ガイド](./docs/diff-apply-usage.md)を参照してください。
+Project Translatorは、APIキーに環境変数を使用することをサポートしています。これは、APIキーを構成ファイルに直接保存するよりも安全な方法です：
 
-この機能により以下が可能になります：
-- 正確な行単位の翻訳更新
-- 大規模ファイルのAPIコスト削減
-- バージョンコントロールとのより良い統合
-- ドキュメントフォーマットの維持
+1. `apiKeyEnvVarName` プロパティでベンダーを構成：
+
+```json
+{
+  "projectTranslator.vendors": [
+    {
+      "name": "openai",
+      "apiEndpoint": "https://api.openai.com/v1",
+      "apiKeyEnvVarName": "OPENAI_API_KEY",
+      "model": "gpt-4"
+    },
+    {
+      "name": "openrouter",
+      "apiEndpoint": "https://openrouter.ai/api/v1",
+      "apiKeyEnvVarName": "OPENROUTER_API_KEY",
+      "model": "anthropic/claude-3-opus"
+    }
+  ]
+}
+```
+
+2. システムに環境変数を設定：
+   - Windowsの場合：`set OPENAI_API_KEY=your_api_key`
+   - macOS/Linuxの場合：`export OPENAI_API_KEY=your_api_key`
+
+3. 拡張機能が実行されると：
+   - まず構成内に `apiKey` が直接指定されているか確認
+   - 指定されていない場合、`apiKeyEnvVarName` で指定された環境変数を探す
+
+この方法により、APIキーを構成ファイルやバージョン管理システムから外すことができます。
+
+### フロントマターに基づいて翻訳をスキップ
+
+Project Translatorは、Markdownファイルのフロントマターメタデータに基づいて翻訳をスキップできます。これは下書きドキュメントや翻訳不要とマークされたファイルに便利です。
+
+この機能を有効にするには、`projectTranslator.skipFrontMatterMarkers` オプションを構成します：
+
+```json
+{
+  "projectTranslator.skipFrontMatterMarkers": {
+    "enabled": true,
+    "markers": [
+      {
+        "key": "draft",
+        "value": "true"
+      },
+      {
+        "key": "translate",
+        "value": "false"
+      }
+    ]
+  }
+}
+```
+
+この構成により、フロントマターに `draft: true` または `translate: false` を含むMarkdownファイルは翻訳からスキップされ、ターゲット先に直接コピーされます。
+
+スキップされるMarkdownファイルの例：
+```
+---
+draft: true
+title: "下書きドキュメント"
+---
+
+このドキュメントは下書きであり、翻訳すべきではありません。
+```
+
 
 ### 設計ドキュメント
 
-差分適用の実装に関する技術的な詳細については、[差分適用翻訳設計](./docs/diff-apply-translation-design.md)を参照してください。
-- 開発ビルド用のソースマップを生成
-- プロダクションビルド用にコードをミニファイ
-- VS Codeの問題マッチャー統合を提供
+- 開発用ビルドにソースマップを生成
+- 本番用ビルドにコードをミニファイ
+- VS Code用の問題マッチャー統合を提供
 
 ## 注意事項
 
 - 十分なAPI使用クォータを確保してください
-- 最初に小さなプロジェクトでテストすることをお勧めします
+- 小規模なプロジェクトでテストすることを推奨
 - 専用のAPIキーを使用し、完了後に削除してください
 
 ## ライセンス

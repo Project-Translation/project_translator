@@ -68,44 +68,40 @@ export interface IgnoreConfig {
     extensions: string[];
 }
 
-// Diff Apply Translation Types
-export interface DiffOperation {
-    type: 'update' | 'insert' | 'delete';
-    line_number: number;
-    old_content?: string;
-    new_content?: string;
-    content?: string;
-}
-
-export interface DiffApplyRequest {
-    operation: 'diff_apply_translation';
-    source_language: SupportedLanguage;
-    target_language: SupportedLanguage;
-    source_document: {
-        path: string;
-        content: string;
-    };
-    target_document: {
-        path: string;
-        content: string;
-    };
-}
-
-export interface DiffApplyResponse {
-    status: 'success' | 'error' | 'no_changes';
-    operations?: DiffOperation[];
-    error_message?: string;
-    metadata?: {
-        totalOperations: number;
-        processingTime: number;
-        estimated_changes?: 'minor' | 'major' | 'extensive';
-    };
-}
-
-export interface DiffApplyConfig {
+export interface Config {
+  currentVendorName: string;
+  currentVendor: VendorConfig;
+  vendors: VendorConfig[];
+  specifiedFiles: SpecifiedFile[];
+  specifiedFolders: SpecifiedFolder[];
+  translationIntervalDays: number;
+  copyOnly: {
+    paths: string[];
+    extensions: string[];
+  };
+  ignore: {
+    paths: string[];
+    extensions: string[];
+  };
+  systemPrompts: string[];
+  userPrompts: string[];
+  segmentationMarkers: Record<string, string[]>; // TODO: This should be a map of language to array of strings
+  debug: boolean;
+  logFile: {
     enabled: boolean;
-    validationLevel: 'strict' | 'normal' | 'loose';
-    autoBackup: boolean;
-    maxOperationsPerFile: number;
+    maxSizeKB: number;
+    maxFiles: number;
+  };
 }
+
+export interface FrontMatterMarker {
+    key: string;
+    value: string;
+}
+
+export interface SkipFrontMatterConfig {
+    enabled: boolean;
+    markers: FrontMatterMarker[];
+}
+
 

@@ -6,18 +6,22 @@ import { isBinaryFile } from "isbinaryfile";
 import * as glob from 'glob';
 import { TranslationDatabase } from "../translationDatabase";
 import { DestFolder, SupportedLanguage } from "../types/types";
-import { TranslatorService, AI_RETURN_CODE } from "./translatorService";
-import { DiffApplyService } from "./diffApplyService";
+import { TranslatorService } from "./translatorService";
 
 import { estimateTokenCount, segmentText, combineSegments } from "../segmentationUtils";
 import { getConfiguration } from "../config/config";
 import { logMessage } from '../extension';
 
+// AI return code.
+const AI_RETURN_CODE = {
+  OK: "OK",
+  NO_NEED_TRANSLATE: "727d2eb8-8683-42bd-a1d0-f604fcd82163",
+};
+
 export class FileProcessor {
     private outputChannel: vscode.OutputChannel;
     private translationDb: TranslationDatabase;
     private translatorService: TranslatorService;
-    private diffApplyService: DiffApplyService;
 
     private processedFilesCount = 0;
     private skippedFilesCount = 0;
@@ -25,7 +29,15 @@ export class FileProcessor {
     private failedFilePaths: string[] = [];
     private isPaused = false;
     private cancellationToken?: vscode.CancellationToken;
-    private workspaceRoot: string;    constructor(
+    private workspaceRoot: string;
+    
+    // Cache to store whether a source file needs translation (to ensure each source is checked only once)
+    private translationDecisionCache: Map<string, {shouldTranslate: boolean, timestamp: number}> = new Map();
+    
+    // Cache to store files that were marked as "no need to translate" during this session
+    private noTranslateCache: Map<string, boolean> = new Map();
+
+    constructor(
         outputChannel: vscode.OutputChannel,
         translationDb: TranslationDatabase,
         translatorService: TranslatorService
@@ -33,9 +45,6 @@ export class FileProcessor {
         this.outputChannel = outputChannel;
         this.translationDb = translationDb;
         this.translatorService = translatorService;
-        this.diffApplyService = new DiffApplyService(outputChannel);
-        
-
         
         // Get workspace root path
         this.workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
@@ -186,6 +195,15 @@ export class FileProcessor {
                 return;
             }
 
+            // Check if file should be skipped based on front matter markers
+            if (this.shouldSkipByFrontMatter(resolvedSourcePath)) {
+                logMessage(`⏭️ Skipping file due to front matter marker: ${resolvedSourcePath}`);
+                // Copy the file directly without translation
+                await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
+                await this.translationDb.updateTranslationTime(resolvedSourcePath, resolvedTargetPath, targetLang);
+                return;
+            }
+
             // Handle different file types
             const ext = path.extname(resolvedSourcePath).toLowerCase();
             const config = getConfiguration();
@@ -199,11 +217,13 @@ export class FileProcessor {
             // Check if file should be copied only (not translated)
             if (this.shouldCopyOnly(resolvedSourcePath, ext, config)) {
                 await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
+                await this.translationDb.updateTranslationTime(resolvedSourcePath, resolvedTargetPath, targetLang);
                 return;
             }
 
             if (await isBinaryFile(resolvedSourcePath)) {
                 await this.handleBinaryFile(resolvedSourcePath, resolvedTargetPath);
+                await this.translationDb.updateTranslationTime(resolvedSourcePath, resolvedTargetPath, targetLang);
                 return;
             }
 
@@ -214,14 +234,111 @@ export class FileProcessor {
             this.failedFilePaths.push(sourcePath);
             throw error;
         }
-    } private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
-        // Check translation interval
-        const shouldTranslate = await this.translationDb.shouldTranslate(sourcePath, targetPath, targetLang);
-        if (!shouldTranslate) {
-            logMessage("⏭️ Skipping translation");
+    } 
+    
+    private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
+        // Check if we've already decided this source file doesn't need translation in this session
+        if (this.noTranslateCache.has(sourcePath)) {
+            logMessage(`⏭️ Skipping translation (previously marked as no need to translate in this session)`);
+            this.skippedFilesCount++;
+            await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
             return true;
         }
+        
+        // Check if we have a recent, valid decision in the cache
+        const cachedDecision = this.translationDecisionCache.get(sourcePath);
+        if (cachedDecision && (Date.now() - cachedDecision.timestamp) < 5 * 60 * 1000) { // 5-minute cache validity
+            if (!cachedDecision.shouldTranslate) {
+                logMessage(`⏭️ Skipping translation (cached decision: no need to translate)`);
+                this.skippedFilesCount++;
+                this.noTranslateCache.set(sourcePath, true); // Ensure session cache is also populated
+                await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+                return true;
+            } else {
+                // If cache says we should translate, we don't need to check the database again.
+                return false;
+            }
+        }
+
+        // If no valid cache entry, perform the check against the database
+        const shouldTranslate = await this.translationDb.shouldTranslate(sourcePath, targetPath, targetLang);
+        
+        // Cache the new decision
+        this.translationDecisionCache.set(sourcePath, { shouldTranslate, timestamp: Date.now() });
+        
+        if (!shouldTranslate) {
+            logMessage("⏭️ Skipping translation (fresh decision: no need to translate)");
+            this.noTranslateCache.set(sourcePath, true); // Mark for this session
+            this.skippedFilesCount++;
+            await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+            return true;
+        }
+
         return false;
+    }
+
+    private shouldSkipByFrontMatter(sourcePath: string): boolean {
+        // Only process if the feature is enabled and the file is markdown
+        const config = getConfiguration();
+        const frontMatterConfig = config.skipFrontMatter;
+        
+        if (!frontMatterConfig || !frontMatterConfig.enabled) {
+            return false;
+        }
+        
+        // Check if it's a markdown file
+        const ext = path.extname(sourcePath).toLowerCase();
+        if (ext !== '.md' && ext !== '.markdown') {
+            return false;
+        }
+        
+        // Check if file exists
+        if (!fs.existsSync(sourcePath)) {
+            return false;
+        }
+        
+        try {
+            // Read the file content
+            const content = fs.readFileSync(sourcePath, 'utf-8');
+            
+            // Check if it has front matter
+            if (!content.startsWith('---')) {
+                return false;
+            }
+            
+            // Extract front matter
+            const frontMatterEnd = content.indexOf('---', 3);
+            if (frontMatterEnd === -1) {
+                return false;
+            }
+            
+            const frontMatter = content.substring(3, frontMatterEnd).trim();
+            
+            // Parse front matter (simple YAML parsing)
+            const frontMatterLines = frontMatter.split('\n');
+            const frontMatterObj: Record<string, string> = {};
+            
+            for (const line of frontMatterLines) {
+                const colonIndex = line.indexOf(':');
+                if (colonIndex > 0) {
+                    const key = line.substring(0, colonIndex).trim();
+                    const value = line.substring(colonIndex + 1).trim().replace(/^['"]|['"]$/g, ''); // Remove quotes
+                    frontMatterObj[key] = value;
+                }
+            }
+            
+            // Check if any configured markers match
+            for (const marker of frontMatterConfig.markers) {
+                if (frontMatterObj[marker.key] === marker.value) {
+                    return true;
+                }
+            }
+            
+            return false;
+        } catch (error) {
+            logMessage(`⚠️ Error checking front matter in ${sourcePath}: ${error instanceof Error ? error.message : String(error)}`);
+            return false;
+        }
     }
 
     private shouldIgnoreFile(sourcePath: string, ext: string, config: any): boolean {
@@ -283,12 +400,11 @@ export class FileProcessor {
             logMessage("⏸️ Translation paused...");
         }
 
-
+        const startTime = Date.now();
 
         // Start translation
         logMessage("🔄 Starting file content translation...");
         const content = fs.readFileSync(sourcePath, "utf8");
-        const startTime = Date.now();
 
         try {
             const config = getConfiguration();
@@ -298,22 +414,7 @@ export class FileProcessor {
             let returnCode: string;
             let translatedContent: string;
 
-            // Check if diff apply mode is enabled and target file exists
-            const diffApplyConfig = config.diffApply;
-            const shouldUseDiffApply = diffApplyConfig?.enabled && fs.existsSync(targetPath);
-
-            if (shouldUseDiffApply) {
-                logMessage("🔄 Using Diff Apply translation mode...");
-                [returnCode, translatedContent] = await this.handleDiffApplyTranslation(
-                    sourcePath, targetPath, sourceLang, targetLang
-                );
-                
-                if (returnCode === AI_RETURN_CODE.OK) {
-                    logMessage("💾 Diff Apply translation completed");
-                } else if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                    logMessage("🔄 No translation needed via Diff Apply");
-                }
-            } else if (estimatedTokens > maxTokensPerSegment) {
+            if (estimatedTokens > maxTokensPerSegment) {
                 [returnCode, translatedContent] = await this.handleLargeFile(content, sourcePath, targetPath, sourceLang, targetLang);
 
                 // No need to write the file here - either it's already been written during processing
@@ -344,198 +445,124 @@ export class FileProcessor {
                         targetLang,
                         sourcePath,
                         this.cancellationToken,
-                        progressCallback
+                        progressCallback,
+                        true // isFirstSegment = true for single file translation
                     );
 
-                    // If NO_NEED_TRANSLATE was detected, copy the original file
+                    // If NO_NEED_TRANSLATE was detected, skip the file but still update translation time
                     if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                        logMessage("🔄 No translation needed, copying file directly");
-                        fs.writeFileSync(targetPath, content);
+                        logMessage("⏭️ No translation needed, skipping file");
+                        this.skippedFilesCount++;
+                        // Cache the decision so subsequent targets reuse this result
+                        this.noTranslateCache.set(sourcePath, true);
+                        this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
+                        await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+                        return; // Skip processing this file
                     } else {
-                        // Otherwise write the collected content
-                        fs.writeFileSync(targetPath, translatedContent);
-                        logMessage("💾 Translation result written");
+                        fs.writeFileSync(targetPath, streamedContent);
+                        logMessage("💾 Stream translation result written");
                     }
                 } else {
+                    logMessage("🔄 Using standard mode for translation...");
                     [returnCode, translatedContent] = await this.translatorService.translateContent(
                         content,
                         sourceLang,
                         targetLang,
                         sourcePath,
-                        this.cancellationToken
+                        this.cancellationToken,
+                        undefined, // no progressCallback for standard mode
+                        true // isFirstSegment = true for single file translation
                     );
 
-                    if (returnCode === AI_RETURN_CODE.OK) {
-                        this.checkCancellation();
+                    this.checkCancellation();
+
+                    // If NO_NEED_TRANSLATE was detected, skip the file but still update translation time
+                    if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                        logMessage("⏭️ No translation needed, skipping file");
+                        this.skippedFilesCount++;
+                        // Cache the decision so subsequent targets reuse this result
+                        this.noTranslateCache.set(sourcePath, true);
+                        this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
+                        await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+                        return; // Skip processing this file
+                    } else {
                         fs.writeFileSync(targetPath, translatedContent);
                         logMessage("💾 Translation result written");
-                    } else if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                        // Copy the file directly for NO_NEED_TRANSLATE
-                        fs.writeFileSync(targetPath, content);
-                        logMessage("🔄 No translation needed, copying file directly");
                     }
                 }
             }
 
-            const endTime = Date.now();
-            logMessage(`⌛ Translation time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`);
-
-            if (!this.isPaused) {
-                await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
-                logMessage("✅ File processing completed, translation timestamp updated\n");
-                this.processedFilesCount++;
-            }
+            const duration = Date.now() - startTime;
+            await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+            logMessage(`⏱️ File translation completed in ${duration}ms (${(duration / 1000).toFixed(2)}s)`);
+            this.processedFilesCount++;
+            return { success: true, duration };
         } catch (error) {
             if (error instanceof vscode.CancellationError) {
                 throw error;
             }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            logMessage(`❌ Translation failed: ${errorMessage}`);
-            throw error;
+            logMessage(`❌ Failed to translate file: ${errorMessage}`);
+            this.failedFilesCount++;
+            this.failedFilePaths.push(sourcePath);
+            return { success: false, error: errorMessage };
         }
     }
 
-    private async handleLargeFile(content: string, sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage): Promise<[string, string]> {
-        const config = getConfiguration();
-        const { maxTokensPerSegment, streamMode } = config.currentVendor;
-        const segments = segmentText(content, sourcePath, maxTokensPerSegment);
-        const translatedSegments: string[] = [];
-
-        logMessage(`📑 File too large, split into ${segments.length} segments`);
-
-        // First, translate just the first segment to check if translation is needed
-        this.checkCancellation();
-        const firstSegment = segments[0];
-        const firstSegmentTokens = estimateTokenCount(firstSegment);
-        logMessage(
-            `🔄 Translating first segment (approximately ${firstSegmentTokens} tokens)...`
-        );
-
+    /**
+     * Handle large file translation by segmenting the content
+     */
+    private async handleLargeFile(
+        content: string,
+        sourcePath: string,
+        targetPath: string,
+        sourceLang: SupportedLanguage,
+        targetLang: SupportedLanguage
+    ): Promise<[string, string]> {
         try {
-            // For the first segment, we'll use streaming if enabled but won't write to file yet
-            // since we need to check if translation is needed
-            let firstSegmentCode: string;
-            let firstTranslatedSegment: string;
-            let firstSegmentContent = '';
+            logMessage("📏 Large file detected, segmenting content...");
+            const config = getConfiguration();
+            const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
 
-            if (streamMode) {
-                const progressCallback = (chunk: string) => {
-                    firstSegmentContent += chunk;
-                };
+            // Segment the content
+            const segments = segmentText(content, sourcePath, maxTokensPerSegment);
+            logMessage(`📦 Segmented into ${segments.length} parts`);
 
-                [firstSegmentCode, firstTranslatedSegment] = await this.translatorService.translateContent(
-                    firstSegment,
-                    sourceLang,
-                    targetLang,
-                    sourcePath,
-                    this.cancellationToken,
-                    progressCallback
-                );
-            } else {
-                [firstSegmentCode, firstTranslatedSegment] = await this.translatorService.translateContent(
-                    firstSegment,
-                    sourceLang,
-                    targetLang,
-                    sourcePath,
-                    this.cancellationToken
-                );
-            }
+            const translatedSegments: string[] = [];
 
-            // If first segment indicates no translation needed, skip the entire file
-            if (firstSegmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                logMessage(`🔄 AI indicated no translation needed for this file, skipping entire file translation`);
-                fs.writeFileSync(targetPath, content);
-                logMessage(`💾 Written original content to target file`);
-
-                // Update translation time to prevent future unnecessary translation attempts
-                await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
-                logMessage("✅ Translation timestamp updated");
-                this.processedFilesCount++;
-
-                return [AI_RETURN_CODE.NO_NEED_TRANSLATE, content];
-            }
-
-            // If translation is needed, add first segment and continue with the rest
-            translatedSegments.push(firstTranslatedSegment);
-
-            // Write progress to file
-            fs.writeFileSync(targetPath, firstTranslatedSegment);
-            logMessage(`💾 Written translation result for segment 1/${segments.length}`);
-
-            // Process remaining segments
-            for (let i = 1; i < segments.length; i++) {
+            // Translate each segment
+            for (let i = 0; i < segments.length; i++) {
                 this.checkCancellation();
 
                 const segment = segments[i];
-                const segmentTokens = estimateTokenCount(segment);
-                logMessage(
-                    `🔄 Translating segment ${i + 1}/${segments.length} (approximately ${segmentTokens} tokens)...`
-                );
-
                 let segmentCode: string;
                 let translatedSegment: string;
 
                 if (streamMode) {
-                    // Define a variable to collect the segments as they come in
+                    // For streaming mode, we'll collect content but only write to file if NO_NEED_TRANSLATE is not detected
                     let currentSegmentContent = '';
-                    let segmentNoTranslateNeeded = false;
+                    let originalSegment = '';
 
-                    // Extract the first part of the UUID to detect partial occurrences
-                    const uuidFirstPart = AI_RETURN_CODE.NO_NEED_TRANSLATE.substring(0, 20);
-
-                    // For streaming mode, we'll use a progress callback that updates the file in real-time
+                    // Define progress callback for streaming
                     const progressCallback = (chunk: string) => {
-                        // If we received a signal that no translation is needed, 
-                        // we might get the original content back in one chunk
-                        if (segmentNoTranslateNeeded) {
-                            return; // Skip any further processing
-                        }
+                        // Clean up the chunk to remove any UUID fragments that might have been included
+                        const cleanedChunk = chunk.replace(/[\s\S]*BEGIN SEGMENT[\s\S]*?END SEGMENT[\s\S]*/g, (match) => {
+                            // Extract the actual content between UUID markers
+                            const uuidContentMatch = match.match(/[\s\S]*BEGIN SEGMENT ([\s\S]*?) END SEGMENT[\s\S]*/);
+                            if (uuidContentMatch && uuidContentMatch[1]) {
+                                return uuidContentMatch[1];
+                            }
+                            return '';
+                        });
 
-                        // Check if the chunk or current content contains the special code or its fragments
-                        if (chunk.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
-                            chunk.includes(uuidFirstPart) ||
-                            currentSegmentContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
-                            currentSegmentContent.includes(uuidFirstPart)) {
-                            segmentNoTranslateNeeded = true;
-                            // For this segment, use the original segment content instead
-                            const originalSegment = segments[i];
-
-                            // Update the file with original content for this segment
+                        // If we detect UUID fragments, it means the AI returned NO_NEED_TRANSLATE
+                        if (chunk.includes("BEGIN SEGMENT") && chunk.includes("END SEGMENT")) {
+                            // Extract the original segment content
+                            originalSegment = cleanedChunk;
                             const currentContent = combineSegments([...translatedSegments, originalSegment]);
                             fs.writeFileSync(targetPath, currentContent);
                             logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
                             return;
-                        }
-
-                        // Make sure we don't write the special code or its fragments to the file
-                        let cleanedChunk = chunk;
-                        if (chunk.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) || chunk.includes(uuidFirstPart)) {
-                            // Check for the full UUID first
-                            const fullCodeIndex = chunk.indexOf(AI_RETURN_CODE.NO_NEED_TRANSLATE);
-                            if (fullCodeIndex >= 0) {
-                                cleanedChunk = chunk.substring(0, fullCodeIndex);
-                            } else {
-                                // Check for partial UUID fragments
-                                const partialCodeIndex = chunk.indexOf(uuidFirstPart);
-                                if (partialCodeIndex >= 0) {
-                                    cleanedChunk = chunk.substring(0, partialCodeIndex);
-                                }
-                            }
-
-                            // If we found a UUID fragment, that's a signal we should use the original content
-                            if (cleanedChunk !== chunk) {
-                                // Only add any content that appeared before the UUID fragment
-                                if (cleanedChunk.length > 0) {
-                                    currentSegmentContent += cleanedChunk;
-                                }
-
-                                segmentNoTranslateNeeded = true;
-                                const originalSegment = segments[i];
-                                const currentContent = combineSegments([...translatedSegments, originalSegment]);
-                                fs.writeFileSync(targetPath, currentContent);
-                                logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
-                                return;
-                            }
                         }
 
                         // If no UUID fragments were found, add the chunk to current segment content
@@ -553,7 +580,8 @@ export class FileProcessor {
                         targetLang,
                         sourcePath,
                         this.cancellationToken,
-                        progressCallback
+                        progressCallback,
+                        i === 0 // isFirstSegment = true only for the first segment
                     );
 
                     // If the segment translation indicates no translation needed,
@@ -567,7 +595,9 @@ export class FileProcessor {
                         sourceLang,
                         targetLang,
                         sourcePath,
-                        this.cancellationToken
+                        this.cancellationToken,
+                        undefined, // no progressCallback
+                        i === 0 // isFirstSegment = true only for the first segment
                     );
 
                     this.checkCancellation();
@@ -596,72 +626,6 @@ export class FileProcessor {
             }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             logMessage(`❌ Failed to translate: ${errorMessage}`);
-            throw error;
-        }
-    }
-
-    /**
-     * Handle diff apply translation for a file
-     */
-    private async handleDiffApplyTranslation(
-        sourcePath: string,
-        targetPath: string,
-        sourceLang: SupportedLanguage,
-        targetLang: SupportedLanguage
-    ): Promise<[string, string]> {
-        try {
-            this.checkCancellation();
-
-            // Create diff apply request
-            const diffRequest = await this.diffApplyService.createDiffApplyRequest(
-                sourcePath,
-                targetPath,
-                sourceLang,
-                targetLang
-            );
-
-            if (!diffRequest) {
-                throw new Error("Failed to create diff apply request");
-            }
-
-            // Perform diff apply translation
-            const [returnCode, diffResponse] = await this.translatorService.translateWithDiffApply(
-                diffRequest,
-                this.cancellationToken
-            );
-
-            if (returnCode === AI_RETURN_CODE.OK && diffResponse) {
-                // Get diff apply configuration
-                const config = vscode.workspace.getConfiguration('projectTranslator');
-                const diffApplyConfig = {
-                    enabled: config.get<boolean>('diffApply.enabled', true),
-                    validationLevel: config.get<'strict' | 'normal' | 'loose'>('diffApply.validationLevel', 'normal'),
-                    autoBackup: config.get<boolean>('diffApply.autoBackup', true),
-                    maxOperationsPerFile: config.get<number>('diffApply.maxOperationsPerFile', 100)
-                };
-
-                // Apply diff operations to target file
-                const success = await this.diffApplyService.applyDiffOperations(
-                    targetPath,
-                    diffResponse.operations || [],
-                    diffApplyConfig
-                );
-                
-                if (success) {
-                     const updatedContent = fs.readFileSync(targetPath, 'utf8');
-                     return [returnCode, updatedContent];
-                 } else {
-                     throw new Error('Failed to apply diff operations');
-                 }
-            } else if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                // No changes needed
-                const currentContent = fs.readFileSync(targetPath, 'utf8');
-                return [returnCode, currentContent];
-            } else {
-                throw new Error('Diff apply translation failed');
-            }
-        } catch (error) {
-            logMessage(`❌ Diff apply translation failed: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
         }
     }

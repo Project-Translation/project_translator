@@ -5,43 +5,36 @@ import {
   SpecifiedFolder,
   CopyOnlyConfig,
   IgnoreConfig,
-  DiffApplyConfig,
+  SkipFrontMatterConfig,
 } from "../types/types";
 import * as path from "path";
 import * as fs from "fs";
 import * as process from "process";
 
+// Default vendor configuration
+export const DEFAULT_VENDOR_CONFIG: VendorConfig = {
+  name: "deepseek",
+  apiEndpoint: "https://api.deepseek.com/v1",
+  apiKeyEnvVarName: "DEEPSEEK_API_KEY",
+  model: "deepseek-chat",
+  rpm: 20,
+  maxTokensPerSegment: 3000,
+  timeout: 30,
+  temperature: 0,
+  top_p: 0.95,
+  streamMode: true
+};
+
 // Default system prompt content embedded in code
-const DEFAULT_SYSTEM_PROMPT = `你是一个专业翻译 AI，严格遵守以下准则：
+// First part - general translation guidelines
+const DEFAULT_SYSTEM_PROMPT_PART1 = `你是一个专业翻译 AI，严格遵守以下准则：
 
 1. **格式绝对优先**：保持原始内容的完整格式(JSON/XML/Markdown 等)，所有格式标记(包括\`\`\`代码块符号)必须原样保留，数量、位置和形式不得更改
 2. **精准符号控制**：特别关注三重反引号(\`\`\`)的使用：
    - 禁止添加或删除任何\`\`\`符号
    - 代码块内的文本仅当明确语言变化时才翻译
    - Markdown 中的代码块标识符(如\`\`\`python)绝不翻译
-3. **核心流程**：
-   - 首先判断是否需要翻译
-   - 需要翻译 → 保留格式进行翻译
-   - 不需要翻译 → 返回固定 UUID：727d2eb8-8683-42bd-a1d0-f604fcd82163
 
-## 翻译判断标准(按优先级)
-
-| 判断依据                       | 处理方式             |
-| ------------------------------ | -------------------- |
-| **纯代码/数据**(无自然语言)    | 返回 UUID            |
-| **Markdown 手稿**(draft: true) | 返回 UUID            |
-| **混合语言内容**               | 翻译全部自然语言文本 |
-
-## 响应协议
-
-**不需要翻译**：
-
-- 严格返回纯文本：\`727d2eb8-8683-42bd-a1d0-f604fcd82163\`
-- 无任何额外字符/格式
-
-**需要翻译**：
-
-- 各种纯文本文档
 
 ## 严格禁令
 
@@ -49,9 +42,9 @@ const DEFAULT_SYSTEM_PROMPT = `你是一个专业翻译 AI，严格遵守以下�
 2. 禁止添加任何前缀/后缀
 3. 禁止将固定 UUID 包裹在任何格式中
 4. 禁止改动原始空白字符(制表符/缩进/空行)
-5. 必须 1:1 匹配\`\`\`数量：
-   - 输入含 3 个\` → 输出必须3个\`
-   - 输入无\`\`\` → 输出禁止添加
+5. 严格匹配\`\`\`数量：
+   - 如果输入含\`\`\` → 输出必须有相同数量的\`\`\`
+   - 如果输入无\`\`\` → 输出禁止添加\`\`\`
 
 ## 执行样例
 
@@ -72,15 +65,40 @@ const DEFAULT_SYSTEM_PROMPT = `你是一个专业翻译 AI，严格遵守以下�
   <content>这需要翻译</content>
 </article>
 \`\`\`
+`;
+
+// Second part - translation judgment logic (used only for first segment)
+const DEFAULT_SYSTEM_PROMPT_PART2 = `**需要判断是否需要翻译**：
+   - 需要翻译 → 保留格式进行翻译
+   - 不需要翻译 → 返回固定 UUID：727d2eb8-8683-42bd-a1d0-f604fcd82163
+
+## 翻译判断标准(按优先级)
+
+| 判断依据                       | 处理方式             |
+| ------------------------------ | -------------------- |
+| **纯代码/数据**(无自然语言)    | 返回 UUID            |
+| **Markdown 手稿**(draft: true) | 返回 UUID            |
+| **混合语言内容**               | 翻译全部自然语言文本 |
+
+## 响应协议
+
+**不需要翻译**：
+
+- 严格返回纯文本：\`727d2eb8-8683-42bd-a1d0-f604fcd82163\`
+- 无任何额外字符/格式
 
 输入示例(Markdown)：
 
 \`\`\`
+---
+draft: true
+---
 
-
+This is a draft.
 \`\`\`
 
-输出: 727d2eb8-8683-42bd-a1d0-f604fcd82163`;
+输出: 727d2eb8-8683-42bd-a1d0-f604fcd82163
+`;
 
 // Using Record<string, string> instead of any
 let translations: Record<string, string> = {};
@@ -113,7 +131,7 @@ export interface Config {
 
   debug?: boolean; // Enable debug mode to log API requests and responses
   logFile?: LogFileConfig; // Configuration for debug log file output
-  diffApply?: DiffApplyConfig; // Configuration for diff apply translation mode
+  skipFrontMatter?: SkipFrontMatterConfig; // Configuration for skipping files based on front matter markers
 }
 
 // Configuration interface for log file functionality
@@ -188,7 +206,6 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       "enableMetrics",
       "debug",
       "logFile",
-      "diffApply",
       "specifiedFiles",
       "specifiedFolders",
       "translationIntervalDays",
@@ -273,7 +290,6 @@ export function getConfiguration(): Config {
 
       debug: config.get("debug"),
       logFile: config.get("logFile"),
-      diffApply: config.get("diffApply"),
     };
   } // Extract and normalize configuration data
   const copyOnly = configData.copyOnly;
@@ -293,150 +309,54 @@ export function getConfiguration(): Config {
     maxFiles: 5,
   };
 
-  // Get diffApply configuration with default values
-  const diffApply = configData.diffApply || {
+
+  // Get skipFrontMatter configuration with default values
+  const skipFrontMatter = configData.skipFrontMatter || {
     enabled: false,
-    validationLevel: "normal",
-    autoBackup: true,
-    maxOperationsPerFile: 100,
+    markers: [
+      {
+        key: "draft",
+        value: "true"
+      }
+    ]
   };
-
-
 
   // Get prompts, fallback to defaults if not present
   let systemPrompts = configData.systemPrompts;
   let userPrompts = configData.userPrompts;
 
-  // If prompts are not available from the current source, get them from VSCode settings or defaults
-  if (!systemPrompts || !userPrompts || (Array.isArray(systemPrompts) && systemPrompts.length === 0) || (Array.isArray(userPrompts) && userPrompts.length === 0)) {
-    const prompts = getTranslationPrompts();
-    systemPrompts = (systemPrompts && Array.isArray(systemPrompts) && systemPrompts.length > 0) ? systemPrompts : prompts.systemPrompts;
-    userPrompts = (userPrompts && Array.isArray(userPrompts) && userPrompts.length > 0) ? userPrompts : prompts.userPrompts;
+  // If no system prompts are provided, use the default system prompt parts
+  if (!systemPrompts || systemPrompts.length === 0) {
+    // Combine both parts as default - first part + second part for initial request
+    systemPrompts = [DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2];
   }
 
-  // Find current vendor configuration
-  const currentVendor = vendors.find(
-    (vendor: VendorConfig) => vendor.name === currentVendorName
-  );
-  if (!currentVendor) {
-    throw new Error(
-      translations["error.invalidApiSettings"] ||
-        "Please provide valid API settings in the vendor configuration"
-    );
-  }
-
-  // If API key is not set directly in the configuration, check environment variable
-  if (!currentVendor.apiKey && currentVendor.apiKeyEnvVarName) {
-    const envApiKey = process.env[currentVendor.apiKeyEnvVarName];
-    if (envApiKey) {
-      currentVendor.apiKey = envApiKey;
-    }
-  }
-  // Validate that we have an API key either from settings or environment variable
-  if (!currentVendor.apiKey) {
-    throw new Error(
-      translations["error.invalidApiSettings"] ||
-        `Please provide valid API key in the vendor configuration or set the environment variable ${
-          currentVendor.apiKeyEnvVarName || "specified in apiKeyEnvVarName"
-        }`
-    );
-  }
-  // Set default temperature to 0 if not specified or is null/undefined
-  if (currentVendor.temperature == null) {
-    currentVendor.temperature = 0;
-  }
-
-  // Set default top_p to 0.95 if not specified or is null/undefined
-  if (currentVendor.top_p == null) {
-    currentVendor.top_p = 0.95;
-  }
-
-  // Set default streamMode to true if not specified or is null/undefined
-  if (currentVendor.streamMode == null) {
-    currentVendor.streamMode = true;
-  }
-  // Return consistent Config structure regardless of source
   return {
-    copyOnly,
-    ignore,
     currentVendorName,
+    currentVendor:
+      vendors.find((v: any) => v.name === currentVendorName) ||
+      DEFAULT_VENDOR_CONFIG,
     vendors,
+    specifiedFiles: specifiedFiles || [],
+    specifiedFolders: specifiedFolders || [],
     translationIntervalDays,
-    specifiedFiles,
-    specifiedFolders,
-    currentVendor,
-    systemPrompts,
-    userPrompts,
-    segmentationMarkers,
+    segmentationMarkers: segmentationMarkers || {},
     debug,
+
     logFile,
-    diffApply,
-  };
-}
-
-/**
- * Resolves prompt strings, loading from files if they are file paths
- * @param prompts Array of strings that can be either prompt content or file paths
- * @returns Array of resolved prompt content
- */
-function resolvePrompts(prompts: string[]): string[] {
-  const resolvedPrompts: string[] = [];
-
-  for (const prompt of prompts) {
-    // Check if the prompt is a file path (contains path separators and has file extension)
-    if (prompt.includes("/") || prompt.includes("\\") || path.extname(prompt)) {
-      try {
-        let filePath = prompt;
-
-        // If it's a relative path, resolve it relative to workspace root
-        if (!path.isAbsolute(filePath)) {
-          const workspaceFolders = vscode.workspace.workspaceFolders;
-          if (workspaceFolders && workspaceFolders.length > 0) {
-            const workspaceRoot = workspaceFolders[0].uri.fsPath;
-            filePath = path.resolve(workspaceRoot, filePath);
-          }
-        }
-
-        // Check if file exists and read its content
-        if (fs.existsSync(filePath)) {
-          const fileContent = fs.readFileSync(filePath, "utf-8");
-          resolvedPrompts.push(fileContent.trim());
-        } else {
-          // If file doesn't exist, treat the string as the prompt content itself
-          resolvedPrompts.push(prompt);
-        }
-      } catch (error) {
-        // If any error occurs reading the file, treat the string as the prompt content
-        resolvedPrompts.push(prompt);
-      }
-    } else {
-      // If it doesn't look like a file path, treat it as prompt content
-      resolvedPrompts.push(prompt);
-    }
-  }
-
-  return resolvedPrompts;
-}
-
-export function getTranslationPrompts() {
-  const projectConfig = vscode.workspace.getConfiguration("projectTranslator");
-  const rawSystemPrompts = projectConfig.get<string[]>("systemPrompts") || [];
-  const rawUserPrompts = projectConfig.get<string[]>("userPrompts") || [];
-
-  // If no system prompts are configured, use the embedded default system prompt
-  let systemPrompts: string[];
-  if (rawSystemPrompts.length === 0) {
-    // Use the embedded default system prompt
-    systemPrompts = [DEFAULT_SYSTEM_PROMPT];
-  } else {
-    // Resolve user-configured system prompts
-    systemPrompts = resolvePrompts(rawSystemPrompts);
-  }
-
-  const userPrompts = resolvePrompts(rawUserPrompts);
-
-  return {
-    systemPrompts,
-    userPrompts,
+    copyOnly: {
+      paths: Array.isArray(copyOnly?.paths) ? copyOnly.paths : [],
+      extensions: Array.isArray(copyOnly?.extensions)
+        ? copyOnly.extensions
+        : [],
+    },
+    ignore: {
+      paths: Array.isArray(ignore?.paths) ? ignore.paths : [],
+      extensions: Array.isArray(ignore?.extensions)
+        ? ignore.extensions
+        : [],
+    },
+    systemPrompts: Array.isArray(systemPrompts) ? systemPrompts : [DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2],
+    userPrompts: Array.isArray(userPrompts) ? userPrompts : [],
   };
 }

@@ -4,3 +4,5 @@ out/
 .vscode-test/
 .copilot-codeGeneration-instructions*.md
 .env
+sample/.translation-logs/
+logs/project-translator.log/

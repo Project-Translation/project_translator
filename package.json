@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.10.7",
+    "version": "0.11.0",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -95,7 +95,7 @@
             "properties": {
                 "projectTranslator.currentVendor": {
                     "type": "string",
-                    "default": "grok",
+                    "default": "deepseek",
                     "description": "%config.currentVendor.description%",
                     "order": 1
                 },
@@ -172,13 +172,13 @@
                     },
                     "default": [
                         {
-                            "name": "gemini",
-                            "apiEndpoint": "https://generativelanguage.googleapis.com/v1beta",
+                            "name": "deepseek",
+                            "apiEndpoint": "https://api.deepseek.com/v1",
                             "apiKey": "",
                             "apiKeyEnvVarName": "",
-                            "model": "gemini-2.5-flash",
+                            "model": "deepseek-chat",
                             "rpm": 20,
-                            "maxTokensPerSegment": 5000,
+                            "maxTokensPerSegment": 3000,
                             "timeout": 30,
                             "temperature": 0,
                             "top_p": 0.95,
@@ -760,44 +760,52 @@
                     "description": "%config.enableMetrics.description%",
                     "order": 13
                 },
-                "projectTranslator.diffApply": {
+                "projectTranslator.skipFrontMatterMarkers": {
                     "type": "object",
                     "properties": {
                         "enabled": {
                             "type": "boolean",
                             "default": false,
-                            "description": "%config.diffApply.enabled.description%"
+                            "description": "Enable checking front matter for translation skip markers"
                         },
-                        "validationLevel": {
-                            "type": "string",
-                            "enum": [
-                                "strict",
-                                "normal",
-                                "loose"
+                        "markers": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "key": {
+                                        "type": "string",
+                                        "description": "The front matter key to check"
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "description": "The value that indicates the file should be skipped"
+                                    }
+                                },
+                                "required": [
+                                    "key",
+                                    "value"
+                                ]
+                            },
+                            "default": [
+                                {
+                                    "key": "draft",
+                                    "value": "true"
+                                }
                             ],
-                            "default": "normal",
-                            "description": "%config.diffApply.validationLevel.description%"
-                        },
-                        "autoBackup": {
-                            "type": "boolean",
-                            "default": true,
-                            "description": "%config.diffApply.autoBackup.description%"
-                        },
-                        "maxOperationsPerFile": {
-                            "type": "number",
-                            "default": 100,
-                            "minimum": 1,
-                            "maximum": 1000,
-                            "description": "%config.diffApply.maxOperationsPerFile.description%"
+                            "description": "List of front matter markers that indicate a file should be skipped from translation"
                         }
                     },
                     "default": {
                         "enabled": false,
-                        "validationLevel": "normal",
-                        "autoBackup": true,
-                        "maxOperationsPerFile": 100
+                        "markers": [
+                            {
+                                "key": "draft",
+                                "value": "true"
+                            }
+                        ]
                     },
-                    "description": "%config.diffApply.description%",
+                    "description": "Configuration for skipping files based on front matter markers",
                     "order": 14
                 }
             }
@@ -831,7 +839,7 @@
         "@types/vscode": "^1.74.0",
         "@typescript-eslint/eslint-plugin": "^8.28.0",
         "@typescript-eslint/parser": "^8.28.0",
-        "@vscode/vsce": "^3.2.2",
+        "@vscode/vsce": "^3.6.0",
         "chai": "^5.2.0",
         "esbuild": "^0.25.1",
         "eslint": "^9.23.0",

@@ -39,10 +39,5 @@
   "config.copyOnly.paths.description": "List of path patterns (glob syntax) for files that should be copied but not translated",  "config.copyOnly.extensions.description": "List of file extensions that should be copied but not translated",
   "config.ignore.description": "Files and paths that should be completely ignored (neither copied nor translated)",
   "config.ignore.paths.description": "List of path patterns (glob syntax) for files that should be completely ignored",
-  "config.ignore.extensions.description": "List of file extensions that should be completely ignored",
-  "config.diffApply.description": "(Experimental) Diff Apply translation mode configuration - enables precise line-by-line translation updates using differential operations",
-  "config.diffApply.enabled.description": "(Experimental) Enable Diff Apply translation mode for more precise and incremental translation updates",
-  "config.diffApply.validationLevel.description": "(Experimental) Validation level for diff operations: strict (thorough validation), normal (balanced), loose (minimal validation)",
-  "config.diffApply.autoBackup.description": "(Experimental) Automatically create backup files before applying diff operations",
-  "config.diffApply.maxOperationsPerFile.description": "(Experimental) Maximum number of diff operations allowed per file to prevent excessive changes"
+  "config.ignore.extensions.description": "List of file extensions that should be completely ignored"
 }
