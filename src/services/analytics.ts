@@ -116,8 +116,7 @@ export class AnalyticsService {
 
       // Choose different URLs based on the environment
       const url = this.isDebugMode
-        ? // ? 'http://100.64.0.5:8080/api/project-translator/data' :
-          "https://collect.jqknono.com/api/project-translator/data"
+        ? 'http://100.64.0.5:8080/api/project-translator/data'
         : "https://collect.jqknono.com/api/project-translator/data";
 
       // Prepare the payload according to the required format
