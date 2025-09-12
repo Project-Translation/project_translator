@@ -61,7 +61,7 @@
     },
     {
       "role": "user",
-      "content": "Please translate the following content..."
+      "content": "Please translate the preceding content..."
     }
   ],
   "temperature": 0

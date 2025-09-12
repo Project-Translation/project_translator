@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.11.0",
+    "version": "0.12.0",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -754,11 +754,47 @@
                     "description": "%config.segmentationMarkers.description%",
                     "order": 12
                 },
+                "projectTranslator.diffApply": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "⚠️ EXPERIMENTAL: Enable differential translation mode that applies AI-generated edits to existing files. This is an experimental feature and may have stability and compatibility issues. Use with caution in production environments and always backup important files."
+                        },
+                        "validationLevel": {
+                            "type": "string",
+                            "enum": ["normal", "strict"],
+                            "default": "normal",
+                            "description": "Validation strictness when applying edits"
+                        },
+                        "autoBackup": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Automatically back up target file before applying edits"
+                        },
+                        "maxOperationsPerFile": {
+                            "type": "number",
+                            "default": 100,
+                            "minimum": 1,
+                            "maximum": 10000,
+                            "description": "Safety limit for number of edit operations per file"
+                        }
+                    },
+                    "default": {
+                        "enabled": false,
+                        "validationLevel": "normal",
+                        "autoBackup": true,
+                        "maxOperationsPerFile": 100
+                    },
+                    "description": "⚠️ EXPERIMENTAL: Configuration for differential translation (diff-apply) mode. This feature is experimental and may have stability and compatibility issues. Use with caution in production environments.",
+                    "order": 13
+                },
                 "projectTranslator.enableMetrics": {
                     "type": "boolean",
                     "default": true,
                     "description": "%config.enableMetrics.description%",
-                    "order": 13
+                    "order": 14
                 },
                 "projectTranslator.skipFrontMatterMarkers": {
                     "type": "object",
@@ -806,7 +842,7 @@
                         ]
                     },
                     "description": "Configuration for skipping files based on front matter markers",
-                    "order": 14
+                    "order": 15
                 }
             }
         }
@@ -828,7 +864,8 @@
         "pretest": "npm run test-compile",
         "publish:minor": "npm run build && npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
         "publish:patch": "npm run build && npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
-        "package": "npm run build && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies"
+        "package": "npm run build && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+        "deps:install": "npm install --no-fund --no-audit"
     },
     "devDependencies": {
         "@eslint/js": "^9.23.0",
@@ -855,7 +892,9 @@
         "glob": "^11.0.1",
         "isbinaryfile": "^5.0.0",
         "minimatch": "^10.0.1",
-        "openai": "^4.85.3"
+        "openai": "^4.85.3",
+        "diff": "^5.2.0",
+        "diff-match-patch": "^1.0.5"
     },
     "capabilities": {
         "virtualWorkspaces": true

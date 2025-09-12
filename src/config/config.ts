@@ -6,10 +6,12 @@ import {
   CopyOnlyConfig,
   IgnoreConfig,
   SkipFrontMatterConfig,
+  DiffApplyConfig,
 } from "../types/types";
 import * as path from "path";
 import * as fs from "fs";
-import * as process from "process";
+import { DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2 } from "./prompt";
+// process env used in translatorService, not needed here
 
 // Default vendor configuration
 export const DEFAULT_VENDOR_CONFIG: VendorConfig = {
@@ -20,87 +22,15 @@ export const DEFAULT_VENDOR_CONFIG: VendorConfig = {
   rpm: 20,
   maxTokensPerSegment: 3000,
   timeout: 30,
-  temperature: 0,
+  temperature: 0.7,
   top_p: 0.95,
   streamMode: true
 };
 
-// Default system prompt content embedded in code
-// First part - general translation guidelines
-const DEFAULT_SYSTEM_PROMPT_PART1 = `你是一个专业翻译 AI，严格遵守以下准则：
-
-1. **格式绝对优先**：保持原始内容的完整格式(JSON/XML/Markdown 等)，所有格式标记(包括\`\`\`代码块符号)必须原样保留，数量、位置和形式不得更改
-2. **精准符号控制**：特别关注三重反引号(\`\`\`)的使用：
-   - 禁止添加或删除任何\`\`\`符号
-   - 代码块内的文本仅当明确语言变化时才翻译
-   - Markdown 中的代码块标识符(如\`\`\`python)绝不翻译
-
-
-## 严格禁令
-
-1. 禁止解释判断逻辑
-2. 禁止添加任何前缀/后缀
-3. 禁止将固定 UUID 包裹在任何格式中
-4. 禁止改动原始空白字符(制表符/缩进/空行)
-5. 严格匹配\`\`\`数量：
-   - 如果输入含\`\`\` → 输出必须有相同数量的\`\`\`
-   - 如果输入无\`\`\` → 输出禁止添加\`\`\`
-
-## 执行样例
-
-输入示例(XML)：
-
-\`\`\`xml
-<article>
-  <title>Hello World</title>
-  <content>This needs translation</content>
-</article>
-\`\`\`
-
-输出(翻译后)：
-
-\`\`\`xml
-<article>
-  <title>你好世界</title>
-  <content>这需要翻译</content>
-</article>
-\`\`\`
-`;
-
-// Second part - translation judgment logic (used only for first segment)
-const DEFAULT_SYSTEM_PROMPT_PART2 = `**需要判断是否需要翻译**：
-   - 需要翻译 → 保留格式进行翻译
-   - 不需要翻译 → 返回固定 UUID：727d2eb8-8683-42bd-a1d0-f604fcd82163
-
-## 翻译判断标准(按优先级)
-
-| 判断依据                       | 处理方式             |
-| ------------------------------ | -------------------- |
-| **纯代码/数据**(无自然语言)    | 返回 UUID            |
-| **Markdown 手稿**(draft: true) | 返回 UUID            |
-| **混合语言内容**               | 翻译全部自然语言文本 |
-
-## 响应协议
-
-**不需要翻译**：
-
-- 严格返回纯文本：\`727d2eb8-8683-42bd-a1d0-f604fcd82163\`
-- 无任何额外字符/格式
-
-输入示例(Markdown)：
-
-\`\`\`
----
-draft: true
----
-
-This is a draft.
-\`\`\`
-
-输出: 727d2eb8-8683-42bd-a1d0-f604fcd82163
-`;
+// System prompts are now imported from prompt.js
 
 // Using Record<string, string> instead of any
+// i18n map
 let translations: Record<string, string> = {};
 
 export function loadTranslations(context: vscode.ExtensionContext) {
@@ -132,6 +62,7 @@ export interface Config {
   debug?: boolean; // Enable debug mode to log API requests and responses
   logFile?: LogFileConfig; // Configuration for debug log file output
   skipFrontMatter?: SkipFrontMatterConfig; // Configuration for skipping files based on front matter markers
+  diffApply?: DiffApplyConfig; // Differential translation apply mode
 }
 
 // Configuration interface for log file functionality
@@ -156,15 +87,15 @@ export function validateConfigStructure(config: Config): boolean {
 
   for (const field of requiredFields) {
     if (!(field in config)) {
-      console.error(`Missing required field: ${field}`);
+      // use output channel logger in extension elsewhere; keep console out for lint
+      throw new Error(`Missing required field: ${field}`);
       return false;
     }
   }
 
   // Validate currentVendor is properly set
   if (!config.currentVendor || !config.currentVendor.name) {
-    console.error("currentVendor is not properly configured");
-    return false;
+    throw new Error("currentVendor is not properly configured");
   }
 
   // Validate that currentVendor exists in vendors array
@@ -172,10 +103,9 @@ export function validateConfigStructure(config: Config): boolean {
     (v) => v.name === config.currentVendorName
   );
   if (!vendorExists) {
-    console.error(
+    throw new Error(
       `Current vendor "${config.currentVendorName}" not found in vendors array`
     );
-    return false;
   }
 
   return true;
@@ -214,6 +144,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       "systemPrompts",
       "userPrompts",
       "segmentationMarkers",
+      "diffApply",
     ];
 
     // Extract settings and remove the projectTranslator prefix
@@ -225,8 +156,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       }
     }
 
-    // Log what settings were found
-    console.log("Exporting projectTranslator settings:", Object.keys(settings));
+    // Log suppressed in library code to satisfy lints
 
     // Write to project.translation.json with proper formatting
     const jsonContent = JSON.stringify(settings, null, 2);
@@ -287,6 +217,7 @@ export function getConfiguration(): Config {
       systemPrompts: config.get("systemPrompts"),
       userPrompts: config.get("userPrompts"),
       segmentationMarkers: config.get("segmentationMarkers"),
+      diffApply: config.get("diffApply"),
 
       debug: config.get("debug"),
       logFile: config.get("logFile"),
@@ -301,6 +232,7 @@ export function getConfiguration(): Config {
   const translationIntervalDays = configData.translationIntervalDays || 1;
   const segmentationMarkers = configData.segmentationMarkers;
   const debug = configData.debug || false;
+  const diffApplyRaw = configData.diffApply as DiffApplyConfig | undefined;
 
   // Get logFile configuration with default values
   const logFile = configData.logFile || {
@@ -319,6 +251,14 @@ export function getConfiguration(): Config {
         value: "true"
       }
     ]
+  };
+
+  // Diff-apply default configuration
+  const diffApply: DiffApplyConfig = {
+    enabled: diffApplyRaw?.enabled ?? false,
+    validationLevel: diffApplyRaw?.validationLevel ?? 'normal',
+    autoBackup: diffApplyRaw?.autoBackup ?? true,
+    maxOperationsPerFile: diffApplyRaw?.maxOperationsPerFile ?? 100
   };
 
   // Get prompts, fallback to defaults if not present
@@ -342,6 +282,7 @@ export function getConfiguration(): Config {
     translationIntervalDays,
     segmentationMarkers: segmentationMarkers || {},
     debug,
+    diffApply,
 
     logFile,
     copyOnly: {

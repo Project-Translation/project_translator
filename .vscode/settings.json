@@ -41,6 +41,7 @@
     "projectTranslator.userPrompts": [
         "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
         "2. './readmes/' in the sentences should replace with './'",
+        "3. './resources/' in the sentences should replace with '../resources/'",
     ],
     "projectTranslator.specifiedFiles": [
         {

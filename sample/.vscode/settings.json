@@ -1,18 +1,6 @@
 {
     "projectTranslator.debug": true,
-    "projectTranslator.currentVendor": "modelscope",
-    "projectTranslator.vendors": [
-        {
-            "name": "modelscope",
-            "apiEndpoint": "https://api-inference.modelscope.cn/v1/",
-            "apiKeyEnvVarName": "MODELSCOPE_SDK_TOKEN",
-            "model": "Qwen/Qwen3-235B-A22B",
-            "rpm": 0,
-            "maxTokensPerSegment": 4000,
-            "timeout": 30,
-            "streamMode": true
-        }
-    ],
+    "projectTranslator.currentVendor": "openrouter2",
     "projectTranslator.translationIntervalDays": 29,
     "projectTranslator.userPrompts": [
         "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
@@ -54,22 +42,23 @@
     ],
     "projectTranslator.specifiedFiles": [
         // should not translate
-        {
-            "sourceFile": {
-                "path": "structure/md/should_skip.md",
-                "lang": "en-us"
-            },
-            "targetFiles": [
-                {
-                    "path": "i18n/md/should_skip.zh-cn.md",
-                    "lang": "zh-cn"
-                },
-                {
-                    "path": "i18n/md/should_skip.zh-hk.md",
-                    "lang": "zh-hk"
-                }
-            ]
-        },
+        // {
+        //     "sourceFile": {
+        //         "path": "structure/md/should_skip.md",
+        //         "lang": "en-us"
+        //     },
+        //     "targetFiles": [
+        //         {
+        //             "path": "i18n/md/should_skip.zh-cn.md",
+        //             "lang": "zh-cn"
+        //         },
+        //         {
+        //             "path": "i18n/md/should_skip.zh-hk.md",
+        //             "lang": "zh-hk"
+        //         }
+        //     ]
+        // },
+        // should translate
         // {
         //     "sourceFile": {
         //         "path": "structure/md/should_translate.md",
@@ -86,17 +75,24 @@
         //         }
         //     ]
         // },
-        // {
-        //     "sourceFile": {
-        //         "path": "translate_source.json",
-        //         "lang": "en-us"
-        //     },
-        //     "targetFiles": [
-        //         {
-        //             "path": "translate_source_zh-cn.json",
-        //             "lang": "zh-cn"
-        //         }
-        //     ]
-        // }
+        // diff apply
+        {
+            "sourceFile": {
+                "path": "translate_source.json",
+                "lang": "en-us"
+            },
+            "targetFiles": [
+                {
+                    "path": "translate_source_zh-cn.json",
+                    "lang": "zh-cn"
+                }
+            ]
+        }
     ],
+    "projectTranslator.diffApply": {
+        "enabled": true,
+        "validationLevel": "normal",
+        "autoBackup": false,
+        "maxOperationsPerFile": 100
+    },
 }

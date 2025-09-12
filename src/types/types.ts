@@ -105,3 +105,13 @@ export interface SkipFrontMatterConfig {
 }
 
 
+// Diff-apply configuration for differential translation
+export type DiffApplyValidationLevel = 'normal' | 'strict'
+
+export interface DiffApplyConfig {
+    enabled: boolean;
+    validationLevel?: DiffApplyValidationLevel; // default: 'normal'
+    autoBackup?: boolean; // default: true
+    maxOperationsPerFile?: number; // default: 100
+}
+

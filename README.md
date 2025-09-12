@@ -1,6 +1,10 @@
 # Project Translator
 
-A VSCode extension: An easy-to-use tool for multi-language localization of projects.
+An easy-to-use vscode extension for multi-language localization of projects.
+
+Project repository: `https://github.com/Project-Translation/project_translator`
+
+![example1](./resources/example1.gif)
 
 ## Available Translations
 
@@ -89,11 +93,18 @@ Current translations in progress: [View Issues](https://github.com/Project-Trans
   - Support for pause/resume/stop translation
   - Automatic maintenance of target folder structure
   - Incremental translation to avoid duplicate work
+- 🔄 Differential Translation (Experimental)
+  - Diff-apply mode for efficient updates of existing translations
+  - Reduces API usage by only translating changed content
+  - Preserves version history with minimal edits
+  - ⚠️ Experimental feature - see [Advanced Features](#differential-translation-diff-apply-mode) for details
 
 ## Installation
 
 1. Search for "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" in VS Code extension marketplace
 2. Click install
+   
+Alternatively, install from Visual Studio Marketplace: `https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator` or search for `techfetch-dev.project-translator` in the VS Code Extensions view.
 
 ## Configuration
 
@@ -134,15 +145,26 @@ The extension supports the following configuration options:
     {
       "name": "openai",
       "apiEndpoint": "API endpoint URL",
-      "apiKey": "API authentication key",
-      "apiKeyEnvVarName": "Environment variable name for API key",
-      "model": "Model name to use",
-      "rpm": "Maximum requests per minute",
+      "apiKeyEnvVarName": "MY_OPENAI_API_KEY",
+      "model": "gpt-4o",
+      "rpm": "10",
       "maxTokensPerSegment": 4096,
       "timeout": 30,
       "temperature": 0.0
     }
-  ]
+  ],
+  "projectTranslator.userPrompts": [
+      "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
+      "2. './readmes/' in the sentences should replace with './'",
+  ],
+  "projectTranslator.ignore": {
+    "paths": [
+      "**/node_modules/**"
+    ],
+    "extensions": [
+      ".log"
+    ]
+  },
 }
 ```
 
@@ -163,6 +185,7 @@ Key configuration details:
 | `projectTranslator.segmentationMarkers`     | Segmentation markers configured by file type, supports regular expressions                     |
 | `projectTranslator.debug`                   | Enable debug mode to log all API requests and responses to output channel (default: false)     |
 | `projectTranslator.logFile`                 | Configuration for debug log files (see [Log File Feature](./docs/log-file-feature.md))         |
+| `projectTranslator.diffApply.enabled`       | Enable experimental differential translation mode (default: false)                             |
 
 ## Usage
 
@@ -279,6 +302,81 @@ title: "Draft Document"
 
 This document is a draft and should not be translated.
 ```
+
+### Differential Translation (Diff-Apply) Mode
+
+> **⚠️ Experimental Feature Warning**: Differential translation mode is currently an experimental feature and may have stability and compatibility issues. It is recommended to use it with caution in production environments and always backup important files.
+
+The extension supports an optional differential translation mode (diff-apply). When enabled, the extension sends both the source content and the existing translated target file to the model. The model should return one or more SEARCH/REPLACE blocks (plain text, no code fences). The extension applies these blocks locally to minimize changes, reduce API usage, and better preserve version history.
+
+- **Toggle**: Configure `projectTranslator.diffApply.enabled` in VS Code settings or `project.translation.json` (default: `false`).
+- **Options**:
+  - `validationLevel`: `normal` or `strict` (default: `normal`). In `strict` mode, invalid markers or matching failures will cause an error and the extension will fall back to the standard translation flow.
+  - `autoBackup`: If true, create a `.bak` backup of the target file before applying edits (default: `true`).
+  - `maxOperationsPerFile`: (retained for compatibility) not used by the new strategy.
+
+Workflow:
+1. If `diffApply.enabled` is `true` and the target file exists, the extension reads both source and target contents.
+2. It calls the model with a differential prompt and requires returning plain-text SEARCH/REPLACE blocks.
+3. Locally, the extension parses and applies the SEARCH/REPLACE blocks. If application fails, it falls back to the normal full translation and overwrites the target file.
+
+Example SEARCH/REPLACE (multiple blocks allowed):
+
+```
+<<<<<<< SEARCH
+:start_line: 10
+-------
+const label = "Old"
+=======
+const label = "New"
+>>>>>>> REPLACE
+
+<<<<<<< SEARCH
+:start_line: 25
+-------
+function foo() {
+  return 1
+}
+=======
+function foo() {
+  return 2
+}
+>>>>>>> REPLACE
+```
+
+Notes:
+- Use exact content including indentation and whitespace in SEARCH sections. If unsure, use the latest file content.
+- Keep a single line of `=======` between SEARCH and REPLACE.
+- If no change is needed, the model should return an empty string.
+
+Why differential translation currently performs poorly (explanation)
+
+- **Cross-language alignment and comparison challenges**: Differential translation requires sending both the original source document and the existing translated document to the model, and the model must compare them across languages to decide which parts of the translation need to be changed. This is a fundamentally harder task than modifying a single document in-place because the model must accurately align segments in different languages and judge semantic differences.
+
+- **Complexity of format and boundary preservation**: Many documents contain code blocks, tables, frontend markers, or special placeholders. A reliable diff workflow must preserve these structures while making textual edits. If the model cannot consistently produce results that strictly follow the SEARCH/REPLACE format, applying edits automatically may introduce formatting regressions or structural errors.
+
+- **Context and terminology consistency issues**: Small, localized edits often depend on broader context and an existing terminology/style glossary. When asked to produce minimal edits, the model may neglect global consistency (terminology, style, comments, variable names), resulting in inconsistent or semantically shifted translations.
+
+- **Model stability and cost trade-offs**: Achieving a dependable differential translation requires models with strong comparative reasoning and stable, predictable output formats. Current mainstream models do not reliably provide both robust cross-language alignment and strictly formatted outputs at reasonable cost, so systems often fall back to a full retranslation to ensure correctness.
+
+Therefore, while differential translation can theoretically reduce expensive output tokens and better preserve version history, it is currently limited by models' cross-language comparison capabilities and output stability. This feature remains experimental; recommended mitigations include keeping automatic backups (`autoBackup: true`), using a tolerant validation level (`validationLevel: "normal"`), and falling back to full retranslation when matching or formatting fails. In the future, specialized bilingual alignment post-processors or custom smaller models may improve the stability of the diff approach.
+
+Cost savings and why it helps
+
+- **Input vs Output token cost**: Large-model APIs commonly charge differently for input (prompt) and output (completion) tokens. Often, output tokens are significantly more expensive because the model generates longer text. Diff-apply helps because we send the **updated source (input)** and the **existing translated file (input)** to the model and ask for a compact JSON of edits. The model's response is a small JSON (few output tokens) rather than a full retranslated file (many output tokens), so you pay much less for the expensive output portion.
+
+- **Only send what's changed**: Instead of re-translating the entire file whenever small changes occur, diff-apply instructs the model to compute the minimal edit operations to update the existing translation. This is particularly effective for files that were previously translated and only receive incremental edits.
+
+- **Best for formatted files**: Files with strict formatting (JSON, XML, Markdown with code blocks) benefit greatly because diff-apply preserves structure and only changes textual parts that need translation. That reduces the chance of format-related regressions and extra output tokens caused by model reformatting.
+
+- **Line-oriented base unit, smarter aggregation**: The tool treats the basic translation unit as a "line", and the SEARCH/REPLACE strategy applies exact or fuzzy matching near `:start_line:`. Use `validationLevel: "normal"` for tolerant behavior and `"strict"` when you need conservative, exact edits.
+
+When to use diff-apply:
+
+- Use when the target file already exists and was previously translated.
+- Use for large, formatted documents where re-translating the whole file would be expensive.
+- Avoid for brand-new files without any previous translation, or when you want a fresh retranslation.
+
 
 
 ### Design Documentation

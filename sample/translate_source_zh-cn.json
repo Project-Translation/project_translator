@@ -1,14 +1,9 @@
-
-
 {
-  "description.description": "项目翻译器",
-  "configuration.title": "项目翻译器",
-  "command.translateFolders": "翻译文件夹",
-  "command.translateProject": "翻译项目",
-  "nothing": "无需做任何事情",
-  "anything": "做任何事情都是好的",
-  "command.translateFiles": "翻译文件",
-  "command.pauseTranslation": "暂停翻译",
-  "command.resumeTranslation": "恢复翻译",
-  "command.stopTranslation": "停止翻译"
+    "configuration.title": "项目翻译器",
+    "command.translateFolders": "翻译文件夹",
+    "command.translateProject": "翻译项目",
+    "command.translateFiles": "翻译文件",
+    "command.pauseTranslation": "暂停翻译",
+    "command.resumeTranslation": "恢复翻译",
+    "sentence.6": "你好，世界！"
 }

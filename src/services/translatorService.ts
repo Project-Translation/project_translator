@@ -4,16 +4,13 @@ import { getConfiguration } from "../config/config";
 import { SupportedLanguage } from "../translationDatabase";
 import { logMessage } from "../extension";
 import * as path from "path";
-import * as fs from "fs";
+import { AI_RETURN_CODE, DIFF_SYSTEM_PROMPT, getDiffSystemPrompt } from "../config/prompt";
+// no fs usage here
 
 // Store the last request timestamp for each vendor
 const vendorLastRequest: Map<string, number> = new Map();
 
-// AI return code.
-export const AI_RETURN_CODE = {
-  OK: "OK",
-  NO_NEED_TRANSLATE: "727d2eb8-8683-42bd-a1d0-f604fcd82163",
-};
+// AI return codes are now imported from prompt.js
 
 export interface TranslationProgressCallback {
   (chunk: string): void;
@@ -105,7 +102,9 @@ export class TranslatorService {
 
     const { currentVendorName, currentVendor, systemPrompts, userPrompts } =
       getConfiguration();
-    const { model, rpm, temperature, streamMode } = currentVendor;
+    // Ensure temperature has a sensible default if undefined
+    const { model, rpm, streamMode } = currentVendor;
+    const temperature = currentVendor.temperature === undefined ? 0.7 : currentVendor.temperature;
 
     logMessage(`🤖 Using model: ${model}`);
     logMessage(`🌐 Target language: ${targetLang}`);
@@ -136,10 +135,19 @@ export class TranslatorService {
     if (effectiveSystemPrompts.length > 0) {
       mergedSystemPrompt = effectiveSystemPrompts.join("\n");
     }
+    // Message ordering per requirement:
+    // 1) system: system prompts
+    // 2) user: raw content
+    // 3) user custom prompts from settings
+    // 4) built-in user prompt(s)
     const messages = [
       {
         role: "system" as const,
         content: mergedSystemPrompt,
+      },
+      {
+        role: "user" as const,
+        content: content,
       },
       ...(userPrompts || []).map((prompt: string) => ({
         role: "user" as const,
@@ -147,13 +155,7 @@ export class TranslatorService {
       })),
       {
         role: "user" as const,
-        content: `Please translate the following content from ${sourceLang} to ${targetLang}. The file type is ${path.extname(
-          sourcePath
-        )}.`,
-      },
-      {
-        role: "user" as const,
-        content: content,
+        content: `Please translate the preceding content from ${sourceLang} to ${targetLang}.`,
       },
     ];
 
@@ -188,6 +190,60 @@ export class TranslatorService {
       logMessage(`❌ Translation failed: ${errorMessage}`);
       throw error;
     }
+  }
+
+  /**
+   * 生成 Roo-Code 风格的 SEARCH/REPLACE 差异块
+   * 要求模型严格输出由多个 SEARCH/REPLACE 块组成的纯文本，不得包含围栏或解释
+   */
+  public async generateSearchReplaceDiff(
+    sourceContent: string,
+    targetContent: string,
+    sourcePath: string,
+    sourceLang: SupportedLanguage,
+    targetLang: SupportedLanguage
+  ): Promise<string> {
+    if (!this.openaiClient) {
+      const error = "OpenAI client not initialized";
+      logMessage(`❌ ${error}`);
+      throw new Error(error);
+    }
+
+    const { currentVendorName, currentVendor, systemPrompts, userPrompts } =
+      getConfiguration();
+
+    const mergedSystemPrompt = [
+      ...(systemPrompts || []),
+      DIFF_SYSTEM_PROMPT
+    ].join("\n");
+
+    const messages = [
+      { role: "system" as const, content: mergedSystemPrompt },
+      {
+        role: "system" as const,
+        content: getDiffSystemPrompt(sourceLang, targetLang, sourcePath),
+      },
+      // 先提供 SOURCE 后提供 TARGET，便于模型对齐
+      { role: "user" as const, content: `SOURCE BEGIN\n${sourceContent}\nSOURCE END` },
+      { role: "user" as const, content: `TARGET BEGIN\n${targetContent}\nTARGET END` },
+      // User custom prompts last
+      ...(userPrompts || []).map((p) => ({ role: "user" as const, content: p })),
+    ];
+
+    logMessage(`🔄 Sending differential translation request...`);
+    logMessage(`🔄 Messages: ${JSON.stringify(messages, null, 2)}`);
+
+    const payload: OpenAI.ChatCompletionCreateParamsNonStreaming = {
+      model: currentVendor.model,
+      messages: messages as OpenAI.ChatCompletionMessageParam[],
+      temperature: currentVendor.temperature,
+      top_p: currentVendor.top_p,
+    };
+
+    const response = await this.openaiClient.chat.completions.create(payload);
+    vendorLastRequest.set(currentVendorName, Date.now());
+    const content = response.choices?.[0]?.message?.content?.trim() || '';
+    return content;
   }
 
   private async standardTranslateContent(

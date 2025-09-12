@@ -2,23 +2,9 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 import * as vscode from "vscode";
-import { SpecifiedFolder } from "./types/types";
+import { SpecifiedFolder, SpecifiedFile } from "./types/types";
 import { getConfiguration } from "./config/config";
 import { logMessage } from "./extension";
-
-// Example language codes, but system now accepts any string with length < 10
-export const SUPPORTED_LANGUAGES = [
-  "zh-cn",
-  "zh-tw",
-  "en-us",
-  "ja-jp",
-  "ko-kr",
-  "fr-fr",
-  "de-de",
-  "es-es",
-  "pt-br",
-  "ru-ru",
-];
 
 // Any string with length under 10 characters is now a valid language code
 export type SupportedLanguage = string;
@@ -61,15 +47,16 @@ export class TranslationDatabase {
     // Create the cache directory if it doesn't exist
     if (!fs.existsSync(this.translationCacheDir)) {
       fs.mkdirSync(this.translationCacheDir, { recursive: true });
-      logMessage(
-        `📁 Created cache directory: ${this.translationCacheDir}`
-      );
+      logMessage(`📁 Created cache directory: ${this.translationCacheDir}`);
     }
 
     // Get configuration
     const config = vscode.workspace.getConfiguration("projectTranslator");
     const specifiedFolders =
       config.get<Array<SpecifiedFolder>>("specifiedFolders") || [];
+
+    const specifiedFiles =
+      config.get<Array<SpecifiedFile>>("specifiedFiles") || [];
 
     // Only create caches for languages specified in the configuration
     const configuredLanguages = new Set<SupportedLanguage>();
@@ -79,16 +66,27 @@ export class TranslationDatabase {
         (folder: { lang: SupportedLanguage }) => {
           if (folder.lang && isValidLanguage(folder.lang)) {
             configuredLanguages.add(folder.lang);
-            logMessage(
-              `🌐 Found configured language: ${folder.lang}`
-            );
+            logMessage(`🌐 Found configured language: ${folder.lang}`);
           } else if (folder.lang) {
-            logMessage(
-              `⚠️ Invalid language code: ${folder.lang}`,
-              'warn'
-            );
+            logMessage(`⚠️ Invalid language code: ${folder.lang}`, "warn");
             vscode.window.showWarningMessage(
               `Invalid language code "${folder.lang}". Language codes must be non-empty strings with less than 10 characters.`
+            );
+          }
+        }
+      );
+    }
+
+    if (specifiedFiles.length > 0) {
+      specifiedFiles[0].targetFiles?.forEach(
+        (file: { lang: SupportedLanguage }) => {
+          if (file.lang && isValidLanguage(file.lang)) {
+            configuredLanguages.add(file.lang);
+            logMessage(`🌐 Found configured language: ${file.lang}`);
+          } else if (file.lang) {
+            logMessage(`⚠️ Invalid language code: ${file.lang}`, "warn");
+            vscode.window.showWarningMessage(
+              `Invalid language code "${file.lang}". Language codes must be non-empty strings with less than 10 characters.`
             );
           }
         }
@@ -104,7 +102,7 @@ export class TranslationDatabase {
         this.loadCacheForLanguage(lang).catch((err) => {
           logMessage(
             `❌ Failed to load cache for language ${lang}: ${err}`,
-            'error'
+            "error"
           );
           vscode.window.showErrorMessage(
             `Failed to load cache for language ${lang}: ${err}`
@@ -112,14 +110,9 @@ export class TranslationDatabase {
         })
       );
       await Promise.all(loadCachePromises);
-      logMessage(
-        "✅ Translation cache initialization completed"
-      );
+      logMessage("✅ Translation cache initialization completed");
     } else {
-      logMessage(
-        "⚠️ No valid target languages found in configuration",
-        'warn'
-      );
+      logMessage("⚠️ No valid target languages found in configuration", "warn");
       vscode.window.showWarningMessage(
         "No valid target languages found in configuration"
       );
@@ -129,7 +122,7 @@ export class TranslationDatabase {
     if (!isValidLanguage(lang)) {
       logMessage(
         `⚠️ Cannot create cache for invalid language code "${lang}"`,
-        'warn'
+        "warn"
       );
       vscode.window.showWarningMessage(
         `Cannot create cache for invalid language code "${lang}"`
@@ -157,16 +150,14 @@ export class TranslationDatabase {
         // Initialize with empty record if file doesn't exist
         this.translationCache.set(lang, {});
         await this.saveCacheForLanguage(lang);
-        logMessage(
-          `📄 Created new cache file for ${lang}: ${cacheFileName}`
-        );
+        logMessage(`📄 Created new cache file for ${lang}: ${cacheFileName}`);
       }
     } catch (error) {
       // If there's an error reading or parsing the file, start with an empty cache
       this.translationCache.set(lang, {});
       logMessage(
         `❌ Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`,
-        'error'
+        "error"
       );
       vscode.window.showWarningMessage(
         `Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`
@@ -177,7 +168,7 @@ export class TranslationDatabase {
     if (!isValidLanguage(lang)) {
       logMessage(
         `⚠️ Cannot save cache for invalid language code "${lang}"`,
-        'warn'
+        "warn"
       );
       return;
     }
@@ -192,7 +183,9 @@ export class TranslationDatabase {
       const cache = this.translationCache.get(lang) || {};
       const cacheContent = JSON.stringify(cache, null, 2);
       logMessage(
-        `💾 Writing cache content for ${lang} to ${cacheFilePath} with ${Object.keys(cache).length} records`
+        `💾 Writing cache content for ${lang} to ${cacheFilePath} with ${
+          Object.keys(cache).length
+        } records`
       );
       fs.writeFileSync(cacheFilePath, cacheContent, "utf8");
       const recordCount = Object.keys(cache).length;
@@ -202,7 +195,7 @@ export class TranslationDatabase {
     } catch (error) {
       logMessage(
         `❌ Failed to save translation cache for ${lang}: ${error}`,
-        'error'
+        "error"
       );
       vscode.window.showErrorMessage(
         `Failed to save translation cache for ${lang}: ${error}`
@@ -231,9 +224,7 @@ export class TranslationDatabase {
 
     const normalizedPath = path.normalize(targetPath).replace(/\\/g, "/");
     this.targetRoots.set(normalizedPath, targetLang);
-    logMessage(
-      `🎯 Set target root for ${targetLang}: ${normalizedPath}`
-    );
+    logMessage(`🎯 Set target root for ${targetLang}: ${normalizedPath}`);
   }
 
   public clearTargetRoots() {
@@ -271,7 +262,9 @@ export class TranslationDatabase {
     // Get the translation record for this language
     const translationRecord = this.translationCache.get(targetLang) || {};
     logMessage(
-      `📋 Current translation records for ${targetLang}: ${Object.keys(translationRecord).length}`
+      `📋 Current translation records for ${targetLang}: ${
+        Object.keys(translationRecord).length
+      }`
     );
 
     // Get current file info
@@ -282,15 +275,11 @@ export class TranslationDatabase {
 
     // Update the record
     translationRecord[relativeSourcePath] = fileInfo;
-    logMessage(
-      `✏️ Updated record in memory for ${relativeSourcePath}`
-    );
+    logMessage(`✏️ Updated record in memory for ${relativeSourcePath}`);
 
     // Save back to the cache
     this.translationCache.set(targetLang, translationRecord);
-    logMessage(
-      `💾 Set translation record in memory cache for ${targetLang}`
-    );
+    logMessage(`💾 Set translation record in memory cache for ${targetLang}`);
 
     // Save to file
     await this.saveCacheForLanguage(targetLang);
@@ -345,9 +334,7 @@ export class TranslationDatabase {
 
     // Always translate if target file doesn't exist
     if (!fs.existsSync(targetPath)) {
-      logMessage(
-        `✅ Target file doesn't exist, translation needed`
-      );
+      logMessage(`✅ Target file doesn't exist, translation needed`);
       return true;
     }
 
@@ -366,9 +353,7 @@ export class TranslationDatabase {
 
       // If the source file has no record, it should be translated
       if (!translationRecord[relativeSourcePath]) {
-        logMessage(
-          `✅ No translation record found, translation needed`
-        );
+        logMessage(`✅ No translation record found, translation needed`);
         return true;
       }
 
@@ -401,7 +386,8 @@ export class TranslationDatabase {
       }
       const daysSinceLastTranslation =
         (Date.now() - cachedTimestamp) / (1000 * 60 * 60 * 24);
-      const isPastInterval = daysSinceLastTranslation >= intervalDays && intervalDays > 0;
+      const isPastInterval =
+        daysSinceLastTranslation >= intervalDays && intervalDays > 0;
 
       logMessage(
         `📊 Translation analysis: days since last=${daysSinceLastTranslation.toFixed(
@@ -418,7 +404,7 @@ export class TranslationDatabase {
 
       return shouldTranslate;
     } catch (error) {
-      logMessage(`❌ Error in shouldTranslate: ${error}`, 'error');
+      logMessage(`❌ Error in shouldTranslate: ${error}`, "error");
       vscode.window.showErrorMessage(`Error in shouldTranslate: ${error}`);
       return true; // If there's an error, proceed with translation
     }
@@ -428,7 +414,9 @@ export class TranslationDatabase {
 
     // Save all caches before closing
     const languages = Array.from(this.translationCache.keys());
-    logMessage(`💾 Saving caches for ${languages.length} languages before closing`);
+    logMessage(
+      `💾 Saving caches for ${languages.length} languages before closing`
+    );
     const savePromises = languages.map((lang) => {
       logMessage(`💾 Saving cache for language: ${lang}`);
       return this.saveCacheForLanguage(lang);
@@ -437,9 +425,7 @@ export class TranslationDatabase {
     return Promise.all(savePromises).then(() => {
       // Clear the cache to free up memory
       this.translationCache.clear();
-      logMessage(
-        "✅ Translation database closed successfully"
-      );
+      logMessage("✅ Translation database closed successfully");
     });
   }
   private calculateFileHash(filePath: string): string {
@@ -455,7 +441,7 @@ export class TranslationDatabase {
     } catch (error) {
       logMessage(
         `❌ Error calculating hash for ${filePath}: ${error}`,
-        'error'
+        "error"
       );
       throw error;
     }
@@ -471,7 +457,6 @@ export class TranslationDatabase {
     return `${year}-${month}-${day}:${hours}:${minutes}`;
   }
 
-
   private async getCurrentFileInfo(sourcePath: string): Promise<{
     translate_datetime: string;
     src_hash: string;
@@ -482,10 +467,4 @@ export class TranslationDatabase {
 
     return { translate_datetime, src_hash };
   }
-
-
-
-
-
-
 }

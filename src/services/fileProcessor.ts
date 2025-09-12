@@ -7,6 +7,7 @@ import * as glob from 'glob';
 import { TranslationDatabase } from "../translationDatabase";
 import { DestFolder, SupportedLanguage } from "../types/types";
 import { TranslatorService } from "./translatorService";
+import { SearchReplaceDiffApplier } from './searchReplaceDiffApplier'
 
 import { estimateTokenCount, segmentText, combineSegments } from "../segmentationUtils";
 import { getConfiguration } from "../config/config";
@@ -209,13 +210,21 @@ export class FileProcessor {
             const config = getConfiguration();
 
             // Check if file should be completely ignored
-            if (this.shouldIgnoreFile(resolvedSourcePath, ext, config)) {
+            if (this.shouldIgnoreFile(
+                resolvedSourcePath,
+                ext,
+                { ignore: config.ignore ?? { paths: [], extensions: [] } }
+            )) {
                 logMessage(`⏭️ Skipping ignored file: ${resolvedSourcePath}`);
                 return;
             }
 
             // Check if file should be copied only (not translated)
-            if (this.shouldCopyOnly(resolvedSourcePath, ext, config)) {
+            if (this.shouldCopyOnly(
+                resolvedSourcePath,
+                ext,
+                { copyOnly: config.copyOnly ?? { paths: [], extensions: [] } }
+            )) {
                 await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
                 await this.translationDb.updateTranslationTime(resolvedSourcePath, resolvedTargetPath, targetLang);
                 return;
@@ -341,7 +350,9 @@ export class FileProcessor {
         }
     }
 
-    private shouldIgnoreFile(sourcePath: string, ext: string, config: any): boolean {
+    private shouldIgnoreFile(sourcePath: string, ext: string, config: {
+        ignore: { paths: string[], extensions: string[] }
+    }): boolean {
         const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
         const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");        // Check ignore paths
         if (config.ignore?.paths) {
@@ -356,7 +367,9 @@ export class FileProcessor {
         return config.ignore.extensions.includes(ext);
     }
 
-    private shouldCopyOnly(sourcePath: string, ext: string, config: any): boolean {
+    private shouldCopyOnly(sourcePath: string, ext: string, config: {
+        copyOnly: { paths: string[], extensions: string[] }
+    }): boolean {
         const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
         const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");
 
@@ -410,6 +423,48 @@ export class FileProcessor {
             const config = getConfiguration();
             const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
             const estimatedTokens = estimateTokenCount(content);
+
+            // Diff-apply branch: if enabled and target exists, try differential edits first
+            const diffApplyEnabled = !!config.diffApply?.enabled
+            const targetExists = fs.existsSync(targetPath)
+            if (diffApplyEnabled && targetExists) {
+                logMessage("🧩 Diff-apply mode enabled; generating edits...")
+                const currentTarget = fs.readFileSync(targetPath, 'utf8')
+                try {
+                    const searchReplace = await this.translatorService.generateSearchReplaceDiff(
+                        content,
+                        currentTarget,
+                        sourcePath,
+                        sourceLang,
+                        targetLang
+                    )
+                    logMessage(`🔄 Generated SEARCH/REPLACE diff: ${searchReplace}`)                    
+                    const { updatedText, appliedCount } = SearchReplaceDiffApplier.apply(
+                        currentTarget,
+                        searchReplace,
+                        { fuzzyThreshold: 1.0, bufferLines: 40 },
+                        (m, lvl = 'info') => logMessage(m, lvl)
+                    )
+                    logMessage(`🔄 Diff edits applied (${appliedCount} ops)`)                    
+                    if (appliedCount > 0) {
+                        if (config.diffApply?.autoBackup) {
+                            // 手动备份，复用原有命名规则
+                            const ts = new Date().toISOString().replace(/[-:T]/g, '').replace(/\..+$/, '')
+                            const backupPath = `${targetPath}.bak.${ts}`
+                            fs.copyFileSync(targetPath, backupPath)
+                        }
+                        fs.writeFileSync(targetPath, updatedText)
+                        await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+                        logMessage(`✅ Diff edits applied (${appliedCount} ops)`)                    
+                        this.processedFilesCount++
+                        return
+                    } else {
+                        logMessage("ℹ️ No diff operations necessary; Skipping file", "warn")
+                    }
+                } catch (e) {
+                    logMessage(`⚠️ Diff-apply failed: ${e instanceof Error ? e.message : String(e)}; fallback to normal translation`)
+                }
+            }
 
             let returnCode: string;
             let translatedContent: string;
