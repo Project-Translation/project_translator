@@ -120,6 +120,18 @@ function registerCommands(): vscode.Disposable[] {
         exportSettingsToConfigFile
     );
 
+    // Enable auto-translate task on folder open
+    const enableAutoTranslateTaskCommand = vscode.commands.registerCommand(
+        "extension.enableAutoTranslateOnOpen",
+        handleEnableAutoTranslateOnOpen
+    );
+
+    // Disable auto-translate task on folder open
+    const disableAutoTranslateTaskCommand = vscode.commands.registerCommand(
+        "extension.disableAutoTranslateOnOpen",
+        handleDisableAutoTranslateOnOpen
+    );
+
     return [
         translateProjectCommand,
         translateFoldersCommand,
@@ -129,8 +141,183 @@ function registerCommands(): vscode.Disposable[] {
         stopCommand,
         addFileCommand,
         addFolderCommand,
-        exportSettingsCommand
+        exportSettingsCommand,
+        enableAutoTranslateTaskCommand,
+        disableAutoTranslateTaskCommand
     ];
+}
+
+/**
+ * 在当前工作区创建/更新 .vscode/tasks.json，添加一个在文件夹打开时触发翻译的任务
+ */
+async function handleEnableAutoTranslateOnOpen() {
+    try {
+        const workspace = vscode.workspace.workspaceFolders?.[0]
+        if (!workspace) {
+            throw new Error("Please open a workspace first")
+        }
+
+        const vscodeDir = path.join(workspace.uri.fsPath, ".vscode")
+        const tasksPath = path.join(vscodeDir, "tasks.json")
+
+        // 目标任务定义（与用户提供的已验证片段一致）
+        const targetTaskLabel = "Translate project on open"
+        const targetTask: any = {
+            label: targetTaskLabel,
+            type: "shell",
+            command: "echo",
+            args: [
+                "Triggering Project Translator on workspace open",
+                "${command:extension.translateProject}"
+            ],
+            problemMatcher: [],
+            runOptions: {
+                runOn: "folderOpen"
+            },
+            presentation: {
+                reveal: "never",
+                panel: "dedicated"
+            }
+        }
+
+        // 确保 .vscode 目录存在
+        if (!fs.existsSync(vscodeDir)) {
+            fs.mkdirSync(vscodeDir, { recursive: true })
+        }
+
+        // 读取并容错解析现有 tasks.json（允许 JSONC 注释/尾随逗号）
+        let content: any = { version: "2.0.0", tasks: [] as any[] }
+        if (fs.existsSync(tasksPath)) {
+            try {
+                const raw = fs.readFileSync(tasksPath, "utf8")
+                const sanitized = raw
+                    .replace(/\/\*[\s\S]*?\*\//g, "") // 块注释
+                    .replace(/^\s*\/\/.*$/gm, "") // 行注释
+                    .replace(/,\s*([}\]])/g, "$1") // 尾随逗号
+                const parsed = JSON.parse(sanitized)
+                if (parsed && typeof parsed === "object") {
+                    content = parsed
+                    if (!Array.isArray(content.tasks)) content.tasks = []
+                    if (!content.version) content.version = "2.0.0"
+                }
+            } catch (e) {
+                // 解析失败则保留默认结构，避免破坏原文件；提示用户
+                logMessage(
+                    `⚠️ 无法解析现有 tasks.json，将创建最简结构写入新任务。错误: ${e}`,
+                    "warn"
+                )
+            }
+        }
+
+        // 如已存在相同 label 的任务，则更新其关键字段；否则追加
+        const tasks: any[] = content.tasks || []
+        const existing = tasks.find(t => t && t.label === targetTaskLabel)
+        if (existing) {
+            existing.type = targetTask.type
+            existing.command = targetTask.command
+            existing.args = targetTask.args
+            existing.problemMatcher = targetTask.problemMatcher
+            existing.runOptions = { ...(existing.runOptions || {}), runOn: "folderOpen" }
+            existing.presentation = { ...(existing.presentation || {}), reveal: "never", panel: "dedicated" }
+        } else {
+            tasks.push(targetTask)
+        }
+        content.tasks = tasks
+
+        // 写回文件（标准 JSON 缩进）
+        fs.writeFileSync(tasksPath, JSON.stringify(content, null, 2) + "\n", "utf8")
+
+        logMessage(`✅ 已在 ${path.relative(workspace.uri.fsPath, tasksPath)} 写入自动翻译任务。`)
+
+        // 询问是否立即重载以触发 folderOpen 任务
+        const action = await vscode.window.showInformationMessage(
+            "已启用在工作区打开时自动翻译。是否现在重载窗口以立即生效？",
+            "重载窗口",
+            "稍后"
+        )
+        if (action === "重载窗口") {
+            await vscode.commands.executeCommand("workbench.action.reloadWindow")
+        }
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        vscode.window.showErrorMessage(`启用自动翻译任务失败: ${msg}`)
+        logMessage(`❌ 启用自动翻译任务失败: ${msg}`, "error")
+    }
+}
+
+/**
+ * 取消在文件夹打开时自动触发翻译：
+ * - 定位并解析 .vscode/tasks.json
+ * - 找到标签为 "Translate project on open" 或包含 ${command:extension.translateProject} 的任务
+ * - 移除其 runOptions.runOn，从而不再在打开工作区时自动执行
+ */
+async function handleDisableAutoTranslateOnOpen() {
+    try {
+        const workspace = vscode.workspace.workspaceFolders?.[0]
+        if (!workspace) {
+            throw new Error("Please open a workspace first")
+        }
+
+        const vscodeDir = path.join(workspace.uri.fsPath, ".vscode")
+        const tasksPath = path.join(vscodeDir, "tasks.json")
+
+        if (!fs.existsSync(tasksPath)) {
+            vscode.window.showInformationMessage("未发现 tasks.json，自动翻译似乎未启用。")
+            logMessage("未发现 tasks.json，自动翻译似乎未启用。", "warn")
+            return
+        }
+
+        const raw = fs.readFileSync(tasksPath, "utf8")
+        const sanitized = raw
+            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/^\s*\/\/.*$/gm, "")
+            .replace(/,\s*([}\]])/g, "$1")
+        let content: any
+        try {
+            content = JSON.parse(sanitized)
+        } catch (e) {
+            vscode.window.showErrorMessage("无法解析 tasks.json，放弃修改以避免损坏文件。")
+            logMessage(`无法解析 tasks.json: ${e}`, "error")
+            return
+        }
+
+        if (!content || typeof content !== "object") content = { version: "2.0.0", tasks: [] }
+        const tasks: any[] = Array.isArray(content.tasks) ? content.tasks : []
+
+        const targetTaskLabel = "Translate project on open"
+        let modified = false
+
+        const hasTranslateProjectArg = (t: any) => {
+            const args = t?.args
+            return Array.isArray(args) && args.some((a) => typeof a === "string" && a.includes("${command:extension.translateProject}"))
+        }
+
+        for (const t of tasks) {
+            if (!t || typeof t !== "object") continue
+            if (t.label === targetTaskLabel || hasTranslateProjectArg(t)) {
+                if (t.runOptions && typeof t.runOptions === "object" && "runOn" in t.runOptions) {
+                    delete t.runOptions.runOn
+                    // 清理空对象
+                    if (Object.keys(t.runOptions).length === 0) delete t.runOptions
+                    modified = true
+                }
+            }
+        }
+
+        if (!modified) {
+            vscode.window.showInformationMessage("看起来自动翻译已处于禁用状态。")
+            logMessage("未发现需要禁用的 runOn 设置，可能已禁用。")
+            return
+        }
+
+        fs.writeFileSync(tasksPath, JSON.stringify({ ...content, tasks }, null, 2) + "\n", "utf8")
+        logMessage(`✅ 已在 ${path.relative(workspace.uri.fsPath, tasksPath)} 禁用自动翻译（移除 runOn）。`)
+        vscode.window.showInformationMessage("已禁用在工作区打开时自动翻译。")
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        vscode.window.showErrorMessage(`禁用自动翻译任务失败: ${msg}`)
+        logMessage(`❌ 禁用自动翻译任务失败: ${msg}`, "error")
+    }
 }
 
 async function handletranslateFolders() {

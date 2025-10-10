@@ -74,6 +74,14 @@
             {
                 "command": "extension.exportSettingsToConfig",
                 "title": "%command.exportSettingsToConfig%"
+            },
+            {
+                "command": "extension.enableAutoTranslateOnOpen",
+                "title": "%command.enableAutoTranslateOnOpen%"
+            },
+            {
+                "command": "extension.disableAutoTranslateOnOpen",
+                "title": "%command.disableAutoTranslateOnOpen%"
             }
         ],
         "menus": {

@@ -10,6 +10,8 @@
   "command.addFileToTranslationSettings": "项目翻译器：添加到项目翻译",
   "command.addFolderToTranslationSettings": "项目翻译器：添加到项目翻译",
   "command.exportSettingsToConfig": "项目翻译器：导出设置到 project.translation.json",
+  "command.enableAutoTranslateOnOpen": "项目翻译器：启用工作区打开时自动翻译",
+  "command.disableAutoTranslateOnOpen": "项目翻译器：禁用工作区打开时自动翻译",
   "config.sourceFolder.description": "源文件夹路径，用于存储上次选择的翻译文件夹路径",
   "config.targetFolders.description": "翻译目标文件夹配置，可指定多个目标文件夹及其对应的目标语言",
   "config.translationIntervalDays.description": "翻译间隔天数，如果目标文件已存在且在此天数内已翻译过，则跳过",
