@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.12.0",
+    "version": "0.13.0",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -772,7 +772,10 @@
                         },
                         "validationLevel": {
                             "type": "string",
-                            "enum": ["normal", "strict"],
+                            "enum": [
+                                "normal",
+                                "strict"
+                            ],
                             "default": "normal",
                             "description": "Validation strictness when applying edits"
                         },
