@@ -201,7 +201,6 @@ export class FileProcessor {
                 logMessage(`⏭️ Skipping file due to front matter marker: ${resolvedSourcePath}`);
                 // Copy the file directly without translation
                 await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
-                await this.translationDb.updateTranslationTime(resolvedSourcePath, resolvedTargetPath, targetLang);
                 return;
             }
 
@@ -226,13 +225,11 @@ export class FileProcessor {
                 { copyOnly: config.copyOnly ?? { paths: [], extensions: [] } }
             )) {
                 await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
-                await this.translationDb.updateTranslationTime(resolvedSourcePath, resolvedTargetPath, targetLang);
                 return;
             }
 
             if (await isBinaryFile(resolvedSourcePath)) {
                 await this.handleBinaryFile(resolvedSourcePath, resolvedTargetPath);
-                await this.translationDb.updateTranslationTime(resolvedSourcePath, resolvedTargetPath, targetLang);
                 return;
             }
 
@@ -250,7 +247,6 @@ export class FileProcessor {
         if (this.noTranslateCache.has(sourcePath)) {
             logMessage(`⏭️ Skipping translation (previously marked as no need to translate in this session)`);
             this.skippedFilesCount++;
-            await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
             return true;
         }
         
@@ -261,7 +257,6 @@ export class FileProcessor {
                 logMessage(`⏭️ Skipping translation (cached decision: no need to translate)`);
                 this.skippedFilesCount++;
                 this.noTranslateCache.set(sourcePath, true); // Ensure session cache is also populated
-                await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
                 return true;
             } else {
                 // If cache says we should translate, we don't need to check the database again.
@@ -279,7 +274,6 @@ export class FileProcessor {
             logMessage("⏭️ Skipping translation (fresh decision: no need to translate)");
             this.noTranslateCache.set(sourcePath, true); // Mark for this session
             this.skippedFilesCount++;
-            await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
             return true;
         }
 
@@ -414,6 +408,7 @@ export class FileProcessor {
         }
 
         const startTime = Date.now();
+        let wasTranslated = false;
 
         // Start translation
         logMessage("🔄 Starting file content translation...");
@@ -477,6 +472,7 @@ export class FileProcessor {
                 if (returnCode === AI_RETURN_CODE.OK) {
                     this.checkCancellation();
                     logMessage("💾 Translation result written");
+                    wasTranslated = translatedContent !== content;
                 }
             } else {
                 this.checkCancellation();
@@ -511,11 +507,11 @@ export class FileProcessor {
                         // Cache the decision so subsequent targets reuse this result
                         this.noTranslateCache.set(sourcePath, true);
                         this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
-                        await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
                         return; // Skip processing this file
                     } else {
                         fs.writeFileSync(targetPath, streamedContent);
                         logMessage("💾 Stream translation result written");
+                        wasTranslated = streamedContent !== content;
                     }
                 } else {
                     logMessage("🔄 Using standard mode for translation...");
@@ -531,24 +527,28 @@ export class FileProcessor {
 
                     this.checkCancellation();
 
-                    // If NO_NEED_TRANSLATE was detected, skip the file but still update translation time
+                    // If NO_NEED_TRANSLATE was detected, skip the file
                     if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                         logMessage("⏭️ No translation needed, skipping file");
                         this.skippedFilesCount++;
                         // Cache the decision so subsequent targets reuse this result
                         this.noTranslateCache.set(sourcePath, true);
                         this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
-                        await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
                         return; // Skip processing this file
                     } else {
                         fs.writeFileSync(targetPath, translatedContent);
                         logMessage("💾 Translation result written");
+                        wasTranslated = translatedContent !== content;
                     }
                 }
             }
 
             const duration = Date.now() - startTime;
-            await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+            if (wasTranslated) {
+                await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+            } else {
+                logMessage("ℹ️ Translation timestamp not updated (no actual translation performed)");
+            }
             logMessage(`⏱️ File translation completed in ${duration}ms (${(duration / 1000).toFixed(2)}s)`);
             this.processedFilesCount++;
             return { success: true, duration };
