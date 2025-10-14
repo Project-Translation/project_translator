@@ -1,6 +1,6 @@
 {
     "projectTranslator.debug": true,
-    "projectTranslator.currentVendor": "openrouter2",
+    "projectTranslator.currentVendor": "modelscope",
     "projectTranslator.translationIntervalDays": 29,
     "projectTranslator.userPrompts": [
         "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",

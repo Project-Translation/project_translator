@@ -15,28 +15,6 @@
         "maxSizeKB": 10240,
         "maxFiles": 5
     },
-    "projectTranslator.vendors": [
-        {
-            "name": "openrouter",
-            "apiEndpoint": "https://openrouter.ai/api/v1",
-            "apiKeyEnvVarName": "OPENROUTER_API_KEY",
-            "model": "deepseek/deepseek-chat-v3-0324:free",
-            "rpm": 0,
-            "maxTokensPerSegment": 3000,
-            "timeout": 30,
-            "streamMode": true
-        },
-        {
-            "name": "modelscope",
-            "apiEndpoint": "https://api-inference.modelscope.cn/v1/",
-            "apiKeyEnvVarName": "MODELSCOPE_SDK_TOKEN",
-            "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
-            "rpm": 0,
-            "maxTokensPerSegment": 3000,
-            "timeout": 30,
-            "streamMode": true
-        }
-    ],
     "projectTranslator.translationIntervalDays": -1,
     "projectTranslator.userPrompts": [
         "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",

@@ -33,6 +33,13 @@ export const DEFAULT_VENDOR_CONFIG: VendorConfig = {
 // i18n map
 let translations: Record<string, string> = {};
 
+// Normalize env var name from vendor name (replace non-alnum to '_', uppercase, append _API_KEY)
+const normalizeEnvVarNameFromVendorName = (name: string): string => {
+  const baseCandidate = name && name.trim().length > 0 ? name : "VENDOR"
+  const base = baseCandidate.replace(/[^a-zA-Z0-9]/g, "_").toUpperCase()
+  return `${base}_API_KEY`
+}
+
 export function loadTranslations(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration("projectTranslator");
   const language = config.get<string>("language", "en");
@@ -131,9 +138,10 @@ export async function exportSettingsToConfigFile(): Promise<void> {
     const config = vscode.workspace.getConfiguration("projectTranslator"); // Define all projectTranslator setting keys that should be exported
     // Note: enableMetrics is intentionally excluded as it should remain hidden
     const settingKeys = [
+      "currentVendor",
       "vendors",
       "destFolders",
-      "enableMetrics",
+      // intentionally exclude enableMetrics from export
       "debug",
       "logFile",
       "specifiedFiles",
@@ -153,6 +161,136 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       const value = config.get(key);
       if (value !== undefined) {
         settings[key] = value;
+      }
+    }
+
+    // Post-process vendors: only keep the currently selected vendor
+    const currentVendorName = settings.currentVendor || config.get<string>("currentVendor")
+    const vendorsFromSettings = (settings.vendors || config.get("vendors") || []) as VendorConfig[]
+
+    const selectedVendor = vendorsFromSettings.find(v => v.name === currentVendorName)
+      || vendorsFromSettings.find(v => v.name === DEFAULT_VENDOR_CONFIG.name)
+      || vendorsFromSettings[0]
+
+    if (selectedVendor) {
+      const vendorToExport: any = { ...selectedVendor }
+
+      // Security: remove plaintext apiKey only when exporting to file
+      if ("apiKey" in vendorToExport) {
+        delete vendorToExport.apiKey
+      }
+
+      // Ensure apiKeyEnvVarName is present; keep apiKey if provided
+      if (!vendorToExport.apiKeyEnvVarName || `${vendorToExport.apiKeyEnvVarName}`.trim().length === 0) {
+        const baseName = vendorToExport.name || currentVendorName || DEFAULT_VENDOR_CONFIG.name
+        vendorToExport.apiKeyEnvVarName = normalizeEnvVarNameFromVendorName(baseName)
+      }
+
+      // Remove fields that equal defaults (full coverage)
+      const comparableKeys: Array<keyof VendorConfig> = [
+        "apiEndpoint",
+        "model",
+        "rpm",
+        "maxTokensPerSegment",
+        "timeout",
+        "temperature",
+        "top_p",
+        "streamMode",
+      ]
+      for (const k of comparableKeys) {
+        if (vendorToExport[k] === (DEFAULT_VENDOR_CONFIG as any)[k]) {
+          delete vendorToExport[k]
+        }
+      }
+
+      settings.vendors = [vendorToExport]
+      settings.currentVendor = vendorToExport.name
+    } else {
+      // No vendor found in settings; export minimal entry using currentVendorName
+      const minimalName = (currentVendorName || DEFAULT_VENDOR_CONFIG.name) as string
+      const minimalVendor: any = { name: minimalName }
+      const envName = normalizeEnvVarNameFromVendorName(minimalName)
+      if (envName !== (DEFAULT_VENDOR_CONFIG.apiKeyEnvVarName || "")) {
+        minimalVendor.apiKeyEnvVarName = envName
+      }
+      settings.vendors = [ minimalVendor ]
+      settings.currentVendor = minimalName
+    }
+
+    // Deep-equal helper for pruning defaults
+    const deepEqual = (a: any, b: any): boolean => {
+      if (a === b) return true
+      if (typeof a !== typeof b) return false
+      if (a && b && typeof a === 'object') {
+        if (Array.isArray(a) !== Array.isArray(b)) return false
+        if (Array.isArray(a)) {
+          if (a.length !== b.length) return false
+          for (let i = 0; i < a.length; i++) {
+            if (!deepEqual(a[i], b[i])) return false
+          }
+          return true
+        }
+        const aKeys = Object.keys(a)
+        const bKeys = Object.keys(b)
+        if (aKeys.length !== bKeys.length) return false
+        for (const k of aKeys) {
+          if (!deepEqual(a[k], b[k])) return false
+        }
+        return true
+      }
+      return false
+    }
+
+    // VSCode defaults may be undefined in some environments; fall back to baseline defaults
+    const baselineDefaults: Record<string, any> = {
+      translationIntervalDays: -1,
+      systemPrompts: [],
+      userPrompts: [],
+      copyOnly: { paths: [], extensions: [".svg"] },
+      ignore: {
+        paths: [
+          "**/node_modules/**",
+          "**/.git/**",
+          "**/.github/**",
+          "**/.vscode/**",
+          "**/.nuxt/**",
+          "**/.next/**",
+        ],
+        extensions: [],
+      },
+      segmentationMarkers: {
+        markdown: ["^#\\s", "^##\\s", "^###\\s"],
+        html: ["^<h1[^>]*>", "^<h2[^>]*>", "^<h3[^>]*>"],
+        javascript: ["^function\\s+\\w+\\(", "^class\\s+\\w+"],
+        typescript: ["^function\\s+\\w+\\(", "^class\\s+\\w+", "^interface\\s+\\w+"],
+        python: ["^def\\s+\\w+\\(", "^class\\s+\\w+"],
+        java: ["^public\\s+(class|interface|enum)\\s+\\w+", "^\\s*public\\s+\\w+\\s+\\w+\\("],
+        go: ["^func\\s+\\w+\\(", "^type\\s+\\w+\\s+struct"],
+        "c#": ["^public\\s+(class|interface|enum)\\s+\\w+", "^\\s*public\\s+\\w+\\s+\\w+\\("],
+        php: ["^function\\s+\\w+\\(", "^class\\s+\\w+"],
+        ruby: ["^def\\s+\\w+", "^class\\s+\\w+"],
+        rust: ["^fn\\s+\\w+", "^struct\\s+\\w+", "^enum\\s+\\w+"],
+        swift: ["^func\\s+\\w+", "^class\\s+\\w+", "^struct\\s+\\w+"],
+        kotlin: ["^fun\\s+\\w+", "^class\\s+\\w+"],
+        plaintext: ["^\\s*$"],
+      },
+      diffApply: {
+        enabled: false,
+        validationLevel: "normal",
+        autoBackup: true,
+        maxOperationsPerFile: 100,
+      },
+    }
+
+    // Prune top-level fields that equal defaults
+    for (const key of Object.keys(settings)) {
+      if (key === 'vendors' || key === 'currentVendor') continue // always keep these
+      const inspected = config.inspect(key as any)
+      const defaultValue = (inspected && 'defaultValue' in inspected) ? (inspected as any).defaultValue : undefined
+      const baseline = baselineDefaults[key]
+      const compareTo = defaultValue !== undefined ? defaultValue : baseline
+      if (compareTo !== undefined && deepEqual(settings[key], compareTo)) {
+        delete settings[key]
       }
     }
 
@@ -226,7 +364,15 @@ export function getConfiguration(): Config {
   const copyOnly = configData.copyOnly;
   const ignore = configData.ignore;
   const currentVendorName = configData.currentVendor || "grok";
-  const vendors = configData.vendors || [];
+  const vendorsRaw = (configData.vendors || []) as VendorConfig[];
+  const vendors = vendorsRaw.map((v) => {
+    const merged: VendorConfig = { ...DEFAULT_VENDOR_CONFIG, ...v }
+    if (!merged.apiKeyEnvVarName || `${merged.apiKeyEnvVarName}`.trim().length === 0) {
+      merged.apiKeyEnvVarName = normalizeEnvVarNameFromVendorName(merged.name)
+    }
+    // Keep apiKey if provided (priority: apiKey > apiKeyEnvVarName)
+    return merged
+  });
   const specifiedFiles = configData.specifiedFiles;
   const specifiedFolders = configData.specifiedFolders;
   const translationIntervalDays = configData.translationIntervalDays || 1;
