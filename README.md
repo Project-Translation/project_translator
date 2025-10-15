@@ -4,7 +4,8 @@ An easy-to-use vscode extension for multi-language localization of projects.
 
 Project repository: `https://github.com/Project-Translation/project_translator`
 
-![example1](./resources/example1.gif)
+<!-- ![example1](./resources/example1.gif) -->
+![example1](https://i.imgur.com/uwRal2I.gif)
 
 ## Available Translations
 
