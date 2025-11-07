@@ -30,3 +30,29 @@ jobs:
           npx @vscode/vsce publish --pat ${{ secrets.VSCE_PAT }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+  publish-ovsx:
+    name: Publish to Open VSX
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Package Extension
+        run: npm run package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main
+
+      - name: Publish to Open VSX Registry
+        env:
+          OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
+        run: |
+          npm run publish:ovsx

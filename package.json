@@ -875,6 +875,7 @@
         "pretest": "npm run test-compile",
         "publish:minor": "npm run build && npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
         "publish:patch": "npm run build && npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+        "publish:ovsx": "node scripts/ovsx-publish.mjs",
         "package": "npm run build && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
         "deps:install": "npm install --no-fund --no-audit"
     },
@@ -888,6 +889,7 @@
         "@typescript-eslint/eslint-plugin": "^8.28.0",
         "@typescript-eslint/parser": "^8.28.0",
         "@vscode/vsce": "^3.6.0",
+        "ovsx": "^0.10.6",
         "chai": "^5.2.0",
         "esbuild": "^0.25.1",
         "eslint": "^9.23.0",

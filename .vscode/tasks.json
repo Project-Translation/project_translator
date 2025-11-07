@@ -166,6 +166,35 @@
             "group": "build",
             "problemMatcher": [],
             "detail": "Convert SVG icon to PNG format (128x128)"
+        },
+        {
+            "label": "publish open-vsx (local)",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "publish:ovsx"
+            ],
+            "group": "build",
+            "dependsOn": [
+                "package vsix"
+            ],
+            "options": {
+                "env": {
+                    "OVSX_PAT": "${input:openVsxToken}",
+                    "OPEN_VSX_TOKEN": "${input:openVsxToken}"
+                }
+            },
+            "problemMatcher": [],
+            "detail": "本地使用 npm 脚本发布到 Open VSX（运行时输入 Token，不写入文件）"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "openVsxToken",
+            "type": "promptString",
+            "description": "请输入 Open VSX Access Token（仅本次会话使用，不会保存）",
+            "password": true
         }
     ]
 }
