@@ -28,6 +28,7 @@ export class TranslationDatabase {
   private targetRoots: Map<string, SupportedLanguage> = new Map();
   private translationCache: Map<string, TranslationRecord> = new Map();
   private outputChannel: vscode.OutputChannel;
+  private readonly fsp = fs.promises;
 
   constructor(workspaceRoot: string, outputChannel: vscode.OutputChannel) {
     this.workspaceRoot = workspaceRoot;
@@ -44,10 +45,13 @@ export class TranslationDatabase {
   private async initCache() {
     logMessage("🗂️ Initializing translation cache...");
 
-    // Create the cache directory if it doesn't exist
-    if (!fs.existsSync(this.translationCacheDir)) {
-      fs.mkdirSync(this.translationCacheDir, { recursive: true });
-      logMessage(`📁 Created cache directory: ${this.translationCacheDir}`);
+    // Create the cache directory（异步，避免阻塞）
+    try {
+      await this.fsp.mkdir(this.translationCacheDir, { recursive: true });
+      logMessage(`📁 Ensured cache directory: ${this.translationCacheDir}`);
+    } catch (e) {
+      logMessage(`❌ Failed to create cache directory ${this.translationCacheDir}: ${e}`, "error");
+      throw e;
     }
 
     // Get configuration
@@ -138,8 +142,16 @@ export class TranslationDatabase {
     const cacheFilePath = path.join(this.translationCacheDir, cacheFileName);
 
     try {
-      if (fs.existsSync(cacheFilePath)) {
-        const cacheContent = fs.readFileSync(cacheFilePath, "utf8");
+      let cacheExists = false;
+      try {
+        const stat = await this.fsp.stat(cacheFilePath);
+        cacheExists = stat.isFile();
+      } catch {
+        cacheExists = false;
+      }
+
+      if (cacheExists) {
+        const cacheContent = await this.fsp.readFile(cacheFilePath, "utf8");
         const cache = JSON.parse(cacheContent);
         this.translationCache.set(lang, cache);
         const recordCount = Object.keys(cache).length;
@@ -187,7 +199,7 @@ export class TranslationDatabase {
           Object.keys(cache).length
         } records`
       );
-      fs.writeFileSync(cacheFilePath, cacheContent, "utf8");
+      await this.fsp.writeFile(cacheFilePath, cacheContent, "utf8");
       const recordCount = Object.keys(cache).length;
       logMessage(
         `💾 Saved cache for ${lang}: ${recordCount} records to ${cacheFileName}`
@@ -333,7 +345,13 @@ export class TranslationDatabase {
     );
 
     // Always translate if target file doesn't exist
-    if (!fs.existsSync(targetPath)) {
+    try {
+      const stat = await this.fsp.stat(targetPath);
+      if (!stat.isFile()) {
+        logMessage(`✅ Target path is not a file, translation needed`);
+        return true;
+      }
+    } catch {
       logMessage(`✅ Target file doesn't exist, translation needed`);
       return true;
     }
@@ -348,7 +366,7 @@ export class TranslationDatabase {
       const translationRecord = this.translationCache.get(targetLang) || {};
 
       // Get the interval in days from configuration
-      const config = getConfiguration();
+      const config = await getConfiguration();
       const intervalDays = config.translationIntervalDays;
 
       // If the source file has no record, it should be translated
@@ -428,9 +446,9 @@ export class TranslationDatabase {
       logMessage("✅ Translation database closed successfully");
     });
   }
-  private calculateFileHash(filePath: string): string {
+  private async calculateFileHash(filePath: string): Promise<string> {
     try {
-      const fileContent = fs.readFileSync(filePath);
+      const fileContent = await this.fsp.readFile(filePath);
       const hash = crypto.createHash("md5").update(fileContent).digest("hex");
       logMessage(
         `🔍 Calculated file hash for ${path.basename(
@@ -463,7 +481,7 @@ export class TranslationDatabase {
   }> {
     const timestamp = Date.now();
     const translate_datetime = this.formatDateTime(timestamp);
-    const src_hash = this.calculateFileHash(sourcePath);
+    const src_hash = await this.calculateFileHash(sourcePath);
 
     return { translate_datetime, src_hash };
   }

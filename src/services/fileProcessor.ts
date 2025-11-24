@@ -19,6 +19,8 @@ const AI_RETURN_CODE = {
   NO_NEED_TRANSLATE: "727d2eb8-8683-42bd-a1d0-f604fcd82163",
 };
 
+const fsp = fs.promises;
+
 export class FileProcessor {
     private outputChannel: vscode.OutputChannel;
     private translationDb: TranslationDatabase;
@@ -86,13 +88,16 @@ export class FileProcessor {
         const resolvedSourcePath = this.resolvePath(sourcePath);
 
         logMessage("\n[Directory Processing] ----------------------------------------");
-        logMessage(`📂 Starting to process directory: ${sourcePath}`); try {
+        logMessage(`📂 Starting to process directory: ${sourcePath}`);
+        try {
             this.checkCancellation();
 
-            const config = getConfiguration();
+            const config = await getConfiguration();
             const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
             const sourceRoot = this.translationDb.getSourceRoot() || resolvedSourcePath;
-            const relativeToWorkspacePath = path.relative(workspaceRoot, resolvedSourcePath).replace(/\\/g, "/");            // Check if directory should be ignored using glob
+            const relativeToWorkspacePath = path.relative(workspaceRoot, resolvedSourcePath).replace(/\\/g, "/");
+
+            // Check if directory should be ignored using glob
             if (config.ignore?.paths) {
                 for (const pattern of config.ignore.paths) {
                     if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
@@ -102,14 +107,16 @@ export class FileProcessor {
                 }
             }
 
-            const files = fs.readdirSync(resolvedSourcePath);
+            const files = await fsp.readdir(resolvedSourcePath);
             logMessage(`📊 Found ${files.length} files/directories`);
 
+            let processedEntries = 0;
             for (const file of files) {
                 this.checkCancellation();
 
                 const fullPath = path.join(resolvedSourcePath, file);
-                const stat = fs.statSync(fullPath); if (stat.isDirectory()) {
+                const stat = await fsp.stat(fullPath);
+                if (stat.isDirectory()) {
                     await this.processSubDirectory(fullPath, targetPaths, sourceRoot, config.ignore?.paths || [], sourceLang);
                 } else {
                     logMessage(`\n📄 File: ${file}`);
@@ -120,6 +127,11 @@ export class FileProcessor {
                         const targetFilePath = path.join(resolvedTargetPath, relativeToSourcePath);
                         await this.processFile(fullPath, targetFilePath, sourceLang, target.lang);
                     }
+                }
+
+                processedEntries++;
+                if (processedEntries % 10 === 0) {
+                    await this.yieldToEventLoop();
                 }
             }
         } catch (error) {
@@ -155,19 +167,16 @@ export class FileProcessor {
 
         logMessage(`\n📂 Processing subdirectory: ${path.basename(fullPath)}`);
 
-        // Create corresponding directories for each target path
+        // Create corresponding directories for each target path（使用异步 mkdir 避免阻塞）
         for (const target of targetPaths) {
-            // Resolve target path
             const resolvedTargetPath = this.resolvePath(target.path);
-            if (!fs.existsSync(resolvedTargetPath)) {
-                logMessage(`Creating target directory: ${resolvedTargetPath}`);
-                try {
-                    fs.mkdirSync(resolvedTargetPath, { recursive: true });
-                } catch (error) {
-                    logMessage(`❌ Failed to create directory: ${resolvedTargetPath}`);
-                    logMessage(`❌ Error details: ${error instanceof Error ? error.message : String(error)}`);
-                    throw error;
-                }
+            logMessage(`Ensuring target directory exists: ${resolvedTargetPath}`);
+            try {
+                await fsp.mkdir(resolvedTargetPath, { recursive: true });
+            } catch (error) {
+                logMessage(`❌ Failed to create directory: ${resolvedTargetPath}`);
+                logMessage(`❌ Error details: ${error instanceof Error ? error.message : String(error)}`);
+                throw error;
             }
         }
 
@@ -182,22 +191,27 @@ export class FileProcessor {
 
             logMessage(`\n🔄 Translating file: ${path.basename(sourcePath)} from ${sourceLang} to ${targetLang}`);
 
-            // Validate paths
-            if (!fs.existsSync(resolvedSourcePath)) {
+            // Validate paths（异步判断文件是否存在）
+            try {
+                const stat = await fsp.stat(resolvedSourcePath);
+                if (!stat.isFile()) {
+                    throw new Error(`Source path is not a file: ${sourcePath}`);
+                }
+            } catch {
                 throw new Error(`Source file not found: ${sourcePath}`);
             }
 
             // Ensure target directory exists
             const targetDir = path.dirname(resolvedTargetPath);
-            if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
-            }            // Skip if file should be ignored
+            await fsp.mkdir(targetDir, { recursive: true });
+
+            // Skip if file should be ignored
             if (await this.shouldSkipFile(resolvedSourcePath, resolvedTargetPath, targetLang)) {
                 return;
             }
 
             // Check if file should be skipped based on front matter markers
-            if (this.shouldSkipByFrontMatter(resolvedSourcePath)) {
+            if (await this.shouldSkipByFrontMatter(resolvedSourcePath)) {
                 logMessage(`⏭️ Skipping file due to front matter marker: ${resolvedSourcePath}`);
                 // Copy the file directly without translation
                 await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
@@ -206,7 +220,7 @@ export class FileProcessor {
 
             // Handle different file types
             const ext = path.extname(resolvedSourcePath).toLowerCase();
-            const config = getConfiguration();
+            const config = await getConfiguration();
 
             // Check if file should be completely ignored
             if (this.shouldIgnoreFile(
@@ -280,9 +294,9 @@ export class FileProcessor {
         return false;
     }
 
-    private shouldSkipByFrontMatter(sourcePath: string): boolean {
+    private async shouldSkipByFrontMatter(sourcePath: string): Promise<boolean> {
         // Only process if the feature is enabled and the file is markdown
-        const config = getConfiguration();
+        const config = await getConfiguration();
         const frontMatterConfig = config.skipFrontMatter;
         
         if (!frontMatterConfig || !frontMatterConfig.enabled) {
@@ -296,13 +310,9 @@ export class FileProcessor {
         }
         
         // Check if file exists
-        if (!fs.existsSync(sourcePath)) {
-            return false;
-        }
-        
         try {
             // Read the file content
-            const content = fs.readFileSync(sourcePath, 'utf-8');
+            const content = await fsp.readFile(sourcePath, 'utf-8');
             
             // Check if it has front matter
             if (!content.startsWith('---')) {
@@ -379,27 +389,38 @@ export class FileProcessor {
     }
 
     private async handleCopyOnlyFile(sourcePath: string, targetPath: string) {
-        if (fs.existsSync(targetPath)) {
-            const sourceContent = fs.readFileSync(sourcePath);
-            const targetContent = fs.readFileSync(targetPath);
-            if (Buffer.compare(sourceContent, targetContent) === 0) {
-                logMessage("⏭️ Source file and target file content are the same, skipping copy");
-                this.skippedFilesCount++;
-                return;
+        try {
+            const targetStat = await fsp.stat(targetPath);
+            if (targetStat.isFile()) {
+                const [sourceContent, targetContent] = await Promise.all([
+                    fsp.readFile(sourcePath),
+                    fsp.readFile(targetPath),
+                ]);
+                if (Buffer.compare(sourceContent, targetContent) === 0) {
+                    logMessage("⏭️ Source file and target file content are the same, skipping copy");
+                    this.skippedFilesCount++;
+                    return;
+                }
             }
+        } catch {
+            // target 不存在或无法访问，直接继续执行复制逻辑
         }
 
         logMessage(`📦 Detected file type for copy-only: ${path.extname(sourcePath)}`);
-            logMessage("🔄 Performing file copy");
-            fs.copyFileSync(sourcePath, targetPath);
-            logMessage("✅ Copy-only file copy completed");
+        logMessage("🔄 Performing file copy");
+        await fsp.copyFile(sourcePath, targetPath);
+        logMessage("✅ Copy-only file copy completed");
         this.processedFilesCount++;
-    } private async handleBinaryFile(sourcePath: string, targetPath: string) {
+    }
+
+    private async handleBinaryFile(sourcePath: string, targetPath: string) {
         logMessage("📦 Detected binary file, performing direct copy");
-            fs.copyFileSync(sourcePath, targetPath);
-            logMessage("✅ Binary file copy completed");
+        await fsp.copyFile(sourcePath, targetPath);
+        logMessage("✅ Binary file copy completed");
         this.processedFilesCount++;
-    }    private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
+    }
+
+    private async handleTextFile(sourcePath: string, targetPath: string, sourceLang: SupportedLanguage, targetLang: SupportedLanguage) {
         // Handle pause state
         while (this.isPaused) {
             this.checkCancellation();
@@ -412,19 +433,25 @@ export class FileProcessor {
 
         // Start translation
         logMessage("🔄 Starting file content translation...");
-        const content = fs.readFileSync(sourcePath, "utf8");
+        const content = await fsp.readFile(sourcePath, "utf8");
 
         try {
-            const config = getConfiguration();
+            const config = await getConfiguration();
             const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
             const estimatedTokens = estimateTokenCount(content);
 
             // Diff-apply branch: if enabled and target exists, try differential edits first
             const diffApplyEnabled = !!config.diffApply?.enabled
-            const targetExists = fs.existsSync(targetPath)
+            let targetExists = false
+            try {
+                const stat = await fsp.stat(targetPath)
+                targetExists = stat.isFile()
+            } catch {
+                targetExists = false
+            }
             if (diffApplyEnabled && targetExists) {
                 logMessage("🧩 Diff-apply mode enabled; generating edits...")
-                const currentTarget = fs.readFileSync(targetPath, 'utf8')
+                const currentTarget = await fsp.readFile(targetPath, 'utf8')
                 try {
                     const searchReplace = await this.translatorService.generateSearchReplaceDiff(
                         content,
@@ -446,9 +473,9 @@ export class FileProcessor {
                             // 手动备份，复用原有命名规则
                             const ts = new Date().toISOString().replace(/[-:T]/g, '').replace(/\..+$/, '')
                             const backupPath = `${targetPath}.bak.${ts}`
-                            fs.copyFileSync(targetPath, backupPath)
+                            await fsp.copyFile(targetPath, backupPath)
                         }
-                        fs.writeFileSync(targetPath, updatedText)
+                        await fsp.writeFile(targetPath, updatedText)
                         await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
                         logMessage(`✅ Diff edits applied (${appliedCount} ops)`)                    
                         this.processedFilesCount++
@@ -501,18 +528,18 @@ export class FileProcessor {
                     );
 
                     // If NO_NEED_TRANSLATE was detected, skip the file but still update translation time
-                    if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                        logMessage("⏭️ No translation needed, skipping file");
-                        this.skippedFilesCount++;
-                        // Cache the decision so subsequent targets reuse this result
-                        this.noTranslateCache.set(sourcePath, true);
-                        this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
-                        return; // Skip processing this file
-                    } else {
-                        fs.writeFileSync(targetPath, streamedContent);
-                        logMessage("💾 Stream translation result written");
-                        wasTranslated = streamedContent !== content;
-                    }
+                        if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                            logMessage("⏭️ No translation needed, skipping file");
+                            this.skippedFilesCount++;
+                            // Cache the decision so subsequent targets reuse this result
+                            this.noTranslateCache.set(sourcePath, true);
+                            this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
+                            return; // Skip processing this file
+                        } else {
+                            await fsp.writeFile(targetPath, streamedContent);
+                            logMessage("💾 Stream translation result written");
+                            wasTranslated = streamedContent !== content;
+                        }
                 } else {
                     logMessage("🔄 Using standard mode for translation...");
                     [returnCode, translatedContent] = await this.translatorService.translateContent(
@@ -528,18 +555,18 @@ export class FileProcessor {
                     this.checkCancellation();
 
                     // If NO_NEED_TRANSLATE was detected, skip the file
-                    if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                        logMessage("⏭️ No translation needed, skipping file");
-                        this.skippedFilesCount++;
-                        // Cache the decision so subsequent targets reuse this result
-                        this.noTranslateCache.set(sourcePath, true);
-                        this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
-                        return; // Skip processing this file
-                    } else {
-                        fs.writeFileSync(targetPath, translatedContent);
-                        logMessage("💾 Translation result written");
-                        wasTranslated = translatedContent !== content;
-                    }
+                        if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                            logMessage("⏭️ No translation needed, skipping file");
+                            this.skippedFilesCount++;
+                            // Cache the decision so subsequent targets reuse this result
+                            this.noTranslateCache.set(sourcePath, true);
+                            this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
+                            return; // Skip processing this file
+                        } else {
+                            await fsp.writeFile(targetPath, translatedContent);
+                            logMessage("💾 Translation result written");
+                            wasTranslated = translatedContent !== content;
+                        }
                 }
             }
 
@@ -576,7 +603,7 @@ export class FileProcessor {
     ): Promise<[string, string]> {
         try {
             logMessage("📏 Large file detected, segmenting content...");
-            const config = getConfiguration();
+            const config = await getConfiguration();
             const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
 
             // Segment the content
@@ -584,6 +611,9 @@ export class FileProcessor {
             logMessage(`📦 Segmented into ${segments.length} parts`);
 
             const translatedSegments: string[] = [];
+
+            // 用于保证流式写入的顺序性
+            let lastWritePromise: Promise<void> = Promise.resolve();
 
             // Translate each segment
             for (let i = 0; i < segments.length; i++) {
@@ -615,17 +645,26 @@ export class FileProcessor {
                             // Extract the original segment content
                             originalSegment = cleanedChunk;
                             const currentContent = combineSegments([...translatedSegments, originalSegment]);
-                            fs.writeFileSync(targetPath, currentContent);
-                            logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
+                            lastWritePromise = lastWritePromise.then(() =>
+                                fsp.writeFile(targetPath, currentContent).then(() => {
+                                    logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
+                                }).catch((err) => {
+                                    logMessage(`❌ Failed to write segment (no-translate) content: ${err instanceof Error ? err.message : String(err)}`, "error");
+                                })
+                            );
                             return;
                         }
 
                         // If no UUID fragments were found, add the chunk to current segment content
                         currentSegmentContent += cleanedChunk;
 
-                        // Update the file with what we have so far
+                        // Update the file with what we have so far（顺序串行异步写入）
                         const currentContent = combineSegments([...translatedSegments, currentSegmentContent]);
-                        fs.writeFileSync(targetPath, currentContent);
+                        lastWritePromise = lastWritePromise.then(() =>
+                            fsp.writeFile(targetPath, currentContent).catch((err) => {
+                                logMessage(`❌ Failed to write segment content: ${err instanceof Error ? err.message : String(err)}`, "error");
+                            })
+                        );
                     };
 
                     logMessage(`🔄 Using stream mode for segment ${i + 1}/${segments.length}...`);
@@ -660,8 +699,13 @@ export class FileProcessor {
 
                     // Write progress to file
                     const currentContent: string = combineSegments(translatedSegments);
-                    fs.writeFileSync(targetPath, currentContent);
-                    logMessage(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
+                    lastWritePromise = lastWritePromise.then(() =>
+                        fsp.writeFile(targetPath, currentContent).then(() => {
+                            logMessage(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
+                        }).catch((err) => {
+                            logMessage(`❌ Failed to write segment content: ${err instanceof Error ? err.message : String(err)}`, "error");
+                        })
+                    );
                 }
 
                 translatedSegments.push(translatedSegment);
@@ -671,9 +715,13 @@ export class FileProcessor {
                 if (streamMode) {
                     logMessage(`✅ Completed segment ${i + 1}/${segments.length}`);
                 }
+
+                await this.yieldToEventLoop();
             }
 
             const finalContent = combineSegments(translatedSegments);
+            // 确保所有挂起的写入完成
+            await lastWritePromise;
             return [AI_RETURN_CODE.OK, finalContent];
         } catch (error) {
             if (error instanceof vscode.CancellationError) {
@@ -683,5 +731,14 @@ export class FileProcessor {
             logMessage(`❌ Failed to translate: ${errorMessage}`);
             throw error;
         }
+    }
+
+    /**
+     * 在长循环中把控制权交还给事件循环，避免阻塞 VSCode 扩展宿主
+     */
+    private async yieldToEventLoop(): Promise<void> {
+        await new Promise(resolve => {
+            globalThis.setTimeout(resolve, 0);
+        });
     }
 }

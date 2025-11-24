@@ -180,28 +180,26 @@ async function handleEnableAutoTranslateOnOpen() {
             }
         }
 
-        // 确保 .vscode 目录存在
-        if (!fs.existsSync(vscodeDir)) {
-            fs.mkdirSync(vscodeDir, { recursive: true })
-        }
+        // 确保 .vscode 目录存在（使用异步 mkdir 避免阻塞）
+        await fs.promises.mkdir(vscodeDir, { recursive: true })
 
         // 读取并容错解析现有 tasks.json（允许 JSONC 注释/尾随逗号）
         let content: any = { version: "2.0.0", tasks: [] as any[] }
-        if (fs.existsSync(tasksPath)) {
-            try {
-                const raw = fs.readFileSync(tasksPath, "utf8")
-                const sanitized = raw
-                    .replace(/\/\*[\s\S]*?\*\//g, "") // 块注释
-                    .replace(/^\s*\/\/.*$/gm, "") // 行注释
-                    .replace(/,\s*([}\]])/g, "$1") // 尾随逗号
-                const parsed = JSON.parse(sanitized)
-                if (parsed && typeof parsed === "object") {
-                    content = parsed
-                    if (!Array.isArray(content.tasks)) content.tasks = []
-                    if (!content.version) content.version = "2.0.0"
-                }
-            } catch (e) {
-                // 解析失败则保留默认结构，避免破坏原文件；提示用户
+        try {
+            const raw = await fs.promises.readFile(tasksPath, "utf8")
+            const sanitized = raw
+                .replace(/\/\*[\s\S]*?\*\//g, "") // 块注释
+                .replace(/^\s*\/\/.*$/gm, "") // 行注释
+                .replace(/,\s*([}\]])/g, "$1") // 尾随逗号
+            const parsed = JSON.parse(sanitized)
+            if (parsed && typeof parsed === "object") {
+                content = parsed
+                if (!Array.isArray(content.tasks)) content.tasks = []
+                if (!content.version) content.version = "2.0.0"
+            }
+        } catch (e) {
+            // 文件不存在或解析失败：保留默认结构，避免破坏原文件；提示用户
+            if ((e as NodeJS.ErrnoException).code !== 'ENOENT') {
                 logMessage(
                     `⚠️ 无法解析现有 tasks.json，将创建最简结构写入新任务。错误: ${e}`,
                     "warn"
@@ -261,13 +259,15 @@ async function handleDisableAutoTranslateOnOpen() {
         const vscodeDir = path.join(workspace.uri.fsPath, ".vscode")
         const tasksPath = path.join(vscodeDir, "tasks.json")
 
-        if (!fs.existsSync(tasksPath)) {
+        try {
+            await fs.promises.access(tasksPath, fs.constants.F_OK)
+        } catch {
             vscode.window.showInformationMessage("未发现 tasks.json，自动翻译似乎未启用。")
             logMessage("未发现 tasks.json，自动翻译似乎未启用。", "warn")
             return
         }
 
-        const raw = fs.readFileSync(tasksPath, "utf8")
+        const raw = await fs.promises.readFile(tasksPath, "utf8")
         const sanitized = raw
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/^\s*\/\/.*$/gm, "")
@@ -336,7 +336,7 @@ async function handletranslateFolders() {
 
         // Initialize services
         const translatorService = new TranslatorService(outputChannel);
-        translatorService.initializeOpenAIClient();
+        await translatorService.initializeOpenAIClient();
 
         // Get configuration and validate
         const config = vscode.workspace.getConfiguration("projectTranslator");
@@ -391,7 +391,12 @@ async function handletranslateFolders() {
                         if (!path.isAbsolute(sourceFolder.path)) {
                             sourceFolder.path = path.join(workspace.uri.fsPath, sourceFolder.path);
                         }
-                        if (!fs.existsSync(sourceFolder.path)) {
+                        try {
+                            const stat = await fs.promises.stat(sourceFolder.path);
+                            if (!stat.isDirectory()) {
+                                throw new Error(`Source folder is not a directory: ${sourceFolder.path}`);
+                            }
+                        } catch {
                             throw new Error(`Source folder does not exist: ${sourceFolder.path}`);
                         }
                         // Register source directory and language
@@ -466,10 +471,10 @@ async function handleTranslateFiles() {
 
         // Initialize services
         const translatorService = new TranslatorService(outputChannel);
-        translatorService.initializeOpenAIClient();
+        await translatorService.initializeOpenAIClient();
 
         // Get the configuration
-        const config = getConfiguration();
+        const config = await getConfiguration();
         
         // Get specified files configuration
         const specifiedFiles = config.specifiedFiles;
@@ -595,10 +600,10 @@ async function handleTranslateProject() {
 
         // Initialize services
         const translatorService = new TranslatorService(outputChannel);
-        translatorService.initializeOpenAIClient();
+        await translatorService.initializeOpenAIClient();
 
         // Get configuration
-        const config = getConfiguration();
+        const config = await getConfiguration();
         const translationTasks = [];
 
         // Add folder translation task if specifiedFolders is configured
@@ -661,7 +666,12 @@ async function handleAddFileToSettings(fileUri: vscode.Uri) {
         }
 
         // Verify the file exists
-        if (!fs.existsSync(fileUri.fsPath)) {
+        try {
+            const stat = await fs.promises.stat(fileUri.fsPath);
+            if (!stat.isFile()) {
+                throw new Error(`File does not exist: ${relativePath}`);
+            }
+        } catch {
             throw new Error(`File does not exist: ${relativePath}`);
         }
 
@@ -736,7 +746,12 @@ async function handleAddFolderToSettings(folderUri: vscode.Uri) {
         }
 
         // Verify the folder exists
-        if (!fs.existsSync(folderUri.fsPath) || !fs.statSync(folderUri.fsPath).isDirectory()) {
+        try {
+            const stat = await fs.promises.stat(folderUri.fsPath);
+            if (!stat.isDirectory()) {
+                throw new Error(`Folder does not exist: ${relativePath}`);
+            }
+        } catch {
             throw new Error(`Folder does not exist: ${relativePath}`);
         }
 

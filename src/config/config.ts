@@ -13,6 +13,8 @@ import * as fs from "fs";
 import { DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2 } from "./prompt";
 // process env used in translatorService, not needed here
 
+const fsp = fs.promises;
+
 // Default vendor configuration
 export const DEFAULT_VENDOR_CONFIG: VendorConfig = {
   name: "deepseek",
@@ -48,8 +50,13 @@ export function loadTranslations(context: vscode.ExtensionContext) {
     "i18n",
     `${language}.json`
   );
-  if (fs.existsSync(translationsPath)) {
-    translations = JSON.parse(fs.readFileSync(translationsPath, "utf-8"));
+  try {
+    const stat = fs.statSync(translationsPath);
+    if (stat.isFile()) {
+      translations = JSON.parse(fs.readFileSync(translationsPath, "utf-8"));
+    }
+  } catch {
+    // 如果翻译文件不存在则静默忽略，保持空 translations
   }
 }
 
@@ -296,9 +303,9 @@ export async function exportSettingsToConfigFile(): Promise<void> {
 
     // Log suppressed in library code to satisfy lints
 
-    // Write to project.translation.json with proper formatting
+    // Write to project.translation.json with proper formatting（异步写入，避免阻塞）
     const jsonContent = JSON.stringify(settings, null, 2);
-    fs.writeFileSync(configFilePath, jsonContent, "utf-8");
+    await fsp.writeFile(configFilePath, jsonContent, "utf-8");
 
     const settingsCount = Object.keys(settings).length;
     vscode.window.showInformationMessage(
@@ -316,28 +323,33 @@ export async function exportSettingsToConfigFile(): Promise<void> {
   }
 }
 
-export function getConfiguration(): Config {
+export async function getConfiguration(): Promise<Config> {
   let configData: any = {};
 
-  // Try to read from project.translation.json first
+  // Try to read from project.translation.json first（优先使用项目级配置文件）
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (workspaceFolders && workspaceFolders.length > 0) {
     const workspaceRoot = workspaceFolders[0].uri.fsPath;
     const configFilePath = path.join(workspaceRoot, "project.translation.json");
 
-    if (fs.existsSync(configFilePath)) {
-      try {
-        const fileContent = fs.readFileSync(configFilePath, "utf-8");
-        configData = JSON.parse(fileContent);
-      } catch (error) {
-        vscode.window.showErrorMessage(
-          `Failed to parse project.translation.json: ${
-            (error as Error).message
-          }`
-        );
-        // Fall back to VSCode settings
-        configData = {};
+    try {
+      const stat = await fsp.stat(configFilePath);
+      if (stat.isFile()) {
+        try {
+          const fileContent = await fsp.readFile(configFilePath, "utf-8");
+          configData = JSON.parse(fileContent);
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            `Failed to parse project.translation.json: ${
+              (error as Error).message
+            }`
+          );
+          // Fall back to VSCode settings
+          configData = {};
+        }
       }
+    } catch {
+      // 配置文件不存在时静默忽略，继续走 VSCode 配置
     }
   }
 
@@ -359,8 +371,11 @@ export function getConfiguration(): Config {
 
       debug: config.get("debug"),
       logFile: config.get("logFile"),
+      skipFrontMatter: config.get("skipFrontMatterMarkers"),
     };
-  } // Extract and normalize configuration data
+  }
+
+  // Extract and normalize configuration data
   const copyOnly = configData.copyOnly;
   const ignore = configData.ignore;
   const currentVendorName = configData.currentVendor || "grok";
@@ -386,7 +401,6 @@ export function getConfiguration(): Config {
     maxSizeKB: 10240, // 10MB
     maxFiles: 5,
   };
-
 
   // Get skipFrontMatter configuration with default values
   const skipFrontMatter = configData.skipFrontMatter || {
@@ -431,6 +445,7 @@ export function getConfiguration(): Config {
     diffApply,
 
     logFile,
+    skipFrontMatter,
     copyOnly: {
       paths: Array.isArray(copyOnly?.paths) ? copyOnly.paths : [],
       extensions: Array.isArray(copyOnly?.extensions)

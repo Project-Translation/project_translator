@@ -32,8 +32,8 @@ export class TranslatorService {
     }
   }
 
-  public initializeOpenAIClient() {
-    const { currentVendor } = getConfiguration();
+  public async initializeOpenAIClient() {
+    const { currentVendor } = await getConfiguration();
     const { apiEndpoint, apiKey, apiKeyEnvVarName, model, timeout } = currentVendor;
     
     let finalApiKey = apiKey;
@@ -100,8 +100,9 @@ export class TranslatorService {
       throw new Error(error);
     }
 
-    const { currentVendorName, currentVendor, systemPrompts, userPrompts } =
-      getConfiguration();
+    const config = await getConfiguration();
+    const { currentVendorName, currentVendor, systemPrompts, userPrompts } = config;
+    const debug = !!config.debug;
     // Ensure temperature has a sensible default if undefined
     const { model, rpm, streamMode } = currentVendor;
     const temperature = currentVendor.temperature === undefined ? 0.7 : currentVendor.temperature;
@@ -172,6 +173,8 @@ export class TranslatorService {
           content,
           progressCallback,
           cancellationToken,
+          debug,
+          currentVendor.top_p,
           sourcePath
         );
       } else {
@@ -181,6 +184,8 @@ export class TranslatorService {
           temperature,
           currentVendorName,
           content,
+          debug,
+          currentVendor.top_p,
           sourcePath
         );
       }
@@ -209,8 +214,8 @@ export class TranslatorService {
       throw new Error(error);
     }
 
-    const { currentVendorName, currentVendor, systemPrompts, userPrompts } =
-      getConfiguration();
+    const config = await getConfiguration();
+    const { currentVendorName, currentVendor, systemPrompts, userPrompts } = config;
 
     const mergedSystemPrompt = [
       ...(systemPrompts || []),
@@ -252,21 +257,17 @@ export class TranslatorService {
     temperature: number | undefined,
     currentVendorName: string,
     originalContent: string,
+    debug: boolean | undefined,
+    topP: number | undefined,
     sourcePath: string = ""
   ): Promise<[string, string]> {
     if (!this.openaiClient) {
       throw new Error("OpenAI client not initialized");
     }
 
-    // Get debug configuration
-    const { debug } = getConfiguration();
-    
     // Record start time for API request
     const startTime = Date.now();
     logMessage(`⏱️ Starting OpenAI API request at ${new Date(startTime).toISOString()}`);
-
-    const { currentVendor } = getConfiguration();
-    const { top_p } = currentVendor;
 
     const requestPayload: any = {
       model: model,
@@ -275,8 +276,8 @@ export class TranslatorService {
     };
 
     // Add top_p to request if it's set
-    if (top_p !== undefined) {
-      requestPayload.top_p = top_p;
+    if (topP !== undefined) {
+      requestPayload.top_p = topP;
     }
 
     // Debug: Log request payload
@@ -334,15 +335,14 @@ export class TranslatorService {
     originalContent: string,
     progressCallback: TranslationProgressCallback,
     cancellationToken?: vscode.CancellationToken,
+    debug: boolean | undefined = false,
+    topP: number | undefined = undefined,
     sourcePath: string = ""
   ): Promise<[string, string]> {
     if (!this.openaiClient) {
       throw new Error("OpenAI client not initialized");
     }
 
-    // Get debug configuration
-    const { debug } = getConfiguration();
-    
     logMessage(`🔄 Starting streaming translation...`);
     let fullContent = "";
     let foundNoNeedTranslate = false;
@@ -354,9 +354,6 @@ export class TranslatorService {
     const startTime = Date.now();
     logMessage(`⏱️ Starting OpenAI streaming API request at ${new Date(startTime).toISOString()}`);
 
-    const { currentVendor } = getConfiguration();
-    const { top_p } = currentVendor;
-
     const requestPayload: any = {
       model: model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
@@ -365,8 +362,8 @@ export class TranslatorService {
     };
 
     // Add top_p to request if it's set
-    if (top_p !== undefined) {
-      requestPayload.top_p = top_p;
+    if (topP !== undefined) {
+      requestPayload.top_p = topP;
     }
 
     // Debug: Log request payload
