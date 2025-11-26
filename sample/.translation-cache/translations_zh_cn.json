@@ -6,5 +6,13 @@
   "translate_source.json": {
     "translate_datetime": "2025-10-14:17:20",
     "src_hash": "2b8390e9bd3af316837955b93b04136e"
+  },
+  "embeded/embeded.md": {
+    "translate_datetime": "2025-11-25:19:26",
+    "src_hash": "3895a56fb82dae2ae4011a96ca85fd2d"
+  },
+  "embeded/level1/level1.txt": {
+    "translate_datetime": "2025-11-25:19:26",
+    "src_hash": "e491a9ef5e091462dbf0d2a0fa1099e8"
   }
 }

@@ -1,6 +1,11 @@
+
 {
-    "extension.activated": "¡La extensión Project Translator ahora está activa!",
+    "extension.activated": "¡La extensión Project Translator ya está activa!",
     "status.translation.paused": "Traducción en pausa",
     "status.translation.resumed": "Traducción reanudada",
-    "status.translation.stopped": "Traducción detenida"
+    "status.translation.cancelled": "Traducción cancelada",
+    "status.translation.inProgress": "Traduciendo...",
+    "status.translation.pause": "Pausar traducción",
+    "status.translation.resume": "Reanudar traducción",
+    "status.translation.cancel": "Cancelar traducción"
 }

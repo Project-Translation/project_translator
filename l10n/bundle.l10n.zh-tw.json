@@ -1,6 +1,11 @@
+
 {
-    "extension.activated": "專案翻譯器擴充功能現在已啟用！",
+    "extension.activated": "專案翻譯擴充功能現在已啟用！",
     "status.translation.paused": "翻譯已暫停",
     "status.translation.resumed": "翻譯已恢復",
-    "status.translation.stopped": "翻譯已停止"
+    "status.translation.cancelled": "翻譯已取消",
+    "status.translation.inProgress": "正在翻譯...",
+    "status.translation.pause": "暫停翻譯",
+    "status.translation.resume": "恢復翻譯",
+    "status.translation.cancel": "取消翻譯"
 }

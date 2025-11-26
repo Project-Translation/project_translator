@@ -6,7 +6,7 @@
   "command.translateFiles": "Project Translator: Translate Files",
   "command.pauseTranslation": "Project Translator: Pause Translation",
   "command.resumeTranslation": "Project Translator: Resume Translation",
-  "command.stopTranslation": "Project Translator: Stop Translation",
+  "command.cancelTranslation": "Project Translator: Cancel Translation",
   "command.addFileToTranslationSettings": "Project Translator: Add to Project Translation",
   "command.addFolderToTranslationSettings": "Project Translator: Add to Project Translation",
   "command.exportSettingsToConfig": "Project Translator: Export Settings to project.translation.json",

@@ -1,6 +1,11 @@
+
 {
-    "extension.activated": "프로젝트 번역기 확장 프로그램이 이제 활성화되었습니다!",
-    "status.translation.paused": "번역 일시 중지됨",
-    "status.translation.resumed": "번역 재개됨",
-    "status.translation.stopped": "번역 중지됨"
+    "extension.activated": "프로젝트 번역기 확장이 활성화되었습니다!",
+    "status.translation.paused": "번역이 일시 중지되었습니다",
+    "status.translation.resumed": "번역이 다시 시작되었습니다",
+    "status.translation.cancelled": "번역이 취소되었습니다",
+    "status.translation.inProgress": "번역 중...",
+    "status.translation.pause": "번역 일시 중지",
+    "status.translation.resume": "번역 다시 시작",
+    "status.translation.cancel": "번역 취소"
 }

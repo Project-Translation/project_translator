@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.15.4",
+    "version": "0.15.5",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -60,8 +60,8 @@
                 "title": "%command.resumeTranslation%"
             },
             {
-                "command": "extension.stopTranslation",
-                "title": "%command.stopTranslation%"
+                "command": "extension.cancelTranslation",
+                "title": "%command.cancelTranslation%"
             },
             {
                 "command": "extension.addFileToTranslationSettings",
