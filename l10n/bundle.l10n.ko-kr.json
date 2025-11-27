@@ -1,11 +1,26 @@
 
 {
     "extension.activated": "프로젝트 번역기 확장이 활성화되었습니다!",
-    "status.translation.paused": "번역이 일시 중지되었습니다",
-    "status.translation.resumed": "번역이 다시 시작되었습니다",
-    "status.translation.cancelled": "번역이 취소되었습니다",
+    "status.translation.paused": "번역 일시 중지됨",
+    "status.translation.resumed": "번역 다시 시작됨",
+    "status.translation.cancelled": "번역 취소됨",
     "status.translation.inProgress": "번역 중...",
     "status.translation.pause": "번역 일시 중지",
     "status.translation.resume": "번역 다시 시작",
-    "status.translation.cancel": "번역 취소"
+    "status.translation.cancel": "번역 취소",
+    "autoTranslate.common.noWorkspace": "먼저 작업 영역을 열어주세요",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ 기존 tasks.json을 구문 분석하지 못했습니다. 새 작업으로 최소 구조를 생성합니다. 오류:",
+    "autoTranslate.enable.successLog": "✅ 자동 번역 작업이 다음 위치에 기록되었습니다",
+    "autoTranslate.enable.reloadPrompt": "폴더 열기 시 자동 번역이 활성화되었습니다. 적용하려면 지금 창을 다시 로드하시겠습니까?",
+    "autoTranslate.enable.reloadNow": "창 다시 로드",
+    "autoTranslate.enable.reloadLater": "나중에",
+    "autoTranslate.enable.error": "자동 번역 작업을 활성화하지 못했습니다:",
+    "autoTranslate.disable.noTasks": "tasks.json을 찾을 수 없습니다. 폴더 열기 시 자동 번역이 활성화되지 않은 것 같습니다.",
+    "autoTranslate.disable.parseErrorMessage": "tasks.json을 구문 분석하지 못했습니다. 파일 손상을 방지하기 위해 변경 사항을 건너뜁니다.",
+    "autoTranslate.disable.parseErrorLog": "tasks.json 구문 분석 실패:",
+    "autoTranslate.disable.alreadyDisabled": "폴더 열기 시 자동 번역이 이미 비활성화된 것 같습니다.",
+    "autoTranslate.disable.alreadyDisabledLog": "비활성화할 runOn 설정을 찾을 수 없습니다. 이미 비활성화되었을 수 있습니다.",
+    "autoTranslate.disable.successLog": "✅ 다음 위치에서 자동 번역 작업을 비활성화했습니다 (runOn 제거)",
+    "autoTranslate.disable.successInfo": "폴더 열기 시 자동 번역이 비활성화되었습니다.",
+    "autoTranslate.disable.error": "자동 번역 작업을 비활성화하지 못했습니다:"
 }

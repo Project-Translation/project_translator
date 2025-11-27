@@ -6,5 +6,20 @@
     "status.translation.inProgress": "Translating...",
     "status.translation.pause": "Pause translation",
     "status.translation.resume": "Resume translation",
-    "status.translation.cancel": "Cancel translation"
+    "status.translation.cancel": "Cancel translation",
+    "autoTranslate.common.noWorkspace": "Please open a workspace first",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ Failed to parse existing tasks.json, will create a minimal structure with the new task. Error:",
+    "autoTranslate.enable.successLog": "✅ Auto-translate task has been written to",
+    "autoTranslate.enable.reloadPrompt": "Auto-translate on folder open has been enabled. Reload the window now to take effect?",
+    "autoTranslate.enable.reloadNow": "Reload Window",
+    "autoTranslate.enable.reloadLater": "Later",
+    "autoTranslate.enable.error": "Failed to enable auto-translate task:",
+    "autoTranslate.disable.noTasks": "No tasks.json found; auto-translate on folder open does not seem to be enabled.",
+    "autoTranslate.disable.parseErrorMessage": "Failed to parse tasks.json; skipping changes to avoid corrupting the file.",
+    "autoTranslate.disable.parseErrorLog": "Failed to parse tasks.json:",
+    "autoTranslate.disable.alreadyDisabled": "Auto-translate on folder open already appears to be disabled.",
+    "autoTranslate.disable.alreadyDisabledLog": "No runOn setting found to disable; it may already be disabled.",
+    "autoTranslate.disable.successLog": "✅ Disabled auto-translate task (removed runOn) in",
+    "autoTranslate.disable.successInfo": "Auto-translate on folder open has been disabled.",
+    "autoTranslate.disable.error": "Failed to disable auto-translate task:"
 }

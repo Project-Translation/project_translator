@@ -1,11 +1,26 @@
 
 {
-    "extension.activated": "プロジェクト翻訳拡張機能が有効になりました！",
+    "extension.activated": "プロジェクト翻訳拡張機能がアクティブになりました！",
     "status.translation.paused": "翻訳が一時停止されました",
     "status.translation.resumed": "翻訳が再開されました",
     "status.translation.cancelled": "翻訳がキャンセルされました",
     "status.translation.inProgress": "翻訳中...",
     "status.translation.pause": "翻訳を一時停止",
     "status.translation.resume": "翻訳を再開",
-    "status.translation.cancel": "翻訳をキャンセル"
+    "status.translation.cancel": "翻訳をキャンセル",
+    "autoTranslate.common.noWorkspace": "まずワークスペースを開いてください",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ 既存のtasks.jsonの解析に失敗しました。新しいタスクで最小限の構造を作成します。エラー:",
+    "autoTranslate.enable.successLog": "✅ 自動翻訳タスクが書き込まれました:",
+    "autoTranslate.enable.reloadPrompt": "フォルダー開時の自動翻訳が有効になりました。今すぐウィンドウをリロードして有効にしますか？",
+    "autoTranslate.enable.reloadNow": "ウィンドウをリロード",
+    "autoTranslate.enable.reloadLater": "後で",
+    "autoTranslate.enable.error": "自動翻訳タスクの有効化に失敗しました:",
+    "autoTranslate.disable.noTasks": "tasks.jsonが見つかりません。フォルダー開時の自動翻訳は有効になっていないようです。",
+    "autoTranslate.disable.parseErrorMessage": "tasks.jsonの解析に失敗しました。ファイル破損を避けるため、変更をスキップします。",
+    "autoTranslate.disable.parseErrorLog": "tasks.jsonの解析に失敗しました:",
+    "autoTranslate.disable.alreadyDisabled": "フォルダー開時の自動翻訳はすでに無効になっているようです。",
+    "autoTranslate.disable.alreadyDisabledLog": "無効にするrunOn設定が見つかりません。すでに無効になっている可能性があります。",
+    "autoTranslate.disable.successLog": "✅ 自動翻訳タスクを無効にしました（runOnを削除）:",
+    "autoTranslate.disable.successInfo": "フォルダー開時の自動翻訳が無効になりました。",
+    "autoTranslate.disable.error": "自動翻訳タスクの無効化に失敗しました:"
 }

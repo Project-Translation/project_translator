@@ -1,11 +1,26 @@
 
 {
-    "extension.activated": "تم تفعيل امتداد مترجم المشروع الآن!",
+    "extension.activated": "إضافة مترجم المشروع نشطة الآن!",
     "status.translation.paused": "تم إيقاف الترجمة مؤقتًا",
     "status.translation.resumed": "تم استئناف الترجمة",
     "status.translation.cancelled": "تم إلغاء الترجمة",
-    "status.translation.inProgress": "جاري الترجمة...",
+    "status.translation.inProgress": "جارٍ الترجمة...",
     "status.translation.pause": "إيقاف الترجمة مؤقتًا",
     "status.translation.resume": "استئناف الترجمة",
-    "status.translation.cancel": "إلغاء الترجمة"
+    "status.translation.cancel": "إلغاء الترجمة",
+    "autoTranslate.common.noWorkspace": "يرجى فتح مساحة عمل أولاً",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ فشل في تحليل tasks.json الموجود، سيتم إنشاء هيكل أساسي مع المهمة الجديدة. الخطأ:",
+    "autoTranslate.enable.successLog": "✅ تمت كتابة مهمة الترجمة التلقائية إلى",
+    "autoTranslate.enable.reloadPrompt": "تم تفعيل الترجمة التلقائية عند فتح المجلد. هل تريد إعادة تحميل النافذة الآن لتفعيل التغييرات؟",
+    "autoTranslate.enable.reloadNow": "إعادة تحميل النافذة",
+    "autoTranslate.enable.reloadLater": "لاحقًا",
+    "autoTranslate.enable.error": "فشل في تفعيل مهمة الترجمة التلقائية:",
+    "autoTranslate.disable.noTasks": "لم يتم العثور على ملف tasks.json؛ يبدو أن الترجمة التلقائية عند فتح المجلد غير مفعلة.",
+    "autoTranslate.disable.parseErrorMessage": "فشل في تحليل ملف tasks.json؛ سيتم تخطي التغييرات لتجنب إتلاف الملف.",
+    "autoTranslate.disable.parseErrorLog": "فشل في تحليل ملف tasks.json:",
+    "autoTranslate.disable.alreadyDisabled": "يبدو أن الترجمة التلقائية عند فتح المجلد معطلة بالفعل.",
+    "autoTranslate.disable.alreadyDisabledLog": "لم يتم العثور على إعداد runOn لتعطيله؛ قد يكون معطلاً بالفعل.",
+    "autoTranslate.disable.successLog": "✅ تم تعطيل مهمة الترجمة التلقائية (تمت إزالة runOn) في",
+    "autoTranslate.disable.successInfo": "تم تعطيل الترجمة التلقائية عند فتح المجلد.",
+    "autoTranslate.disable.error": "فشل في تعطيل مهمة الترجمة التلقائية:"
 }

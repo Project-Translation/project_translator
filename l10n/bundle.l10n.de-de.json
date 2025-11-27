@@ -1,11 +1,26 @@
 
 {
-    "extension.activated": "Die Projektübersetzungs-Erweiterung ist jetzt aktiv!",
+    "extension.activated": "Project Translator-Erweiterung ist jetzt aktiv!",
     "status.translation.paused": "Übersetzung pausiert",
     "status.translation.resumed": "Übersetzung fortgesetzt",
     "status.translation.cancelled": "Übersetzung abgebrochen",
-    "status.translation.inProgress": "Übersetzen...",
+    "status.translation.inProgress": "Übersetzung läuft...",
     "status.translation.pause": "Übersetzung pausieren",
     "status.translation.resume": "Übersetzung fortsetzen",
-    "status.translation.cancel": "Übersetzung abbrechen"
+    "status.translation.cancel": "Übersetzung abbrechen",
+    "autoTranslate.common.noWorkspace": "Bitte öffnen Sie zuerst einen Arbeitsbereich",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ Fehler beim Parsen der vorhandenen tasks.json, es wird eine minimale Struktur mit der neuen Aufgabe erstellt. Fehler:",
+    "autoTranslate.enable.successLog": "✅ Auto-Übersetzungs-Aufgabe wurde geschrieben in",
+    "autoTranslate.enable.reloadPrompt": "Auto-Übersetzung beim Öffnen eines Ordners wurde aktiviert. Fenster jetzt neu laden, damit die Änderungen wirksam werden?",
+    "autoTranslate.enable.reloadNow": "Fenster neu laden",
+    "autoTranslate.enable.reloadLater": "Später",
+    "autoTranslate.enable.error": "Fehler beim Aktivieren der Auto-Übersetzungs-Aufgabe:",
+    "autoTranslate.disable.noTasks": "Keine tasks.json gefunden; die Auto-Übersetzung beim Öffnen eines Ordners scheint nicht aktiviert zu sein.",
+    "autoTranslate.disable.parseErrorMessage": "Fehler beim Parsen der tasks.json; Änderungen werden übersprungen, um eine Beschädigung der Datei zu vermeiden.",
+    "autoTranslate.disable.parseErrorLog": "Fehler beim Parsen der tasks.json:",
+    "autoTranslate.disable.alreadyDisabled": "Die Auto-Übersetzung beim Öffnen eines Ordners scheint bereits deaktiviert zu sein.",
+    "autoTranslate.disable.alreadyDisabledLog": "Keine runOn-Einstellung zum Deaktivieren gefunden; sie ist möglicherweise bereits deaktiviert.",
+    "autoTranslate.disable.successLog": "✅ Auto-Übersetzungs-Aufgabe deaktiviert (runOn entfernt) in",
+    "autoTranslate.disable.successInfo": "Die Auto-Übersetzung beim Öffnen eines Ordners wurde deaktiviert.",
+    "autoTranslate.disable.error": "Fehler beim Deaktivieren der Auto-Übersetzungs-Aufgabe:"
 }

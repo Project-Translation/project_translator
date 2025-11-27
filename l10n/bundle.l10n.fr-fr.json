@@ -7,5 +7,20 @@
     "status.translation.inProgress": "Traduction en cours...",
     "status.translation.pause": "Mettre la traduction en pause",
     "status.translation.resume": "Reprendre la traduction",
-    "status.translation.cancel": "Annuler la traduction"
+    "status.translation.cancel": "Annuler la traduction",
+    "autoTranslate.common.noWorkspace": "Veuillez d'abord ouvrir un espace de travail",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ Échec de l'analyse du fichier tasks.json existant, une structure minimale sera créée avec la nouvelle tâche. Erreur :",
+    "autoTranslate.enable.successLog": "✅ La tâche de traduction automatique a été écrite dans",
+    "autoTranslate.enable.reloadPrompt": "La traduction automatique à l'ouverture du dossier a été activée. Recharger la fenêtre maintenant pour prendre effet ?",
+    "autoTranslate.enable.reloadNow": "Recharger la fenêtre",
+    "autoTranslate.enable.reloadLater": "Plus tard",
+    "autoTranslate.enable.error": "Échec de l'activation de la tâche de traduction automatique :",
+    "autoTranslate.disable.noTasks": "Fichier tasks.json introuvable ; la traduction automatique à l'ouverture du dossier ne semble pas être activée.",
+    "autoTranslate.disable.parseErrorMessage": "Échec de l'analyse de tasks.json ; modifications ignorées pour éviter de corrompre le fichier.",
+    "autoTranslate.disable.parseErrorLog": "Échec de l'analyse de tasks.json :",
+    "autoTranslate.disable.alreadyDisabled": "La traduction automatique à l'ouverture du dossier semble déjà être désactivée.",
+    "autoTranslate.disable.alreadyDisabledLog": "Aucun paramètre runOn trouvé à désactiver ; il est peut-être déjà désactivé.",
+    "autoTranslate.disable.successLog": "✅ Tâche de traduction automatique désactivée (runOn supprimé) dans",
+    "autoTranslate.disable.successInfo": "La traduction automatique à l'ouverture du dossier a été désactivée.",
+    "autoTranslate.disable.error": "Échec de la désactivation de la tâche de traduction automatique :"
 }

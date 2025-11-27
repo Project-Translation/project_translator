@@ -1,11 +1,26 @@
 
 {
-    "extension.activated": "¡La extensión Project Translator ya está activa!",
+    "extension.activated": "¡La extensión Project Translator ahora está activa!",
     "status.translation.paused": "Traducción en pausa",
     "status.translation.resumed": "Traducción reanudada",
     "status.translation.cancelled": "Traducción cancelada",
     "status.translation.inProgress": "Traduciendo...",
     "status.translation.pause": "Pausar traducción",
     "status.translation.resume": "Reanudar traducción",
-    "status.translation.cancel": "Cancelar traducción"
+    "status.translation.cancel": "Cancelar traducción",
+    "autoTranslate.common.noWorkspace": "Por favor, abra un espacio de trabajo primero",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ Error al analizar el tasks.json existente, se creará una estructura mínima con la nueva tarea. Error:",
+    "autoTranslate.enable.successLog": "✅ La tarea de traducción automática se ha escrito en",
+    "autoTranslate.enable.reloadPrompt": "Se ha habilitado la traducción automática al abrir la carpeta. ¿Recargar la ventana ahora para que surta efecto?",
+    "autoTranslate.enable.reloadNow": "Recargar ventana",
+    "autoTranslate.enable.reloadLater": "Más tarde",
+    "autoTranslate.enable.error": "Error al habilitar la tarea de traducción automática:",
+    "autoTranslate.disable.noTasks": "No se encontró tasks.json; la traducción automática al abrir la carpeta no parece estar habilitada.",
+    "autoTranslate.disable.parseErrorMessage": "Error al analizar tasks.json; omitiendo cambios para evitar corromper el archivo.",
+    "autoTranslate.disable.parseErrorLog": "Error al analizar tasks.json:",
+    "autoTranslate.disable.alreadyDisabled": "La traducción automática al abrir la carpeta ya parece estar deshabilitada.",
+    "autoTranslate.disable.alreadyDisabledLog": "No se encontró la configuración runOn para deshabilitar; ya puede estar deshabilitada.",
+    "autoTranslate.disable.successLog": "✅ Tarea de traducción automática deshabilitada (runOn eliminado) en",
+    "autoTranslate.disable.successInfo": "Se ha deshabilitado la traducción automática al abrir la carpeta.",
+    "autoTranslate.disable.error": "Error al deshabilitar la tarea de traducción automática:"
 }

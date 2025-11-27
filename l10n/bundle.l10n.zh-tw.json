@@ -1,11 +1,26 @@
 
 {
-    "extension.activated": "專案翻譯擴充功能現在已啟用！",
+    "extension.activated": "Project Translator 擴充功能現在已啟用！",
     "status.translation.paused": "翻譯已暫停",
     "status.translation.resumed": "翻譯已恢復",
     "status.translation.cancelled": "翻譯已取消",
-    "status.translation.inProgress": "正在翻譯...",
+    "status.translation.inProgress": "翻譯中...",
     "status.translation.pause": "暫停翻譯",
     "status.translation.resume": "恢復翻譯",
-    "status.translation.cancel": "取消翻譯"
+    "status.translation.cancel": "取消翻譯",
+    "autoTranslate.common.noWorkspace": "請先開啟一個工作區",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ 解析現有的 tasks.json 失敗，將使用新任務建立一個最小結構。錯誤：",
+    "autoTranslate.enable.successLog": "✅ 自動翻譯任務已寫入至",
+    "autoTranslate.enable.reloadPrompt": "已在開啟資料夾時啟用自動翻譯。是否立即重新載入視窗以生效？",
+    "autoTranslate.enable.reloadNow": "重新載入視窗",
+    "autoTranslate.enable.reloadLater": "稍後",
+    "autoTranslate.enable.error": "啟用自動翻譯任務失敗：",
+    "autoTranslate.disable.noTasks": "找不到 tasks.json；似乎未啟用在開啟資料夾時自動翻譯的功能。",
+    "autoTranslate.disable.parseErrorMessage": "解析 tasks.json 失敗；為避免損壞檔案，將跳過變更。",
+    "autoTranslate.disable.parseErrorLog": "解析 tasks.json 失敗：",
+    "autoTranslate.disable.alreadyDisabled": "在開啟資料夾時自動翻譯的功能似乎已經停用。",
+    "autoTranslate.disable.alreadyDisabledLog": "找不到要停用的 runOn 設定；它可能已經被停用了。",
+    "autoTranslate.disable.successLog": "✅ 已在其中停用自動翻譯任務（已移除 runOn）",
+    "autoTranslate.disable.successInfo": "已在開啟資料夾時停用自動翻譯的功能。",
+    "autoTranslate.disable.error": "停用自動翻譯任務失敗："
 }

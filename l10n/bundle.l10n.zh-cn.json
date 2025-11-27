@@ -1,11 +1,28 @@
 
+```json
 {
-    "extension.activated": "项目翻译器扩展现已激活！",
+    "extension.activated": "Project Translator 扩展现已激活！",
     "status.translation.paused": "翻译已暂停",
     "status.translation.resumed": "翻译已恢复",
     "status.translation.cancelled": "翻译已取消",
     "status.translation.inProgress": "正在翻译...",
     "status.translation.pause": "暂停翻译",
     "status.translation.resume": "恢复翻译",
-    "status.translation.cancel": "取消翻译"
+    "status.translation.cancel": "取消翻译",
+    "autoTranslate.common.noWorkspace": "请先打开一个工作区",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ 解析现有 tasks.json 失败，将使用新任务创建一个最小结构。错误：",
+    "autoTranslate.enable.successLog": "✅ 自动翻译任务已写入",
+    "autoTranslate.enable.reloadPrompt": "已启用打开文件夹时自动翻译。现在重新加载窗口以生效吗？",
+    "autoTranslate.enable.reloadNow": "重新加载窗口",
+    "autoTranslate.enable.reloadLater": "稍后",
+    "autoTranslate.enable.error": "启用自动翻译任务失败：",
+    "autoTranslate.disable.noTasks": "未找到 tasks.json；打开文件夹时自动翻译似乎未启用。",
+    "autoTranslate.disable.parseErrorMessage": "解析 tasks.json 失败；为避免文件损坏，跳过更改。",
+    "autoTranslate.disable.parseErrorLog": "解析 tasks.json 失败：",
+    "autoTranslate.disable.alreadyDisabled": "打开文件夹时自动翻译似乎已被禁用。",
+    "autoTranslate.disable.alreadyDisabledLog": "未找到要禁用的 runOn 设置；它可能已被禁用。",
+    "autoTranslate.disable.successLog": "✅ 已在以下位置禁用自动翻译任务（已移除 runOn）",
+    "autoTranslate.disable.successInfo": "打开文件夹时自动翻译已被禁用。",
+    "autoTranslate.disable.error": "禁用自动翻译任务失败："
 }
+```

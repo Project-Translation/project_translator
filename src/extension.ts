@@ -167,7 +167,12 @@ async function handleEnableAutoTranslateOnOpen() {
     try {
         const workspace = vscode.workspace.workspaceFolders?.[0]
         if (!workspace) {
-            throw new Error("Please open a workspace first")
+            throw new Error(
+                localize(
+                    "autoTranslate.common.noWorkspace",
+                    "Please open a workspace first"
+                )
+            )
         }
 
         const vscodeDir = path.join(workspace.uri.fsPath, ".vscode")
@@ -213,10 +218,11 @@ async function handleEnableAutoTranslateOnOpen() {
         } catch (e) {
             // 文件不存在或解析失败：保留默认结构，避免破坏原文件；提示用户
             if ((e as NodeJS.ErrnoException).code !== 'ENOENT') {
-                logMessage(
-                    `⚠️ 无法解析现有 tasks.json，将创建最简结构写入新任务。错误: ${e}`,
-                    "warn"
+                const parseErrorPrefix = localize(
+                    "autoTranslate.enable.parseTasksJsonError",
+                    "⚠️ Failed to parse existing tasks.json, will create a minimal structure with the new task. Error:"
                 )
+                logMessage(`${parseErrorPrefix} ${e}`, "warn")
             }
         }
 
@@ -238,21 +244,41 @@ async function handleEnableAutoTranslateOnOpen() {
         // 写回文件（标准 JSON 缩进）
         fs.writeFileSync(tasksPath, JSON.stringify(content, null, 2) + "\n", "utf8")
 
-        logMessage(`✅ 已在 ${path.relative(workspace.uri.fsPath, tasksPath)} 写入自动翻译任务。`)
+        const successLogPrefix = localize(
+            "autoTranslate.enable.successLog",
+            "✅ Auto-translate task has been written to"
+        )
+        logMessage(`${successLogPrefix} ${path.relative(workspace.uri.fsPath, tasksPath)}.`)
 
         // 询问是否立即重载以触发 folderOpen 任务
-        const action = await vscode.window.showInformationMessage(
-            "已启用在工作区打开时自动翻译。是否现在重载窗口以立即生效？",
-            "重载窗口",
-            "稍后"
+        const reloadPrompt = localize(
+            "autoTranslate.enable.reloadPrompt",
+            "Auto-translate on folder open has been enabled. Reload the window now to take effect?"
         )
-        if (action === "重载窗口") {
+        const reloadNowLabel = localize(
+            "autoTranslate.enable.reloadNow",
+            "Reload Window"
+        )
+        const reloadLaterLabel = localize(
+            "autoTranslate.enable.reloadLater",
+            "Later"
+        )
+        const action = await vscode.window.showInformationMessage(
+            reloadPrompt,
+            reloadNowLabel,
+            reloadLaterLabel
+        )
+        if (action === reloadNowLabel) {
             await vscode.commands.executeCommand("workbench.action.reloadWindow")
         }
     } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)
-        vscode.window.showErrorMessage(`启用自动翻译任务失败: ${msg}`)
-        logMessage(`❌ 启用自动翻译任务失败: ${msg}`, "error")
+        const errorPrefix = localize(
+            "autoTranslate.enable.error",
+            "Failed to enable auto-translate task:"
+        )
+        vscode.window.showErrorMessage(`${errorPrefix} ${msg}`)
+        logMessage(`❌ ${errorPrefix} ${msg}`, "error")
     }
 }
 
@@ -266,7 +292,12 @@ async function handleDisableAutoTranslateOnOpen() {
     try {
         const workspace = vscode.workspace.workspaceFolders?.[0]
         if (!workspace) {
-            throw new Error("Please open a workspace first")
+            throw new Error(
+                localize(
+                    "autoTranslate.common.noWorkspace",
+                    "Please open a workspace first"
+                )
+            )
         }
 
         const vscodeDir = path.join(workspace.uri.fsPath, ".vscode")
@@ -275,8 +306,12 @@ async function handleDisableAutoTranslateOnOpen() {
         try {
             await fs.promises.access(tasksPath, fs.constants.F_OK)
         } catch {
-            vscode.window.showInformationMessage("未发现 tasks.json，自动翻译似乎未启用。")
-            logMessage("未发现 tasks.json，自动翻译似乎未启用。", "warn")
+            const noTasksMessage = localize(
+                "autoTranslate.disable.noTasks",
+                "No tasks.json found; auto-translate on folder open does not seem to be enabled."
+            )
+            vscode.window.showInformationMessage(noTasksMessage)
+            logMessage(noTasksMessage, "warn")
             return
         }
 
@@ -289,8 +324,16 @@ async function handleDisableAutoTranslateOnOpen() {
         try {
             content = JSON.parse(sanitized)
         } catch (e) {
-            vscode.window.showErrorMessage("无法解析 tasks.json，放弃修改以避免损坏文件。")
-            logMessage(`无法解析 tasks.json: ${e}`, "error")
+            const parseErrorMessage = localize(
+                "autoTranslate.disable.parseErrorMessage",
+                "Failed to parse tasks.json; skipping changes to avoid corrupting the file."
+            )
+            vscode.window.showErrorMessage(parseErrorMessage)
+            const parseErrorLogPrefix = localize(
+                "autoTranslate.disable.parseErrorLog",
+                "Failed to parse tasks.json:"
+            )
+            logMessage(`${parseErrorLogPrefix} ${e}`, "error")
             return
         }
 
@@ -318,18 +361,38 @@ async function handleDisableAutoTranslateOnOpen() {
         }
 
         if (!modified) {
-            vscode.window.showInformationMessage("看起来自动翻译已处于禁用状态。")
-            logMessage("未发现需要禁用的 runOn 设置，可能已禁用。")
+            const alreadyDisabledMessage = localize(
+                "autoTranslate.disable.alreadyDisabled",
+                "Auto-translate on folder open already appears to be disabled."
+            )
+            vscode.window.showInformationMessage(alreadyDisabledMessage)
+            const alreadyDisabledLog = localize(
+                "autoTranslate.disable.alreadyDisabledLog",
+                "No runOn setting found to disable; it may already be disabled."
+            )
+            logMessage(alreadyDisabledLog)
             return
         }
 
         fs.writeFileSync(tasksPath, JSON.stringify({ ...content, tasks }, null, 2) + "\n", "utf8")
-        logMessage(`✅ 已在 ${path.relative(workspace.uri.fsPath, tasksPath)} 禁用自动翻译（移除 runOn）。`)
-        vscode.window.showInformationMessage("已禁用在工作区打开时自动翻译。")
+        const disableSuccessLogPrefix = localize(
+            "autoTranslate.disable.successLog",
+            "✅ Disabled auto-translate task (removed runOn) in"
+        )
+        logMessage(`${disableSuccessLogPrefix} ${path.relative(workspace.uri.fsPath, tasksPath)}.`)
+        const disableSuccessMessage = localize(
+            "autoTranslate.disable.successInfo",
+            "Auto-translate on folder open has been disabled."
+        )
+        vscode.window.showInformationMessage(disableSuccessMessage)
     } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)
-        vscode.window.showErrorMessage(`禁用自动翻译任务失败: ${msg}`)
-        logMessage(`❌ 禁用自动翻译任务失败: ${msg}`, "error")
+        const disableErrorPrefix = localize(
+            "autoTranslate.disable.error",
+            "Failed to disable auto-translate task:"
+        )
+        vscode.window.showErrorMessage(`${disableErrorPrefix} ${msg}`)
+        logMessage(`❌ ${disableErrorPrefix} ${msg}`, "error")
     }
 }
 

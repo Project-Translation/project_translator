@@ -7,5 +7,20 @@
     "status.translation.inProgress": "Traduzindo...",
     "status.translation.pause": "Pausar tradução",
     "status.translation.resume": "Retomar tradução",
-    "status.translation.cancel": "Cancelar tradução"
+    "status.translation.cancel": "Cancelar tradução",
+    "autoTranslate.common.noWorkspace": "Por favor, abra um espaço de trabalho primeiro",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ Falha ao analisar o tasks.json existente, uma estrutura mínima será criada com a nova tarefa. Erro:",
+    "autoTranslate.enable.successLog": "✅ A tarefa de tradução automática foi escrita em",
+    "autoTranslate.enable.reloadPrompt": "A tradução automática ao abrir a pasta foi ativada. Recarregar a janela agora para que as alterações tenham efeito?",
+    "autoTranslate.enable.reloadNow": "Recarregar Janela",
+    "autoTranslate.enable.reloadLater": "Mais tarde",
+    "autoTranslate.enable.error": "Falha ao ativar a tarefa de tradução automática:",
+    "autoTranslate.disable.noTasks": "Nenhum tasks.json encontrado; a tradução automática ao abrir a pasta não parece estar ativada.",
+    "autoTranslate.disable.parseErrorMessage": "Falha ao analisar o tasks.json; alterações ignoradas para evitar corromper o arquivo.",
+    "autoTranslate.disable.parseErrorLog": "Falha ao analisar o tasks.json:",
+    "autoTranslate.disable.alreadyDisabled": "A tradução automática ao abrir a pasta já parece estar desativada.",
+    "autoTranslate.disable.alreadyDisabledLog": "Nenhuma configuração runOn encontrada para desativar; ela já pode estar desativada.",
+    "autoTranslate.disable.successLog": "✅ Tarefa de tradução automática desativada (runOn removido) em",
+    "autoTranslate.disable.successInfo": "A tradução automática ao abrir a pasta foi desativada.",
+    "autoTranslate.disable.error": "Falha ao desativar a tarefa de tradução automática:"
 }

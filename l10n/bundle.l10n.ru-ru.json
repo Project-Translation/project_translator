@@ -1,11 +1,26 @@
 
 {
-    "extension.activated": "Расширение «Переводчик проектов» активно!",
+    "extension.activated": "Расширение 'Project Translator' теперь активно!",
     "status.translation.paused": "Перевод приостановлен",
     "status.translation.resumed": "Перевод возобновлен",
     "status.translation.cancelled": "Перевод отменен",
-    "status.translation.inProgress": "Идёт перевод...",
+    "status.translation.inProgress": "Перевод...",
     "status.translation.pause": "Приостановить перевод",
     "status.translation.resume": "Возобновить перевод",
-    "status.translation.cancel": "Отменить перевод"
+    "status.translation.cancel": "Отменить перевод",
+    "autoTranslate.common.noWorkspace": "Пожалуйста, сначала откройте рабочую область",
+    "autoTranslate.enable.parseTasksJsonError": "⚠️ Не удалось проанализировать существующий файл tasks.json, будет создана минимальная структура с новой задачей. Ошибка:",
+    "autoTranslate.enable.successLog": "✅ Задача автоперевода записана в",
+    "autoTranslate.enable.reloadPrompt": "Автоперевод при открытии папки включен. Перезагрузить окно сейчас, чтобы изменения вступили в силу?",
+    "autoTranslate.enable.reloadNow": "Перезагрузить окно",
+    "autoTranslate.enable.reloadLater": "Позже",
+    "autoTranslate.enable.error": "Не удалось включить задачу автоперевода:",
+    "autoTranslate.disable.noTasks": "Файл tasks.json не найден; похоже, что автоперевод при открытии папки не включен.",
+    "autoTranslate.disable.parseErrorMessage": "Не удалось проанализировать tasks.json; изменения пропущены, чтобы избежать повреждения файла.",
+    "autoTranslate.disable.parseErrorLog": "Не удалось проанализировать tasks.json:",
+    "autoTranslate.disable.alreadyDisabled": "Похоже, автоперевод при открытии папки уже отключен.",
+    "autoTranslate.disable.alreadyDisabledLog": "Не найдена настройка runOn для отключения; возможно, она уже отключена.",
+    "autoTranslate.disable.successLog": "✅ Задача автоперевода отключена (удален runOn) в",
+    "autoTranslate.disable.successInfo": "Автоперевод при открытии папки отключен.",
+    "autoTranslate.disable.error": "Не удалось отключить задачу автоперевода:"
 }
