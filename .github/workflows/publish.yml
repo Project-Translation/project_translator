@@ -2,8 +2,9 @@ name: Publish Extension
 
 on:
   push:
+    # 推送任意 tag 时触发（例如 0.16.1 或 v0.16.1）
     tags:
-      - "v*"
+      - "*"
 
 jobs:
   publish:
@@ -14,7 +15,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          # 使用 GitHub Actions 提供的最新 LTS 版本
+          node-version: 'lts/*'
           
       - name: Install dependencies
         run: npm install
@@ -40,7 +42,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          # 使用 GitHub Actions 提供的最新 LTS 版本
+          node-version: 'lts/*'
 
       - name: Install dependencies
         run: npm install
