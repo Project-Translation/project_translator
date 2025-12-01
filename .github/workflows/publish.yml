@@ -2,12 +2,60 @@ name: Publish Extension
 
 on:
   push:
-    # 推送任意 tag 时触发（例如 0.16.1 或 v0.16.1）
-    tags:
-      - "*"
+    # 仅在 main 分支 push 时检查 / 创建 tag 并发布
+    branches:
+      - main
 
 jobs:
+  create-tag:
+    name: Create tag from package.json version if needed
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      created_tag: ${{ steps.create_tag.outputs.created_tag }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 需要完整历史和已有 tags
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # 使用 GitHub Actions 提供的最新 LTS 版本
+          node-version: 'lts/*'
+
+      - name: Read version from package.json
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag if not exists
+        id: create_tag
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          TAG="v$VERSION"
+          echo "当前 package.json 版本: $VERSION"
+          git fetch --tags
+          if git tag --list "*$VERSION*" | grep -q .; then
+            echo "已存在包含版本号 $VERSION 的 tag，跳过创建。"
+            echo "created_tag=false" >> $GITHUB_OUTPUT
+          else
+            echo "不存在包含版本号 $VERSION 的 tag，将创建并推送新 tag: $TAG"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "created_tag=true" >> $GITHUB_OUTPUT
+          fi
+
   publish:
+    # 当本次 push 创建了新 tag 时，发布到 VS Marketplace
+    needs: create-tag
+    if: needs.create-tag.outputs.created_tag == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +73,7 @@ jobs:
         run: npm run build
         
       - name: Package Extension
-        run: npm run package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main
+        run: npm run package
 
       - name: Publish to Visual Studio Marketplace
         run: |
@@ -34,6 +82,9 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
   publish-ovsx:
+    # 当本次 push 创建了新 tag 时，发布到 Open VSX
+    needs: create-tag
+    if: needs.create-tag.outputs.created_tag == 'true'
     name: Publish to Open VSX
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +103,7 @@ jobs:
         run: npm run build
 
       - name: Package Extension
-        run: npm run package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main
+        run: npm run package
 
       - name: Publish to Open VSX Registry
         env:
