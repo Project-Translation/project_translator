@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.16.4",
+    "version": "0.17.0",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -860,7 +860,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Project-Translation/index"
+        "url": "https://github.com/Project-Translation/project_translator"
     },
     "scripts": {
         "build": "npm run esbuild-base -- --production",
@@ -877,7 +877,8 @@
         "publish:patch": "npm run build && npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
         "publish:ovsx": "node scripts/ovsx-publish.mjs",
         "package": "npm run build && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
-        "deps:install": "npm install --no-fund"
+        "deps:install": "npm install --no-fund",
+        "update": "npm update --no-fund"
     },
     "devDependencies": {
         "@eslint/js": "^9.23.0",

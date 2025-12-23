@@ -15,10 +15,16 @@ export function isValidLanguage(lang: string): boolean {
 }
 
 interface TranslationRecord {
-  [sourcePath: string]: {
-    translate_datetime: string;
-    src_hash: string;
-  };
+  [sourcePath: string]: TranslationFileInfo;
+}
+
+interface TranslationFileInfo {
+  translate_datetime: string;
+  src_hash: string;
+  // Fast-path fields for detecting unchanged files without hashing.
+  // Optional for backward compatibility with older cache files.
+  src_size?: number;
+  src_mtime_ms?: number;
 }
 
 export class TranslationDatabase {
@@ -29,6 +35,14 @@ export class TranslationDatabase {
   private translationCache: Map<string, TranslationRecord> = new Map();
   private outputChannel: vscode.OutputChannel;
   private readonly fsp = fs.promises;
+
+  // Cache current source file info to avoid repeated stat/hash during scans.
+  // Keyed by absolute source path.
+  private sourceFileInfoCache: Map<
+    string,
+    { src_size: number; src_mtime_ms: number; src_hash?: string; checkedAt: number }
+  > = new Map();
+  private readonly sourceFileInfoCacheTtlMs = 2000;
 
   constructor(workspaceRoot: string, outputChannel: vscode.OutputChannel) {
     this.workspaceRoot = workspaceRoot;
@@ -375,13 +389,7 @@ export class TranslationDatabase {
         return true;
       }
 
-      // Get current file info to compare
-      const currentFileInfo = await this.getCurrentFileInfo(sourcePath);
-      const cachedFileInfo = translationRecord[relativeSourcePath]; // Check if both conditions are met: hash changed and past interval
-      const hashChanged = currentFileInfo.src_hash !== cachedFileInfo.src_hash;
-      logMessage(
-        `📋 Checking translation necessity for ${relativeSourcePath}: hash changed=${hashChanged}`
-      );
+      const cachedFileInfo = translationRecord[relativeSourcePath];
 
       // Parse cached datetime to timestamp for comparison
       const cachedDateTime = cachedFileInfo.translate_datetime;
@@ -413,7 +421,52 @@ export class TranslationDatabase {
         )}, interval=${intervalDays}, past interval=${isPastInterval}`
       );
 
-      const shouldTranslate = hashChanged || isPastInterval;
+      if (isPastInterval) {
+        logMessage(
+          `✅ Translation decision: NEEDED (past interval: ${isPastInterval})`
+        );
+        return true;
+      }
+
+      // Fast path: if stat matches cached, skip hashing.
+      let hashChanged = false;
+      const hasCachedStat =
+        typeof cachedFileInfo.src_mtime_ms === "number" &&
+        typeof cachedFileInfo.src_size === "number";
+
+      const currentStat = await this.getCurrentSourceFileStat(sourcePath);
+      if (
+        hasCachedStat &&
+        currentStat.src_mtime_ms === cachedFileInfo.src_mtime_ms &&
+        currentStat.src_size === cachedFileInfo.src_size
+      ) {
+        hashChanged = false;
+        // Populate in-memory cache for reuse by other target languages.
+        this.sourceFileInfoCache.set(sourcePath, {
+          ...currentStat,
+          src_hash: cachedFileInfo.src_hash,
+          checkedAt: Date.now(),
+        });
+      } else {
+        const currentHash = await this.getSourceFileHashForStat(
+          sourcePath,
+          currentStat
+        );
+        hashChanged = currentHash !== cachedFileInfo.src_hash;
+
+        // If content is unchanged but stat differs (e.g. file touched), backfill
+        // stat fields to avoid future hashing.
+        if (!hashChanged) {
+          cachedFileInfo.src_mtime_ms = currentStat.src_mtime_ms;
+          cachedFileInfo.src_size = currentStat.src_size;
+        }
+      }
+
+      logMessage(
+        `📋 Checking translation necessity for ${relativeSourcePath}: hash changed=${hashChanged}`
+      );
+
+      const shouldTranslate = hashChanged;
       logMessage(
         `${shouldTranslate ? "✅" : "⏭️"} Translation decision: ${
           shouldTranslate ? "NEEDED" : "SKIP"
@@ -475,14 +528,60 @@ export class TranslationDatabase {
     return `${year}-${month}-${day}:${hours}:${minutes}`;
   }
 
-  private async getCurrentFileInfo(sourcePath: string): Promise<{
-    translate_datetime: string;
-    src_hash: string;
+  private async getCurrentSourceFileStat(sourcePath: string): Promise<{
+    src_size: number;
+    src_mtime_ms: number;
   }> {
+    const now = Date.now();
+    const cached = this.sourceFileInfoCache.get(sourcePath);
+    if (cached && now - cached.checkedAt < this.sourceFileInfoCacheTtlMs) {
+      return { src_size: cached.src_size, src_mtime_ms: cached.src_mtime_ms };
+    }
+
+    const stat = await this.fsp.stat(sourcePath);
+    const current = { src_size: stat.size, src_mtime_ms: stat.mtimeMs };
+    this.sourceFileInfoCache.set(sourcePath, {
+      ...current,
+      src_hash: cached?.src_hash,
+      checkedAt: now,
+    });
+    return current;
+  }
+
+  private async getSourceFileHashForStat(
+    sourcePath: string,
+    currentStat: { src_size: number; src_mtime_ms: number }
+  ): Promise<string> {
+    const cached = this.sourceFileInfoCache.get(sourcePath);
+    if (
+      cached &&
+      cached.src_hash &&
+      cached.src_size === currentStat.src_size &&
+      cached.src_mtime_ms === currentStat.src_mtime_ms
+    ) {
+      return cached.src_hash;
+    }
+
+    const src_hash = await this.calculateFileHash(sourcePath);
+    this.sourceFileInfoCache.set(sourcePath, {
+      ...currentStat,
+      src_hash,
+      checkedAt: Date.now(),
+    });
+    return src_hash;
+  }
+
+  private async getCurrentFileInfo(sourcePath: string): Promise<TranslationFileInfo> {
     const timestamp = Date.now();
     const translate_datetime = this.formatDateTime(timestamp);
-    const src_hash = await this.calculateFileHash(sourcePath);
+    const currentStat = await this.getCurrentSourceFileStat(sourcePath);
+    const src_hash = await this.getSourceFileHashForStat(sourcePath, currentStat);
 
-    return { translate_datetime, src_hash };
+    return {
+      translate_datetime,
+      src_hash,
+      src_size: currentStat.src_size,
+      src_mtime_ms: currentStat.src_mtime_ms,
+    };
   }
 }

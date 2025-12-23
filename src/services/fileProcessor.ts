@@ -34,10 +34,10 @@ export class FileProcessor {
     private cancellationToken?: vscode.CancellationToken;
     private workspaceRoot: string;
     
-    // Cache to store whether a source file needs translation (to ensure each source is checked only once)
+    // Cache to store whether a (source,targetLang,targetPath) needs translation
     private translationDecisionCache: Map<string, {shouldTranslate: boolean, timestamp: number}> = new Map();
     
-    // Cache to store files that were marked as "no need to translate" during this session
+    // Cache to store (source,targetLang,targetPath) that were marked as "no need to translate" during this session
     private noTranslateCache: Map<string, boolean> = new Map();
 
     constructor(
@@ -67,6 +67,11 @@ export class FileProcessor {
         // Otherwise, resolve it relative to workspace root
         const resolvedPath = path.resolve(this.workspaceRoot, filePath);
         return resolvedPath;
+    }
+
+    private getDecisionCacheKey(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): string {
+        const normalize = (p: string) => path.normalize(p).replace(/\\/g, "/");
+        return `${normalize(sourcePath)}::${normalize(targetPath)}::${targetLang}`;
     }
 
     public setTranslationState(isPaused: boolean, token: vscode.CancellationToken) {
@@ -257,20 +262,22 @@ export class FileProcessor {
     } 
     
     private async shouldSkipFile(sourcePath: string, targetPath: string, targetLang: SupportedLanguage): Promise<boolean> {
+        const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
+
         // Check if we've already decided this source file doesn't need translation in this session
-        if (this.noTranslateCache.has(sourcePath)) {
+        if (this.noTranslateCache.has(decisionKey)) {
             logMessage(`⏭️ Skipping translation (previously marked as no need to translate in this session)`);
             this.skippedFilesCount++;
             return true;
         }
         
         // Check if we have a recent, valid decision in the cache
-        const cachedDecision = this.translationDecisionCache.get(sourcePath);
+        const cachedDecision = this.translationDecisionCache.get(decisionKey);
         if (cachedDecision && (Date.now() - cachedDecision.timestamp) < 5 * 60 * 1000) { // 5-minute cache validity
             if (!cachedDecision.shouldTranslate) {
                 logMessage(`⏭️ Skipping translation (cached decision: no need to translate)`);
                 this.skippedFilesCount++;
-                this.noTranslateCache.set(sourcePath, true); // Ensure session cache is also populated
+                this.noTranslateCache.set(decisionKey, true); // Ensure session cache is also populated
                 return true;
             } else {
                 // If cache says we should translate, we don't need to check the database again.
@@ -282,11 +289,11 @@ export class FileProcessor {
         const shouldTranslate = await this.translationDb.shouldTranslate(sourcePath, targetPath, targetLang);
         
         // Cache the new decision
-        this.translationDecisionCache.set(sourcePath, { shouldTranslate, timestamp: Date.now() });
+        this.translationDecisionCache.set(decisionKey, { shouldTranslate, timestamp: Date.now() });
         
         if (!shouldTranslate) {
             logMessage("⏭️ Skipping translation (fresh decision: no need to translate)");
-            this.noTranslateCache.set(sourcePath, true); // Mark for this session
+            this.noTranslateCache.set(decisionKey, true); // Mark for this session
             this.skippedFilesCount++;
             return true;
         }
@@ -531,9 +538,10 @@ export class FileProcessor {
                         if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                             logMessage("⏭️ No translation needed, skipping file");
                             this.skippedFilesCount++;
-                            // Cache the decision so subsequent targets reuse this result
-                            this.noTranslateCache.set(sourcePath, true);
-                            this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
+                            // Cache the decision for this (source,targetLang,targetPath) in this session
+                            const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
+                            this.noTranslateCache.set(decisionKey, true);
+                            this.translationDecisionCache.set(decisionKey, { shouldTranslate: false, timestamp: Date.now() });
                             return; // Skip processing this file
                         } else {
                             await fsp.writeFile(targetPath, streamedContent);
@@ -558,9 +566,10 @@ export class FileProcessor {
                         if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                             logMessage("⏭️ No translation needed, skipping file");
                             this.skippedFilesCount++;
-                            // Cache the decision so subsequent targets reuse this result
-                            this.noTranslateCache.set(sourcePath, true);
-                            this.translationDecisionCache.set(sourcePath, { shouldTranslate: false, timestamp: Date.now() });
+                            // Cache the decision for this (source,targetLang,targetPath) in this session
+                            const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
+                            this.noTranslateCache.set(decisionKey, true);
+                            this.translationDecisionCache.set(decisionKey, { shouldTranslate: false, timestamp: Date.now() });
                             return; // Skip processing this file
                         } else {
                             await fsp.writeFile(targetPath, translatedContent);
