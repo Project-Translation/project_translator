@@ -79,6 +79,18 @@ export interface Config {
   diffApply?: DiffApplyConfig; // Differential translation apply mode
 }
 
+// In-memory config cache to avoid repeatedly reading/parsing project.translation.json
+// during large project scans. We keep it conservative: short TTL + mtime check.
+const configCacheTtlMs = 2000;
+let cachedConfig:
+  | {
+      workspaceRoot: string | null;
+      fileMtimeMs: number | null;
+      loadedAt: number;
+      config: Config;
+    }
+  | null = null;
+
 // Configuration interface for log file functionality
 export interface LogFileConfig {
   enabled: boolean; // Enable writing logs to file when debug mode is on
@@ -324,13 +336,54 @@ export async function exportSettingsToConfigFile(): Promise<void> {
 }
 
 export async function getConfiguration(): Promise<Config> {
+  const now = Date.now();
+
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const workspaceRoot =
+    workspaceFolders && workspaceFolders.length > 0
+      ? workspaceFolders[0].uri.fsPath
+      : null;
+
+  // Fast path: short TTL cache hit
+  if (
+    cachedConfig &&
+    cachedConfig.workspaceRoot === workspaceRoot &&
+    now - cachedConfig.loadedAt < configCacheTtlMs
+  ) {
+    return cachedConfig.config;
+  }
+
+  // If we have a workspace, also validate against config file mtime
+  let configFileMtimeMs: number | null = null;
+  let configFilePath: string | null = null;
+  if (workspaceRoot) {
+    configFilePath = path.join(workspaceRoot, "project.translation.json");
+    try {
+      const stat = await fsp.stat(configFilePath);
+      if (stat.isFile()) {
+        configFileMtimeMs = stat.mtimeMs;
+      }
+    } catch {
+      configFileMtimeMs = null;
+    }
+
+    if (
+      cachedConfig &&
+      cachedConfig.workspaceRoot === workspaceRoot &&
+      cachedConfig.fileMtimeMs === configFileMtimeMs
+    ) {
+      cachedConfig.loadedAt = now;
+      return cachedConfig.config;
+    }
+  } else if (cachedConfig && cachedConfig.workspaceRoot === null) {
+    cachedConfig.loadedAt = now;
+    return cachedConfig.config;
+  }
+
   let configData: any = {};
 
   // Try to read from project.translation.json first（优先使用项目级配置文件）
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-  if (workspaceFolders && workspaceFolders.length > 0) {
-    const workspaceRoot = workspaceFolders[0].uri.fsPath;
-    const configFilePath = path.join(workspaceRoot, "project.translation.json");
+  if (workspaceRoot && configFilePath) {
 
     try {
       const stat = await fsp.stat(configFilePath);
@@ -431,7 +484,7 @@ export async function getConfiguration(): Promise<Config> {
     systemPrompts = [DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2];
   }
 
-  return {
+  const finalConfig: Config = {
     currentVendorName,
     currentVendor:
       vendors.find((v: any) => v.name === currentVendorName) ||
@@ -461,4 +514,14 @@ export async function getConfiguration(): Promise<Config> {
     systemPrompts: Array.isArray(systemPrompts) ? systemPrompts : [DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2],
     userPrompts: Array.isArray(userPrompts) ? userPrompts : [],
   };
+
+  cachedConfig = {
+    workspaceRoot,
+    fileMtimeMs: configFileMtimeMs,
+    loadedAt: now,
+    config: finalConfig,
+  };
+
+  return finalConfig;
 }
+
