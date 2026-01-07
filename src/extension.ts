@@ -4,8 +4,8 @@ import { TranslationDatabase } from "./translationDatabase";
 import { FileProcessor } from "./services/fileProcessor";
 import { TranslatorService } from "./services/translatorService";
 import { AnalyticsService } from "./services/analytics";
-import { getConfiguration, exportSettingsToConfigFile } from "./config/config";
-import { DestFolder, SpecifiedFolder } from "./types/types";
+import { getConfiguration, exportSettingsToConfigFile, clearConfigurationCache } from "./config/config";
+import { DestFolder } from "./types/types";
 import { LogFileManager } from "./services/logFileManager";
 import * as fs from "fs";
 
@@ -42,6 +42,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Listen for configuration changes
     const configChangeListener = vscode.workspace.onDidChangeConfiguration(async (event) => {
+        if (event.affectsConfiguration('projectTranslator')) {
+            clearConfigurationCache();
+        }
+
         if (event.affectsConfiguration('projectTranslator.logFile') || 
             event.affectsConfiguration('projectTranslator.debug')) {
             await initializeLogFileManager();
@@ -398,6 +402,9 @@ async function handleDisableAutoTranslateOnOpen() {
 
 async function handletranslateFolders() {
     try {
+        // Ensure we pick up latest settings / project.translation.json
+        clearConfigurationCache();
+
         // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
@@ -415,8 +422,8 @@ async function handletranslateFolders() {
         await translatorService.initializeOpenAIClient();
 
         // Get configuration and validate
-        const config = vscode.workspace.getConfiguration("projectTranslator");
-        const specifiedFolders = config.get<SpecifiedFolder[]>("specifiedFolders") || [];
+        const config = await getConfiguration();
+        const specifiedFolders = config.specifiedFolders || [];
         if (specifiedFolders.length === 0) {
             throw new Error("No folder groups configured. Please configure projectTranslator.specifiedFolders in settings.");
         }
@@ -468,27 +475,27 @@ async function handletranslateFolders() {
 
                 logMessage(`\n📂 Processing source folder: ${sourceFolder.path}`);
 
-                // Use absolute path for source folder
-                if (!path.isAbsolute(sourceFolder.path)) {
-                    sourceFolder.path = path.join(workspace.uri.fsPath, sourceFolder.path);
-                }
+                // Use absolute path for source folder (avoid mutating config)
+                const resolvedSourceFolderPath = path.isAbsolute(sourceFolder.path)
+                    ? sourceFolder.path
+                    : path.join(workspace.uri.fsPath, sourceFolder.path);
                 try {
-                    const stat = await fs.promises.stat(sourceFolder.path);
+                    const stat = await fs.promises.stat(resolvedSourceFolderPath);
                     if (!stat.isDirectory()) {
-                        throw new Error(`Source folder is not a directory: ${sourceFolder.path}`);
+                        throw new Error(`Source folder is not a directory: ${resolvedSourceFolderPath}`);
                     }
                 } catch {
-                    throw new Error(`Source folder does not exist: ${sourceFolder.path}`);
+                    throw new Error(`Source folder does not exist: ${resolvedSourceFolderPath}`);
                 }
                 // Register source directory and language
-                translationDatabase.setSourceRoot(sourceFolder.path);
+                translationDatabase.setSourceRoot(resolvedSourceFolderPath);
 
                 // Reset target roots for this folder group
                 translationDatabase.clearTargetRoots();
                 targetFolders.forEach((target: DestFolder) => translationDatabase.setTargetRoot(target.path, target.lang));
 
                 // Process this folder group
-                await fileProcessor.processDirectory(sourceFolder.path, targetFolders, sourceFolder.lang);
+                await fileProcessor.processDirectory(resolvedSourceFolderPath, targetFolders, sourceFolder.lang);
 
                 // Get updated stats after processing this folder group
                 const stats = fileProcessor.getProcessingStats();
@@ -533,6 +540,9 @@ async function handletranslateFolders() {
 
 async function handleTranslateFiles() {
     try {
+        // Ensure we pick up latest settings / project.translation.json
+        clearConfigurationCache();
+
         // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
@@ -671,6 +681,9 @@ async function handleTranslateFiles() {
 
 async function handleTranslateProject() {
     try {
+        // Ensure we pick up latest settings / project.translation.json
+        clearConfigurationCache();
+
         // 标记进入项目翻译模式
         isProjectTranslation = true;
 

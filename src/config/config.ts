@@ -91,6 +91,14 @@ let cachedConfig:
     }
   | null = null;
 
+/**
+ * Clear in-memory configuration cache.
+ * Useful when VS Code settings change or callers need fresh config immediately.
+ */
+export function clearConfigurationCache(): void {
+  cachedConfig = null;
+}
+
 // Configuration interface for log file functionality
 export interface LogFileConfig {
   enabled: boolean; // Enable writing logs to file when debug mode is on
@@ -353,7 +361,7 @@ export async function getConfiguration(): Promise<Config> {
     return cachedConfig.config;
   }
 
-  // If we have a workspace, also validate against config file mtime
+  // Resolve config file metadata (used for cache metadata and file reads)
   let configFileMtimeMs: number | null = null;
   let configFilePath: string | null = null;
   if (workspaceRoot) {
@@ -366,21 +374,30 @@ export async function getConfiguration(): Promise<Config> {
     } catch {
       configFileMtimeMs = null;
     }
-
-    if (
-      cachedConfig &&
-      cachedConfig.workspaceRoot === workspaceRoot &&
-      cachedConfig.fileMtimeMs === configFileMtimeMs
-    ) {
-      cachedConfig.loadedAt = now;
-      return cachedConfig.config;
-    }
-  } else if (cachedConfig && cachedConfig.workspaceRoot === null) {
-    cachedConfig.loadedAt = now;
-    return cachedConfig.config;
   }
 
-  let configData: any = {};
+  // Always start from VS Code settings (effective config), then allow project.translation.json to override.
+  // This avoids surprising "settings ignored" behavior when the config file exists but doesn't specify all fields.
+  const vscodeConfig = vscode.workspace.getConfiguration("projectTranslator");
+  const vscodeConfigData: any = {
+    currentVendor: vscodeConfig.get("currentVendor"),
+    vendors: vscodeConfig.get("vendors"),
+    specifiedFiles: vscodeConfig.get("specifiedFiles"),
+    specifiedFolders: vscodeConfig.get("specifiedFolders"),
+    translationIntervalDays: vscodeConfig.get("translationIntervalDays"),
+    copyOnly: vscodeConfig.get("copyOnly"),
+    ignore: vscodeConfig.get("ignore"),
+    systemPrompts: vscodeConfig.get("systemPrompts"),
+    userPrompts: vscodeConfig.get("userPrompts"),
+    segmentationMarkers: vscodeConfig.get("segmentationMarkers"),
+    diffApply: vscodeConfig.get("diffApply"),
+
+    debug: vscodeConfig.get("debug"),
+    logFile: vscodeConfig.get("logFile"),
+    skipFrontMatter: vscodeConfig.get("skipFrontMatterMarkers"),
+  };
+
+  let fileConfigData: any = {};
 
   // Try to read from project.translation.json first（优先使用项目级配置文件）
   if (workspaceRoot && configFilePath) {
@@ -390,7 +407,7 @@ export async function getConfiguration(): Promise<Config> {
       if (stat.isFile()) {
         try {
           const fileContent = await fsp.readFile(configFilePath, "utf-8");
-          configData = JSON.parse(fileContent);
+          fileConfigData = JSON.parse(fileContent);
         } catch (error) {
           vscode.window.showErrorMessage(
             `Failed to parse project.translation.json: ${
@@ -398,7 +415,7 @@ export async function getConfiguration(): Promise<Config> {
             }`
           );
           // Fall back to VSCode settings
-          configData = {};
+          fileConfigData = {};
         }
       }
     } catch {
@@ -406,27 +423,7 @@ export async function getConfiguration(): Promise<Config> {
     }
   }
 
-  // If no valid config from file, use VSCode settings as fallback
-  if (Object.keys(configData).length === 0) {
-    const config = vscode.workspace.getConfiguration("projectTranslator");
-    configData = {
-      currentVendor: config.get("currentVendor"),
-      vendors: config.get("vendors"),
-      specifiedFiles: config.get("specifiedFiles"),
-      specifiedFolders: config.get("specifiedFolders"),
-      translationIntervalDays: config.get("translationIntervalDays"),
-      copyOnly: config.get("copyOnly"),
-      ignore: config.get("ignore"),
-      systemPrompts: config.get("systemPrompts"),
-      userPrompts: config.get("userPrompts"),
-      segmentationMarkers: config.get("segmentationMarkers"),
-      diffApply: config.get("diffApply"),
-
-      debug: config.get("debug"),
-      logFile: config.get("logFile"),
-      skipFrontMatter: config.get("skipFrontMatterMarkers"),
-    };
-  }
+  const configData: any = { ...vscodeConfigData, ...fileConfigData };
 
   // Extract and normalize configuration data
   const copyOnly = configData.copyOnly;
@@ -441,8 +438,53 @@ export async function getConfiguration(): Promise<Config> {
     // Keep apiKey if provided (priority: apiKey > apiKeyEnvVarName)
     return merged
   });
-  const specifiedFiles = configData.specifiedFiles;
-  const specifiedFolders = configData.specifiedFolders;
+  // Normalize Windows-style separators in configured paths (e.g. "i18n\\zh-cn\\skills")
+  const normalizeConfigPath = (p: unknown): unknown =>
+    typeof p === "string" ? p.replace(/\\/g, "/") : p;
+
+  const specifiedFiles = Array.isArray(configData.specifiedFiles)
+    ? configData.specifiedFiles.map((group: any) => ({
+        ...group,
+        sourceFile: group?.sourceFile
+          ? {
+              ...group.sourceFile,
+              path: normalizeConfigPath(group.sourceFile.path),
+            }
+          : group?.sourceFile,
+        targetFiles: Array.isArray(group?.targetFiles)
+          ? group.targetFiles.map((t: any) =>
+              t
+                ? {
+                    ...t,
+                    path: normalizeConfigPath(t.path),
+                  }
+                : t
+            )
+          : group?.targetFiles,
+      }))
+    : configData.specifiedFiles;
+
+  const specifiedFolders = Array.isArray(configData.specifiedFolders)
+    ? configData.specifiedFolders.map((group: any) => ({
+        ...group,
+        sourceFolder: group?.sourceFolder
+          ? {
+              ...group.sourceFolder,
+              path: normalizeConfigPath(group.sourceFolder.path),
+            }
+          : group?.sourceFolder,
+        targetFolders: Array.isArray(group?.targetFolders)
+          ? group.targetFolders.map((t: any) =>
+              t
+                ? {
+                    ...t,
+                    path: normalizeConfigPath(t.path),
+                  }
+                : t
+            )
+          : group?.targetFolders,
+      }))
+    : configData.specifiedFolders;
   const translationIntervalDays = configData.translationIntervalDays || 1;
   const segmentationMarkers = configData.segmentationMarkers;
   const debug = configData.debug || false;

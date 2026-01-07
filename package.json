@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.17.2",
+    "version": "0.17.3",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
