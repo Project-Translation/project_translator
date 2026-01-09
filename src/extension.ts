@@ -216,8 +216,8 @@ async function handleEnableAutoTranslateOnOpen() {
             const parsed = JSON.parse(sanitized)
             if (parsed && typeof parsed === "object") {
                 content = parsed
-                if (!Array.isArray(content.tasks)) content.tasks = []
-                if (!content.version) content.version = "2.0.0"
+                if (!Array.isArray(content.tasks)) {content.tasks = []}
+                if (!content.version) {content.version = "2.0.0"}
             }
         } catch (e) {
             // 文件不存在或解析失败：保留默认结构，避免破坏原文件；提示用户
@@ -341,7 +341,7 @@ async function handleDisableAutoTranslateOnOpen() {
             return
         }
 
-        if (!content || typeof content !== "object") content = { version: "2.0.0", tasks: [] }
+        if (!content || typeof content !== "object") {content = { version: "2.0.0", tasks: [] }}
         const tasks: any[] = Array.isArray(content.tasks) ? content.tasks : []
 
         const targetTaskLabel = "Translate project on open"
@@ -353,12 +353,12 @@ async function handleDisableAutoTranslateOnOpen() {
         }
 
         for (const t of tasks) {
-            if (!t || typeof t !== "object") continue
+            if (!t || typeof t !== "object") {continue}
             if (t.label === targetTaskLabel || hasTranslateProjectArg(t)) {
                 if (t.runOptions && typeof t.runOptions === "object" && "runOn" in t.runOptions) {
                     delete t.runOptions.runOn
                     // 清理空对象
-                    if (Object.keys(t.runOptions).length === 0) delete t.runOptions
+                    if (Object.keys(t.runOptions).length === 0) {delete t.runOptions}
                     modified = true
                 }
             }
@@ -515,7 +515,7 @@ async function handletranslateFolders() {
                 const currentStats = fileProcessor.getProcessingStats();
                 const totalProcessed = currentStats.processedFiles + currentStats.skippedFiles;
                 
-                logMessage("⛔ Translation cancelled by user");
+                logMessage("⛔ Translation cancelled by user", "warn");
                 vscode.window.showInformationMessage(`Folders translation cancelled! (${totalProcessed} files processed)`);
                 return;
             }
@@ -532,7 +532,7 @@ async function handletranslateFolders() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Translation failed: ${errorMessage}`);
-        logMessage(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`, "error");
     } finally {
         cleanup();
     }
@@ -656,7 +656,7 @@ async function handleTranslateFiles() {
             vscode.window.showInformationMessage(`Files translation completed! (${processedFiles}/${totalFiles} files)`);
         } catch (error) {
             if (error instanceof vscode.CancellationError) {
-                logMessage("⛔ Translation cancelled by user");
+                logMessage("⛔ Translation cancelled by user", "warn");
                 vscode.window.showInformationMessage(`Files translation cancelled! (${processedFiles}/${totalFiles} files translated)`);
                 return;
             }
@@ -673,7 +673,7 @@ async function handleTranslateFiles() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Files translation failed: ${errorMessage}`);
-        logMessage(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`, "error");
     } finally {
         cleanup();
     }
@@ -742,7 +742,7 @@ async function handleTranslateProject() {
             vscode.window.showInformationMessage("Project translation completed!");
         } catch (error) {
             if (error instanceof vscode.CancellationError) {
-                logMessage("⛔ Translation cancelled by user");
+                logMessage("⛔ Translation cancelled by user", "warn");
                 vscode.window.showInformationMessage("Project translation cancelled!");
                 return;
             }
@@ -752,7 +752,7 @@ async function handleTranslateProject() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Translation failed: ${errorMessage}`);
-        logMessage(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`, "error");
     } finally {
         cleanup(true); // 强制清理
     }
@@ -834,7 +834,7 @@ async function handleAddFileToSettings(fileUri: vscode.Uri) {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Failed to add file to translation settings: ${errorMessage}`);
-        logMessage(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`, "error");
     }
 }
 
@@ -914,7 +914,7 @@ async function handleAddFolderToSettings(folderUri: vscode.Uri) {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         vscode.window.showErrorMessage(`Failed to add folder to translation settings: ${errorMessage}`);
-        logMessage(`❌ Error: ${errorMessage}`);
+        logMessage(`❌ Error: ${errorMessage}`, "error");
     }
 }
 
@@ -1042,7 +1042,7 @@ async function initializeLogFileManager(): Promise<void> {
             }
         }
     } catch (error) {
-        logMessage(`Failed to initialize log file manager: ${error}`);
+        logMessage(`Failed to initialize log file manager: ${error}`, "error");
     }
 }
 
@@ -1092,7 +1092,7 @@ function cleanup(force = false) {
     }
 
     translationDb?.close().catch((error) => {
-        logMessage(`Error closing database: ${error}`);
+        logMessage(`Error closing database: ${error}`, "error");
     });
     translationDb = null;
 

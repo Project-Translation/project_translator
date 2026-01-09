@@ -141,14 +141,14 @@ export class FileProcessor {
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            logMessage(`❌ Error processing directory: ${errorMessage}`);
+            logMessage(`❌ Error processing directory: ${errorMessage}`, "error");
             throw error;
         }
     }
 
     private checkCancellation() {
         if (this.cancellationToken?.isCancellationRequested) {
-            logMessage("⛔ Translation cancelled");
+            logMessage("⛔ Translation cancelled", "warn");
             throw new vscode.CancellationError();
         }
     }
@@ -179,8 +179,8 @@ export class FileProcessor {
             try {
                 await fsp.mkdir(resolvedTargetPath, { recursive: true });
             } catch (error) {
-                logMessage(`❌ Failed to create directory: ${resolvedTargetPath}`);
-                logMessage(`❌ Error details: ${error instanceof Error ? error.message : String(error)}`);
+                logMessage(`❌ Failed to create directory: ${resolvedTargetPath}`, "error");
+                logMessage(`❌ Error details: ${error instanceof Error ? error.message : String(error)}`, "error");
                 throw error;
             }
         }
@@ -254,7 +254,7 @@ export class FileProcessor {
 
             await this.handleTextFile(resolvedSourcePath, resolvedTargetPath, sourceLang, targetLang);
         } catch (error) {
-            logMessage(`❌ File translation failed: ${error instanceof Error ? error.message : String(error)}`);
+            logMessage(`❌ File translation failed: ${error instanceof Error ? error.message : String(error)}`, "error");
             this.failedFilesCount++;
             this.failedFilePaths.push(sourcePath);
             throw error;
@@ -356,7 +356,7 @@ export class FileProcessor {
             
             return false;
         } catch (error) {
-            logMessage(`⚠️ Error checking front matter in ${sourcePath}: ${error instanceof Error ? error.message : String(error)}`);
+            logMessage(`⚠️ Error checking front matter in ${sourcePath}: ${error instanceof Error ? error.message : String(error)}`, "warn");
             return false;
         }
     }
@@ -593,7 +593,7 @@ export class FileProcessor {
                 throw error;
             }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            logMessage(`❌ Failed to translate file: ${errorMessage}`);
+            logMessage(`❌ Failed to translate file: ${errorMessage}`, "error");
             this.failedFilesCount++;
             this.failedFilePaths.push(sourcePath);
             return { success: false, error: errorMessage };
@@ -737,7 +737,7 @@ export class FileProcessor {
                 throw error;
             }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            logMessage(`❌ Failed to translate: ${errorMessage}`);
+            logMessage(`❌ Failed to translate: ${errorMessage}`, "error");
             throw error;
         }
     }

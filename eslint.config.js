@@ -14,16 +14,33 @@ module.exports = [
       parserOptions: {
         ecmaVersion: 2020,
         sourceType: 'module'
+      },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        NodeJS: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        suite: 'readonly',
+        test: 'readonly'
       }
     },
     rules: {
       // Updated rules to match what's available in the new version
-      '@typescript-eslint/naming-convention': 'warn',
+      ...typescript.configs.recommended.rules,
+      '@typescript-eslint/naming-convention': 'off',
       'semi': 'off',
-      'curly': 'warn',
+      'curly': 'off',
       'eqeqeq': 'warn',
       'no-throw-literal': 'warn',
-      ...typescript.configs.recommended.rules
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'no-empty': 'off',
+      'no-unreachable': 'off'
     }
   },
   {

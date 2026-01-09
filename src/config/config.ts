@@ -246,22 +246,22 @@ export async function exportSettingsToConfigFile(): Promise<void> {
 
     // Deep-equal helper for pruning defaults
     const deepEqual = (a: any, b: any): boolean => {
-      if (a === b) return true
-      if (typeof a !== typeof b) return false
+      if (a === b) {return true}
+      if (typeof a !== typeof b) {return false}
       if (a && b && typeof a === 'object') {
-        if (Array.isArray(a) !== Array.isArray(b)) return false
+        if (Array.isArray(a) !== Array.isArray(b)) {return false}
         if (Array.isArray(a)) {
-          if (a.length !== b.length) return false
+          if (a.length !== b.length) {return false}
           for (let i = 0; i < a.length; i++) {
-            if (!deepEqual(a[i], b[i])) return false
+            if (!deepEqual(a[i], b[i])) {return false}
           }
           return true
         }
         const aKeys = Object.keys(a)
         const bKeys = Object.keys(b)
-        if (aKeys.length !== bKeys.length) return false
+        if (aKeys.length !== bKeys.length) {return false}
         for (const k of aKeys) {
-          if (!deepEqual(a[k], b[k])) return false
+          if (!deepEqual(a[k], b[k])) {return false}
         }
         return true
       }
@@ -311,7 +311,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
 
     // Prune top-level fields that equal defaults
     for (const key of Object.keys(settings)) {
-      if (key === 'vendors' || key === 'currentVendor') continue // always keep these
+      if (key === 'vendors' || key === 'currentVendor') {continue} // always keep these
       const inspected = config.inspect(key as any)
       const defaultValue = (inspected && 'defaultValue' in inspected) ? (inspected as any).defaultValue : undefined
       const baseline = baselineDefaults[key]

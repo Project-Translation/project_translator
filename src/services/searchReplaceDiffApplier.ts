@@ -28,17 +28,17 @@ function normalizeString(input: string): string {
 function levenshtein(a: string, b: string): number {
   const m = a.length
   const n = b.length
-  if (m === 0) return n
-  if (n === 0) return m
+  if (m === 0) {return n}
+  if (n === 0) {return m}
   const dp = new Array(n + 1)
-  for (let j = 0; j <= n; j++) dp[j] = j
+  for (let j = 0; j <= n; j++) {dp[j] = j}
   for (let i = 1; i <= m; i++) {
     let prev = dp[0]
     dp[0] = i
     for (let j = 1; j <= n; j++) {
       const temp = dp[j]
-      if (a.charCodeAt(i - 1) === b.charCodeAt(j - 1)) dp[j] = prev
-      else dp[j] = Math.min(prev + 1, dp[j] + 1, dp[j - 1] + 1)
+      if (a.charCodeAt(i - 1) === b.charCodeAt(j - 1)) {dp[j] = prev}
+      else {dp[j] = Math.min(prev + 1, dp[j] + 1, dp[j - 1] + 1)}
       prev = temp
     }
   }
@@ -46,17 +46,17 @@ function levenshtein(a: string, b: string): number {
 }
 
 function getSimilarity(original: string, search: string): number {
-  if (search.length === 0) return 0
+  if (search.length === 0) {return 0}
   const o = normalizeString(original)
   const s = normalizeString(search)
-  if (o === s) return 1
+  if (o === s) {return 1}
   const dist = levenshtein(o, s)
   const maxLen = Math.max(o.length, s.length)
   return 1 - dist / (maxLen || 1)
 }
 
 function everyLineHasLineNumbers(text: string): boolean {
-  if (!text.trim()) return false
+  if (!text.trim()) {return false}
   return text.split(/\r?\n/).every(l => /^\s*\d+\s*\|\s?/.test(l) || l.trim() === '')
 }
 
@@ -64,7 +64,7 @@ function stripLineNumbers(text: string, aggressive = false): string {
   const lines = text.split(/\r?\n/)
   return lines
     .map(l => {
-      if (/^\s*\d+\s*\|\s?/.test(l)) return l.replace(/^\s*\d+\s*\|\s?/, '')
+      if (/^\s*\d+\s*\|\s?/.test(l)) {return l.replace(/^\s*\d+\s*\|\s?/, '')}
       return aggressive ? l.replace(/\b\d+\s*\|\s?/g, '') : l
     })
     .join('\n')
@@ -162,25 +162,25 @@ function validateMarkerSequencing(diffContent: string): { success: true } | { su
     }
     switch (state) {
       case State.START:
-        if (marker === SEP) return likelyBad ? malformed(SEP, '<<<<<<< SEARCH') : mergeErr(SEP, '<<<<<<< SEARCH')
-        if (marker === REPLACE) return malformed(REPLACE, '<<<<<<< SEARCH')
-        if (marker.startsWith(REPLACE_PREFIX)) return mergeErr(marker, '<<<<<<< SEARCH')
-        if (SEARCH_RE.test(marker)) state = State.AFTER_SEARCH
-        else if (marker.startsWith(SEARCH_PREFIX)) return mergeErr(marker, '<<<<<<< SEARCH')
+        if (marker === SEP) {return likelyBad ? malformed(SEP, '<<<<<<< SEARCH') : mergeErr(SEP, '<<<<<<< SEARCH')}
+        if (marker === REPLACE) {return malformed(REPLACE, '<<<<<<< SEARCH')}
+        if (marker.startsWith(REPLACE_PREFIX)) {return mergeErr(marker, '<<<<<<< SEARCH')}
+        if (SEARCH_RE.test(marker)) {state = State.AFTER_SEARCH}
+        else if (marker.startsWith(SEARCH_PREFIX)) {return mergeErr(marker, '<<<<<<< SEARCH')}
         break
       case State.AFTER_SEARCH:
-        if (SEARCH_RE.test(marker)) return malformed('<<<<<<< SEARCH', '=======')
-        if (marker.startsWith(SEARCH_PREFIX)) return mergeErr(marker, '=======')
-        if (marker === REPLACE) return malformed(REPLACE, '=======')
-        if (marker.startsWith(REPLACE_PREFIX)) return mergeErr(marker, '=======')
-        if (marker === SEP) state = State.AFTER_SEPARATOR
+        if (SEARCH_RE.test(marker)) {return malformed('<<<<<<< SEARCH', '=======')}
+        if (marker.startsWith(SEARCH_PREFIX)) {return mergeErr(marker, '=======')}
+        if (marker === REPLACE) {return malformed(REPLACE, '=======')}
+        if (marker.startsWith(REPLACE_PREFIX)) {return mergeErr(marker, '=======')}
+        if (marker === SEP) {state = State.AFTER_SEPARATOR}
         break
       case State.AFTER_SEPARATOR:
-        if (SEARCH_RE.test(marker)) return malformed('<<<<<<< SEARCH', '>>>>>>> REPLACE')
-        if (marker.startsWith(SEARCH_PREFIX)) return mergeErr(marker, '>>>>>>> REPLACE')
-        if (marker === SEP) return likelyBad ? malformed(SEP, '>>>>>>> REPLACE') : mergeErr(SEP, '>>>>>>> REPLACE')
-        if (marker === REPLACE) state = State.START
-        else if (marker.startsWith(REPLACE_PREFIX)) return mergeErr(marker, '>>>>>>> REPLACE')
+        if (SEARCH_RE.test(marker)) {return malformed('<<<<<<< SEARCH', '>>>>>>> REPLACE')}
+        if (marker.startsWith(SEARCH_PREFIX)) {return mergeErr(marker, '>>>>>>> REPLACE')}
+        if (marker === SEP) {return likelyBad ? malformed(SEP, '>>>>>>> REPLACE') : mergeErr(SEP, '>>>>>>> REPLACE')}
+        if (marker === REPLACE) {state = State.START}
+        else if (marker.startsWith(REPLACE_PREFIX)) {return mergeErr(marker, '>>>>>>> REPLACE')}
         break
     }
   }
@@ -195,7 +195,7 @@ export class SearchReplaceDiffApplier {
     logger?: (m: string, level?: LogLevel) => void
   ): ApplyResult {
     const log = (m: string, lvl: LogLevel = 'info') => {
-      try { if (logger) logger(m, lvl) } catch {}
+      try { if (logger) {logger(m, lvl)} } catch {}
     }
     const fuzzyThreshold = options?.fuzzyThreshold ?? 1.0
     const bufferLines = options?.bufferLines ?? 40
@@ -240,7 +240,7 @@ export class SearchReplaceDiffApplier {
       let m: RegExpExecArray | null
       while ((m = matchRe.exec(raw)) !== null) {
         matches.push(m)
-        if (m.index === matchRe.lastIndex) matchRe.lastIndex++
+        if (m.index === matchRe.lastIndex) {matchRe.lastIndex++}
       }
       if (matches.length === 0) {
         failParts.push({ success: false, error: 'Invalid diff format - missing SEARCH/REPLACE sections' })
@@ -266,7 +266,7 @@ export class SearchReplaceDiffApplier {
         if (hasAllLineNums && startLine === 0) {
           const first = searchContent.split('\n')[0]
           const num = parseInt(first.split('|')[0])
-          if (!Number.isNaN(num)) startLine = num
+          if (!Number.isNaN(num)) {startLine = num}
         }
         if (hasAllLineNums) {
           searchContent = stripLineNumbers(searchContent)

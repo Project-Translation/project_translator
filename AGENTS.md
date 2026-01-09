@@ -4,13 +4,43 @@ This file provides guidance to agents when working with code in this repository.
 
 ## 构建和测试命令
 
+### 构建命令
+
 - `npm run build` - 生产环境构建（使用 esbuild 压缩）
+  - **用途**：发布到 VSCode 扩展市场前的最终构建
+  - **特点**：启用代码压缩、禁用 source map、将所有依赖打包成单个文件 `out/extension.js`
+  - **输出**：体积最小化的生产代码，适合发布
+  - **相关命令**：`publish:minor`、`publish:patch`、`package` 都会调用此命令
+
 - `npm run compile` - 开发环境编译（不压缩）
-- `npm run watch` - 监听模式编译
-- `npm run lint` - 运行 ESLint 检查
-- `npm run test` - 运行测试（先编译再执行 simpleRunner）
+  - **用途**：日常开发调试
+  - **特点**：不压缩代码、启用 source map、打包成单个文件
+  - **输出**：可读性好的代码，便于调试
+
 - `npm run compile-tsc` - 使用 TypeScript 编译器编译（不打包）
+  - **用途**：开发调试和运行测试
+  - **特点**：不压缩、启用 source map、按文件分别编译（不打包）
+  - **输出**：`out/` 目录下多个 `.js` 文件，每个源文件对应一个编译文件
+  - **相关命令**：`npm run test` 会先执行此命令
+
+### 监听和测试命令
+
+- `npm run watch` - esbuild 监听模式编译
+  - **用途**：开发时自动监听文件变化并重新构建
+  - **特点**：文件修改后自动触发 esbuild 重新编译
+
 - `npm run watch-tsc` - TypeScript 编译器监听模式
+  - **用途**：开发时自动监听文件变化并重新编译
+  - **特点**：文件修改后自动触发 tsc 重新编译
+
+- `npm run lint` - 运行 ESLint 检查
+  - **用途**：代码质量检查
+  - **特点**：检查 `src/` 目录下的所有 TypeScript 文件
+
+- `npm run test` - 运行测试（先编译再执行 simpleRunner）
+  - **用途**：执行单元测试和集成测试
+  - **特点**：先执行 `compile-tsc` 编译测试代码，然后运行 `simpleRunner.js`
+  - **测试位置**：单元测试在 `services/` 目录，集成测试在 `integration/` 目录
 
 ## 项目特定的非显而易见信息
 

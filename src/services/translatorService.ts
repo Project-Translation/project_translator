@@ -48,20 +48,23 @@ export class TranslatorService {
     
     if (!finalApiKey) {
       logMessage(
-        "❌ API key is not set in the vendor configuration or environment variable"
+        "❌ API key is not set in the vendor configuration or environment variable",
+        "error"
       );
       throw new Error("API key is not set in the vendor configuration or environment variable");
     }
     
     if (!apiEndpoint) {
       logMessage(
-        "❌ API endpoint is not set in the vendor configuration"
+        "❌ API endpoint is not set in the vendor configuration",
+        "error"
       );
       throw new Error("API endpoint is not set in the vendor configuration");
     }
     if (!model) {
       logMessage(
-        "❌ Model is not set in the vendor configuration"
+        "❌ Model is not set in the vendor configuration",
+        "error"
       );
       throw new Error("Model is not set in the vendor configuration");
     }
@@ -96,7 +99,7 @@ export class TranslatorService {
   ): Promise<[string, string]> {
     if (!this.openaiClient) {
       const error = "OpenAI client not initialized";
-      logMessage(`❌ ${error}`);
+      logMessage(`❌ ${error}`, "error");
       throw new Error(error);
     }
 
@@ -192,7 +195,7 @@ export class TranslatorService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      logMessage(`❌ Translation failed: ${errorMessage}`);
+      logMessage(`❌ Translation failed: ${errorMessage}`, "error");
       throw error;
     }
   }
@@ -210,7 +213,7 @@ export class TranslatorService {
   ): Promise<string> {
     if (!this.openaiClient) {
       const error = "OpenAI client not initialized";
-      logMessage(`❌ ${error}`);
+      logMessage(`❌ ${error}`, "error");
       throw new Error(error);
     }
 
@@ -390,7 +393,7 @@ export class TranslatorService {
 
     for await (const chunk of stream) {
       if (cancellationToken?.isCancellationRequested) {
-        logMessage("⛔ Translation cancelled");
+        logMessage("⛔ Translation cancelled", "warn");
         throw new vscode.CancellationError();
       }
 
