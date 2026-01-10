@@ -1,14 +1,20 @@
 {
   "l10n/bundle.l10n.json": {
     "translate_datetime": "2025-11-27:20:21",
-    "src_hash": "ee470c00be5fe6d378a02680c81fbbae"
+    "src_hash": "ee470c00be5fe6d378a02680c81fbbae",
+    "src_mtime_ms": 1764244512431.963,
+    "src_size": 1897
   },
   "package.nls.json": {
-    "translate_datetime": "2025-11-25:20:34",
-    "src_hash": "59e255c2114eb3e8fdc4b4c560e1ac0b"
+    "translate_datetime": "2026-01-10:16:20",
+    "src_hash": "8674720c2b03b592f2a1614537b31233",
+    "src_size": 4339,
+    "src_mtime_ms": 1768031336476.612
   },
   "README.md": {
     "translate_datetime": "2025-11-25:20:56",
-    "src_hash": "c75ecb8fa0455decfa5c0ec708dde2ca"
+    "src_hash": "c75ecb8fa0455decfa5c0ec708dde2ca",
+    "src_mtime_ms": 1760518575142.4968,
+    "src_size": 28847
   }
 }

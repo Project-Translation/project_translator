@@ -6,3 +6,4 @@ out/
 .env
 sample/.translation-logs/
 logs/project-translator.log/
+go-translator/translator

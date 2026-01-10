@@ -4,8 +4,10 @@
     "src_hash": "824184cde709ab724cb1cbfab53491c4"
   },
   "translate_source.json": {
-    "translate_datetime": "2025-10-14:17:20",
-    "src_hash": "2b8390e9bd3af316837955b93b04136e"
+    "translate_datetime": "2026-01-09:18:44",
+    "src_hash": "2b8390e9bd3af316837955b93b04136e",
+    "src_size": 247,
+    "src_mtime_ms": 1764071825706.9404
   },
   "embeded/embeded.md": {
     "translate_datetime": "2025-11-25:19:26",
@@ -14,5 +16,11 @@
   "embeded/level1/level1.txt": {
     "translate_datetime": "2025-11-25:19:26",
     "src_hash": "e491a9ef5e091462dbf0d2a0fa1099e8"
+  },
+  "long-stream/news1.md": {
+    "translate_datetime": "2026-01-10:14:37",
+    "src_hash": "9264ad9ed75a994e3bc5ce0b429f87de",
+    "src_size": 8119,
+    "src_mtime_ms": 1768026800352.3154
   }
 }

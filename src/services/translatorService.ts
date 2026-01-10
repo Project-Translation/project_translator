@@ -4,7 +4,7 @@ import { getConfiguration } from "../config/config";
 import { SupportedLanguage } from "../translationDatabase";
 import { logMessage } from "../extension";
 import * as path from "path";
-import { AI_RETURN_CODE, DIFF_SYSTEM_PROMPT, getDiffSystemPrompt } from "../config/prompt";
+import { AI_RETURN_CODE, DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2, DIFF_SYSTEM_PROMPT, getDiffSystemPrompt } from "../config/prompt";
 // no fs usage here
 
 // Store the last request timestamp for each vendor
@@ -88,6 +88,29 @@ export class TranslatorService {
     this.openaiClient = new OpenAI(config);
   }
 
+  /**
+   * 解析AI返回的无需翻译响应
+   * 新格式: "理由 | UUID"
+   * 旧格式: "UUID" (向后兼容)
+   * @returns 返回对象 { hasReason: boolean, reason?: string }
+   */
+  private parseNoNeedTranslateResponse(content: string): { hasReason: boolean; reason?: string } {
+    const delimiter = " | ";
+    if (content.includes(delimiter)) {
+      const parts = content.split(delimiter);
+      if (parts.length >= 2) {
+        // 检查最后一部分是否包含UUID
+        const lastPart = parts[parts.length - 1].trim();
+        if (lastPart.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE)) {
+          // 格式: 理由 | UUID
+          const reason = parts.slice(0, -1).join(delimiter).trim();
+          return { hasReason: true, reason };
+        }
+      }
+    }
+    return { hasReason: false };
+  }
+
   public async translateContent(
     content: string,
     sourceLang: SupportedLanguage,
@@ -104,7 +127,7 @@ export class TranslatorService {
     }
 
     const config = await getConfiguration();
-    const { currentVendorName, currentVendor, systemPrompts, userPrompts } = config;
+    const { currentVendorName, currentVendor, customPrompts } = config;
     const debug = !!config.debug;
     // Ensure temperature has a sensible default if undefined
     const { model, rpm, streamMode } = currentVendor;
@@ -123,42 +146,38 @@ export class TranslatorService {
 
     // Prepare system prompts based on whether this is the first segment
     let effectiveSystemPrompts: string[];
-    if (isFirstSegment && systemPrompts && systemPrompts.length >= 2) {
-      // For the first segment, use both parts of the system prompt
-      effectiveSystemPrompts = systemPrompts;
-    } else if (systemPrompts && systemPrompts.length > 0) {
-      // For subsequent segments or when only one prompt is available, use only the first part
-      effectiveSystemPrompts = [systemPrompts[0]];
+    if (isFirstSegment) {
+      // For the first segment, use both parts of the default system prompt
+      effectiveSystemPrompts = [DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2];
     } else {
-      // Fallback to empty array if no prompts are available
-      effectiveSystemPrompts = [];
+      // For subsequent segments, use only the first part
+      effectiveSystemPrompts = [DEFAULT_SYSTEM_PROMPT_PART1];
     }
 
-    // merge systemPrompts
-    let mergedSystemPrompt = "";
-    if (effectiveSystemPrompts.length > 0) {
-      mergedSystemPrompt = effectiveSystemPrompts.join("\n");
+    // Merge default system prompts with user custom prompts
+    let mergedSystemPrompt = effectiveSystemPrompts.join("\n");
+
+    // Append user custom prompts to system prompt
+    if (customPrompts && customPrompts.length > 0) {
+      mergedSystemPrompt += "\n\n# 用户自定义翻译要求\n\n";
+      mergedSystemPrompt += customPrompts.join("\n\n");
     }
+
     // Message ordering per requirement:
-    // 1) system: system prompts
+    // 1) system: default system prompts + custom prompts
     // 2) user: raw content
-    // 3) user custom prompts from settings
-    // 4) built-in user prompt(s)
-    const messages = [
+    // 3) user: built-in translation prompt
+    const messages: Array<{ role: string; content: string }> = [
       {
-        role: "system" as const,
+        role: "system",
         content: mergedSystemPrompt,
       },
       {
-        role: "user" as const,
+        role: "user",
         content: content,
       },
-      ...(userPrompts || []).map((prompt: string) => ({
-        role: "user" as const,
-        content: prompt,
-      })),
       {
-        role: "user" as const,
+        role: "user",
         content: `Please translate the preceding content from ${sourceLang} to ${targetLang}.`,
       },
     ];
@@ -218,24 +237,30 @@ export class TranslatorService {
     }
 
     const config = await getConfiguration();
-    const { currentVendorName, currentVendor, systemPrompts, userPrompts } = config;
+    const { currentVendorName, currentVendor, customPrompts } = config;
 
-    const mergedSystemPrompt = [
-      ...(systemPrompts || []),
+    // Build system prompt with default prompts and diff prompt
+    let mergedSystemPrompt = [
+      DEFAULT_SYSTEM_PROMPT_PART1,
+      DEFAULT_SYSTEM_PROMPT_PART2,
       DIFF_SYSTEM_PROMPT
     ].join("\n");
 
-    const messages = [
-      { role: "system" as const, content: mergedSystemPrompt },
+    // Append user custom prompts to system prompt
+    if (customPrompts && customPrompts.length > 0) {
+      mergedSystemPrompt += "\n\n# 用户自定义翻译要求\n\n";
+      mergedSystemPrompt += customPrompts.join("\n\n");
+    }
+
+    const messages: Array<{ role: string; content: string }> = [
+      { role: "system", content: mergedSystemPrompt },
       {
-        role: "system" as const,
+        role: "system",
         content: getDiffSystemPrompt(sourceLang, targetLang, sourcePath),
       },
       // 先提供 SOURCE 后提供 TARGET，便于模型对齐
-      { role: "user" as const, content: `SOURCE BEGIN\n${sourceContent}\nSOURCE END` },
-      { role: "user" as const, content: `TARGET BEGIN\n${targetContent}\nTARGET END` },
-      // User custom prompts last
-      ...(userPrompts || []).map((p) => ({ role: "user" as const, content: p })),
+      { role: "user", content: `SOURCE BEGIN\n${sourceContent}\nSOURCE END` },
+      { role: "user", content: `TARGET BEGIN\n${targetContent}\nTARGET END` }
     ];
 
     logMessage(`🔄 Sending differential translation request...`);
@@ -246,12 +271,43 @@ export class TranslatorService {
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: currentVendor.temperature,
       top_p: currentVendor.top_p,
+      response_format: { type: "json_object" },
     };
 
     const response = await this.openaiClient.chat.completions.create(payload);
     vendorLastRequest.set(currentVendorName, Date.now());
     const content = response.choices?.[0]?.message?.content?.trim() || '';
-    return content;
+
+    // Parse JSON response and convert to SEARCH/REPLACE format
+    try {
+      const diffResult = JSON.parse(content) as {
+        has_changes: boolean;
+        changes: Array<{ start_line: number; search: string; replace: string }>;
+      };
+
+      if (!diffResult.has_changes || !diffResult.changes || diffResult.changes.length === 0) {
+        logMessage("ℹ️ No changes detected in diff");
+        return "";
+      }
+
+      // Convert JSON to SEARCH/REPLACE format
+      const searchReplaceBlocks = diffResult.changes.map((change) => {
+        return `<<<<<<< SEARCH
+:start_line: ${change.start_line}
+-------
+${change.search}
+=======
+${change.replace}
+>>>>>>> REPLACE`;
+      }).join("\n\n");
+
+      logMessage(`✅ Converted JSON diff to SEARCH/REPLACE format (${diffResult.changes.length} blocks)`);
+      return searchReplaceBlocks;
+    } catch (e) {
+      logMessage(`❌ Failed to parse JSON diff response: ${e instanceof Error ? e.message : String(e)}`, "error");
+      logMessage(`📄 Raw response: ${content}`);
+      throw new Error(`Failed to parse JSON diff response: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   private async standardTranslateContent(
@@ -321,9 +377,16 @@ export class TranslatorService {
 
     // Check if the response contains the NO_NEED_TRANSLATE return code
     if (translatedContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE)) {
-      logMessage(
-        `🔄 AI indicated no translation needed for this file, skipping translation`
-      );
+      const parsed = this.parseNoNeedTranslateResponse(translatedContent);
+      if (parsed.hasReason) {
+        logMessage(
+          `🔄 AI indicated no translation needed for this file. Reason: ${parsed.reason}`
+        );
+      } else {
+        logMessage(
+          `🔄 AI indicated no translation needed for this file, skipping translation`
+        );
+      }
       return [AI_RETURN_CODE.NO_NEED_TRANSLATE, originalContent]; // Return the original content unchanged
     }
 
@@ -491,9 +554,16 @@ export class TranslatorService {
       fullContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
       fullContent.includes(uuidFirstPart)
     ) {
-      logMessage(
-        `🔄 AI indicated no translation needed for this file, skipping translation`
-      );
+      const parsed = this.parseNoNeedTranslateResponse(fullContent);
+      if (parsed.hasReason) {
+        logMessage(
+          `🔄 AI indicated no translation needed for this file. Reason: ${parsed.reason}`
+        );
+      } else {
+        logMessage(
+          `🔄 AI indicated no translation needed for this file, skipping translation`
+        );
+      }
       return [AI_RETURN_CODE.NO_NEED_TRANSLATE, originalContent];
     }
 

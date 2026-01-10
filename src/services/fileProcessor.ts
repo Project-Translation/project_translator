@@ -511,15 +511,28 @@ export class FileProcessor {
             } else {
                 this.checkCancellation();
                 if (streamMode) {
-                    // For streaming mode, we'll collect content but only write to file if NO_NEED_TRANSLATE is not detected
+                    // For streaming mode, use a write stream to append content as it arrives
                     let streamedContent = '';
                     let noTranslateDetected = false;
+                    let writeStream: fs.WriteStream | null = null;
+                    let writeError: Error | null = null;
 
-                    // Define progress callback for streaming
+                    // Define progress callback for streaming - appends to file as chunks arrive
                     const progressCallback = (chunk: string) => {
-                        // Only collect content, don't write to file yet
-                        if (!noTranslateDetected) {
+                        if (!noTranslateDetected && !writeError) {
                             streamedContent += chunk;
+
+                            // Create write stream on first chunk
+                            if (!writeStream) {
+                                writeStream = fs.createWriteStream(targetPath, { encoding: 'utf8' });
+                                writeStream.on('error', (err) => {
+                                    writeError = err;
+                                    logMessage(`❌ Failed to write streaming content: ${err.message}`, "error");
+                                });
+                            }
+
+                            // Append chunk to stream
+                            writeStream.write(chunk);
                         }
                     };
 
@@ -534,20 +547,36 @@ export class FileProcessor {
                         true // isFirstSegment = true for single file translation
                     );
 
+                    // Close the write stream if it was created
+                    if (writeStream) {
+                        await new Promise<void>((resolve, reject) => {
+                            if (writeError) {
+                                reject(writeError);
+                            } else {
+                                writeStream?.end(() => resolve());
+                            }
+                        });
+                    }
+
                     // If NO_NEED_TRANSLATE was detected, skip the file but still update translation time
-                        if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                            logMessage("⏭️ No translation needed, skipping file");
-                            this.skippedFilesCount++;
-                            // Cache the decision for this (source,targetLang,targetPath) in this session
-                            const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
-                            this.noTranslateCache.set(decisionKey, true);
-                            this.translationDecisionCache.set(decisionKey, { shouldTranslate: false, timestamp: Date.now() });
-                            return; // Skip processing this file
-                        } else {
-                            await fsp.writeFile(targetPath, streamedContent);
-                            logMessage("💾 Stream translation result written");
-                            wasTranslated = streamedContent !== content;
+                    if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                        logMessage("⏭️ No translation needed, skipping file");
+                        this.skippedFilesCount++;
+                        // Cache the decision for this (source,targetLang,targetPath) in this session
+                        const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
+                        this.noTranslateCache.set(decisionKey, true);
+                        this.translationDecisionCache.set(decisionKey, { shouldTranslate: false, timestamp: Date.now() });
+                        // Clean up the partially written file
+                        try {
+                            await fsp.unlink(targetPath);
+                        } catch {
+                            // Ignore errors if file doesn't exist
                         }
+                        return; // Skip processing this file
+                    } else {
+                        logMessage("💾 Stream translation result written");
+                        wasTranslated = streamedContent !== content;
+                    }
                 } else {
                     logMessage("🔄 Using standard mode for translation...");
                     [returnCode, translatedContent] = await this.translatorService.translateContent(
@@ -633,31 +662,27 @@ export class FileProcessor {
                 let translatedSegment: string;
 
                 if (streamMode) {
-                    // For streaming mode, we'll collect content but only write to file if NO_NEED_TRANSLATE is not detected
+                    // For streaming mode, use a write stream to append content as it arrives
                     let currentSegmentContent = '';
-                    let originalSegment = '';
+                    let writeStream: fs.WriteStream | null = null;
 
-                    // Define progress callback for streaming
+                    // Define progress callback for streaming - appends to file as chunks arrive
                     const progressCallback = (chunk: string) => {
-                        // Clean up the chunk to remove any UUID fragments that might have been included
-                        const cleanedChunk = chunk.replace(/[\s\S]*BEGIN SEGMENT[\s\S]*?END SEGMENT[\s\S]*/g, (match) => {
-                            // Extract the actual content between UUID markers
-                            const uuidContentMatch = match.match(/[\s\S]*BEGIN SEGMENT ([\s\S]*?) END SEGMENT[\s\S]*/);
-                            if (uuidContentMatch && uuidContentMatch[1]) {
-                                return uuidContentMatch[1];
-                            }
-                            return '';
-                        });
-
                         // If we detect UUID fragments, it means the AI returned NO_NEED_TRANSLATE
                         if (chunk.includes("BEGIN SEGMENT") && chunk.includes("END SEGMENT")) {
-                            // Extract the original segment content
-                            originalSegment = cleanedChunk;
-                            const currentContent = combineSegments([...translatedSegments, originalSegment]);
+                            // Clean up the chunk to extract the original content between markers
+                            const cleanedChunk = chunk.replace(/[\s\S]*BEGIN SEGMENT[\s\S]*?END SEGMENT[\s\S]*/g, (match) => {
+                                const uuidContentMatch = match.match(/[\s\S]*BEGIN SEGMENT ([\s\S]*?) END SEGMENT[\s\S]*/);
+                                if (uuidContentMatch && uuidContentMatch[1]) {
+                                    return uuidContentMatch[1];
+                                }
+                                return '';
+                            });
+                            currentSegmentContent = cleanedChunk;
+                            const currentContent = combineSegments([...translatedSegments, currentSegmentContent]);
+                            logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
                             lastWritePromise = lastWritePromise.then(() =>
-                                fsp.writeFile(targetPath, currentContent).then(() => {
-                                    logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
-                                }).catch((err) => {
+                                fsp.writeFile(targetPath, currentContent).catch((err) => {
                                     logMessage(`❌ Failed to write segment (no-translate) content: ${err instanceof Error ? err.message : String(err)}`, "error");
                                 })
                             );
@@ -665,15 +690,19 @@ export class FileProcessor {
                         }
 
                         // If no UUID fragments were found, add the chunk to current segment content
-                        currentSegmentContent += cleanedChunk;
+                        currentSegmentContent += chunk;
 
-                        // Update the file with what we have so far（顺序串行异步写入）
-                        const currentContent = combineSegments([...translatedSegments, currentSegmentContent]);
-                        lastWritePromise = lastWritePromise.then(() =>
-                            fsp.writeFile(targetPath, currentContent).catch((err) => {
-                                logMessage(`❌ Failed to write segment content: ${err instanceof Error ? err.message : String(err)}`, "error");
-                            })
-                        );
+                        // Create write stream on first chunk of this segment
+                        if (!writeStream) {
+                            const writeMode = i === 0 ? 'w' : 'a'; // First segment overwrites, others append
+                            writeStream = fs.createWriteStream(targetPath, { encoding: 'utf8', flags: writeMode });
+                            writeStream.on('error', (err) => {
+                                logMessage(`❌ Failed to write streaming content for segment: ${err.message}`, "error");
+                            });
+                        }
+
+                        // Append chunk to stream
+                        writeStream.write(chunk);
                     };
 
                     logMessage(`🔄 Using stream mode for segment ${i + 1}/${segments.length}...`);
@@ -687,11 +716,24 @@ export class FileProcessor {
                         i === 0 // isFirstSegment = true only for the first segment
                     );
 
-                    // If the segment translation indicates no translation needed,
-                    // use the original segment content
+                    // Close the write stream for this segment if it was created
+                    if (writeStream) {
+                        await new Promise<void>((resolve) => {
+                            writeStream?.end(() => resolve());
+                        });
+                        writeStream = null;
+                    }
+
+                    // Determine the final segment content based on return code
                     if (segmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                         translatedSegment = segment;
+                    } else {
+                        // Use the accumulated content from progressCallback
+                        translatedSegment = currentSegmentContent;
                     }
+
+                    // Add to translatedSegments for final combination
+                    translatedSegments.push(translatedSegment);
                 } else {
                     [segmentCode, translatedSegment] = await this.translatorService.translateContent(
                         segment,
@@ -717,13 +759,8 @@ export class FileProcessor {
                     );
                 }
 
-                translatedSegments.push(translatedSegment);
-
-                // In non-streaming mode, this was already done, but in streaming mode,
-                // we should ensure the final combined content is written
-                if (streamMode) {
-                    logMessage(`✅ Completed segment ${i + 1}/${segments.length}`);
-                }
+                // Log completion
+                logMessage(`✅ Completed segment ${i + 1}/${segments.length}`);
 
                 await this.yieldToEventLoop();
             }

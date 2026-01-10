@@ -1,9 +1,9 @@
 {
     "projectTranslator.debug": true,
-    "projectTranslator.currentVendor": "modelscope",
+    "projectTranslator.currentVendor": "openrouter",
     "projectTranslator.translationIntervalDays": 29,
-    "projectTranslator.userPrompts": [
-        "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
+    "projectTranslator.customPrompts": [
+        "1. 如果markdown文件标记draft, 则不必翻译.",
         "2. './readmes/' in the sentences should replace with './'"
     ],
     "projectTranslator.ignore": {
@@ -41,41 +41,6 @@
         }
     ],
     "projectTranslator.specifiedFiles": [
-        // should not translate
-        // {
-        //     "sourceFile": {
-        //         "path": "structure/md/should_skip.md",
-        //         "lang": "en-us"
-        //     },
-        //     "targetFiles": [
-        //         {
-        //             "path": "i18n/md/should_skip.zh-cn.md",
-        //             "lang": "zh-cn"
-        //         },
-        //         {
-        //             "path": "i18n/md/should_skip.zh-hk.md",
-        //             "lang": "zh-hk"
-        //         }
-        //     ]
-        // },
-        // should translate
-        // {
-        //     "sourceFile": {
-        //         "path": "structure/md/should_translate.md",
-        //         "lang": "en-us"
-        //     },
-        //     "targetFiles": [
-        //         {
-        //             "path": "i18n/md/should_translate.zh-cn.md",
-        //             "lang": "zh-cn"
-        //         },
-        //         {
-        //             "path": "i18n/md/should_translate.zh-hk.md",
-        //             "lang": "zh-hk"
-        //         }
-        //     ]
-        // },
-        // diff apply
         {
             "sourceFile": {
                 "path": "translate_source.json",
@@ -87,10 +52,22 @@
                     "lang": "zh-cn"
                 }
             ]
+        },
+        {
+            "sourceFile": {
+                "path": "long-stream/news1.md",
+                "lang": "en-us"
+            },
+            "targetFiles": [
+                {
+                    "path": "i18n/zh-cn/long-stream/news1.md",
+                    "lang": "zh-cn"
+                }
+            ]
         }
     ],
     "projectTranslator.diffApply": {
-        "enabled": true,
+        "enabled": false,
         "validationLevel": "normal",
         "autoBackup": false,
         "maxOperationsPerFile": 100

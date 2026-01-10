@@ -8,7 +8,6 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "js/ts.implicitProjectConfig.checkJs": true,
     "projectTranslator.debug": true,
-    "projectTranslator.currentVendor": "modelscope",
     "projectTranslator.logFile": {
         "enabled": true,
         "path": "logs/project-translator.log",
@@ -16,10 +15,10 @@
         "maxFiles": 5
     },
     "projectTranslator.translationIntervalDays": -1,
-    "projectTranslator.userPrompts": [
-        "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
-        "2. './readmes/' in the sentences should replace with './'",
-        "3. './resources/' in the sentences should replace with '../resources/'",
+    "projectTranslator.customPrompts": [
+        "1. 如果 Markdown 文件的前置数据（front matter）中 'draft' 设置为 'true'，则应返回无需翻译。",
+        "2. 句子中的 './readmes/' 应替换为 './'",
+        "3. 句子中的 './resources/' 应替换为 '../resources/'",
     ],
     "projectTranslator.specifiedFiles": [
         {

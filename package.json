@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.17.4",
+    "version": "0.17.7",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -671,23 +671,14 @@
                     "description": "%config.ignore.description%",
                     "order": 9
                 },
-                "projectTranslator.systemPrompts": {
+                "projectTranslator.customPrompts": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
                     "default": [],
-                    "description": "%config.systemPrompts.description%",
+                    "description": "%config.customPrompts.description%",
                     "order": 10
-                },
-                "projectTranslator.userPrompts": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "default": [],
-                    "description": "%config.userPrompts.description%",
-                    "order": 11
                 },
                 "projectTranslator.segmentationMarkers": {
                     "type": "object",

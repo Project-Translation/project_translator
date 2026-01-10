@@ -83,8 +83,7 @@ export interface Config {
     paths: string[];
     extensions: string[];
   };
-  systemPrompts: string[];
-  userPrompts: string[];
+  customPrompts: string[];
   segmentationMarkers: Record<string, string[]>; // TODO: This should be a map of language to array of strings
   debug: boolean;
   logFile: {

@@ -11,8 +11,7 @@ interface Config {
     vendors: VendorConfig[];
     translationIntervalDays: number;
     currentVendor: VendorConfig;
-    systemPrompts?: string[];
-    userPrompts?: string[];
+    customPrompts?: string[];
     specifiedFiles?: any[];
     specifiedFolders?: any[];
     copyOnly?: any;
@@ -72,8 +71,7 @@ suite('Pure Config Validation Tests', () => {
                     apiKey: 'test-key',
                     model: 'grok-beta'
                 },
-                systemPrompts: ['Test prompt'],
-                userPrompts: ['Test user prompt']
+                customPrompts: ['Test custom prompt']
             };
 
             const result = validateConfigStructure(validConfig);
@@ -96,8 +94,7 @@ suite('Pure Config Validation Tests', () => {
                 vendors: [],
                 translationIntervalDays: 1,
                 currentVendor: null as any,
-                systemPrompts: [],
-                userPrompts: []
+                customPrompts: []
             };
 
             const result = validateConfigStructure(invalidConfig);
@@ -122,8 +119,7 @@ suite('Pure Config Validation Tests', () => {
                     apiKey: 'test-key',
                     model: 'test-model'
                 },
-                systemPrompts: [],
-                userPrompts: []
+                customPrompts: []
             };
 
             const result = validateConfigStructure(invalidConfig);
@@ -208,8 +204,7 @@ suite('Pure Config Validation Tests', () => {
                     apiKey: 'test-key',
                     model: 'test-model'
                 },
-                systemPrompts: ['System prompt 1', 'System prompt 2'],
-                userPrompts: ['User prompt 1'],
+                customPrompts: ['Custom prompt 1'],
                 specifiedFiles: [],
                 specifiedFolders: [],
                 copyOnly: {},
@@ -222,13 +217,11 @@ suite('Pure Config Validation Tests', () => {
             expect(completeConfig).to.have.property('vendors');
             expect(completeConfig).to.have.property('translationIntervalDays');
             expect(completeConfig).to.have.property('currentVendor');
-            expect(completeConfig).to.have.property('systemPrompts');
-            expect(completeConfig).to.have.property('userPrompts');
+            expect(completeConfig).to.have.property('customPrompts');
 
             expect(completeConfig.vendors).to.be.an('array');
             expect(completeConfig.translationIntervalDays).to.be.a('number');
-            expect(completeConfig.systemPrompts).to.be.an('array');
-            expect(completeConfig.userPrompts).to.be.an('array');
+            expect(completeConfig.customPrompts).to.be.an('array');
         });
 
         test('should validate translationIntervalDays bounds', () => {

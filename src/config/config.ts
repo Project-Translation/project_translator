@@ -69,8 +69,7 @@ export interface Config {
   vendors: VendorConfig[]; // List of vendor configurations
   translationIntervalDays: number; // Interval for translation in days
   currentVendor: VendorConfig; // Current vendor configuration (derived from vendors array)
-  systemPrompts?: string[]; // System prompts for translation
-  userPrompts?: string[]; // User prompts for translation
+  customPrompts?: string[]; // Custom prompts for translation (appended to default system prompt)
   segmentationMarkers?: Record<string, string[]>; // Segmentation markers configured by file type
 
   debug?: boolean; // Enable debug mode to log API requests and responses
@@ -176,8 +175,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       "translationIntervalDays",
       "copyOnly",
       "ignore",
-      "systemPrompts",
-      "userPrompts",
+      "customPrompts",
       "segmentationMarkers",
       "diffApply",
     ];
@@ -271,8 +269,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
     // VSCode defaults may be undefined in some environments; fall back to baseline defaults
     const baselineDefaults: Record<string, any> = {
       translationIntervalDays: -1,
-      systemPrompts: [],
-      userPrompts: [],
+      customPrompts: [],
       copyOnly: { paths: [], extensions: [".svg"] },
       ignore: {
         paths: [
@@ -387,8 +384,7 @@ export async function getConfiguration(): Promise<Config> {
     translationIntervalDays: vscodeConfig.get("translationIntervalDays"),
     copyOnly: vscodeConfig.get("copyOnly"),
     ignore: vscodeConfig.get("ignore"),
-    systemPrompts: vscodeConfig.get("systemPrompts"),
-    userPrompts: vscodeConfig.get("userPrompts"),
+    customPrompts: vscodeConfig.get("customPrompts"),
     segmentationMarkers: vscodeConfig.get("segmentationMarkers"),
     diffApply: vscodeConfig.get("diffApply"),
 
@@ -516,15 +512,8 @@ export async function getConfiguration(): Promise<Config> {
     maxOperationsPerFile: diffApplyRaw?.maxOperationsPerFile ?? 100
   };
 
-  // Get prompts, fallback to defaults if not present
-  let systemPrompts = configData.systemPrompts;
-  let userPrompts = configData.userPrompts;
-
-  // If no system prompts are provided, use the default system prompt parts
-  if (!systemPrompts || systemPrompts.length === 0) {
-    // Combine both parts as default - first part + second part for initial request
-    systemPrompts = [DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2];
-  }
+  // Get custom prompts from config (user-defined prompts to append to default system prompt)
+  const customPrompts = configData.customPrompts;
 
   const finalConfig: Config = {
     currentVendorName,
@@ -553,8 +542,7 @@ export async function getConfiguration(): Promise<Config> {
         ? ignore.extensions
         : [],
     },
-    systemPrompts: Array.isArray(systemPrompts) ? systemPrompts : [DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2],
-    userPrompts: Array.isArray(userPrompts) ? userPrompts : [],
+    customPrompts: Array.isArray(customPrompts) ? customPrompts : [],
   };
 
   cachedConfig = {
