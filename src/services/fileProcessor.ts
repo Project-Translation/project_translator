@@ -558,10 +558,9 @@ export class FileProcessor {
                         });
                     }
 
-                    // If NO_NEED_TRANSLATE was detected, skip the file but still update translation time
+                    // If NO_NEED_TRANSLATE was detected, copy the original file and update cache records
                     if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                        logMessage("⏭️ No translation needed, skipping file");
-                        this.skippedFilesCount++;
+                        logMessage("⏭️ No translation needed, copying original file");
                         // Cache the decision for this (source,targetLang,targetPath) in this session
                         const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
                         this.noTranslateCache.set(decisionKey, true);
@@ -572,6 +571,9 @@ export class FileProcessor {
                         } catch {
                             // Ignore errors if file doesn't exist
                         }
+                        await fsp.writeFile(targetPath, content);
+                        await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+                        this.processedFilesCount++;
                         return; // Skip processing this file
                     } else {
                         logMessage("💾 Stream translation result written");
@@ -591,20 +593,22 @@ export class FileProcessor {
 
                     this.checkCancellation();
 
-                    // If NO_NEED_TRANSLATE was detected, skip the file
-                        if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
-                            logMessage("⏭️ No translation needed, skipping file");
-                            this.skippedFilesCount++;
-                            // Cache the decision for this (source,targetLang,targetPath) in this session
-                            const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
-                            this.noTranslateCache.set(decisionKey, true);
-                            this.translationDecisionCache.set(decisionKey, { shouldTranslate: false, timestamp: Date.now() });
-                            return; // Skip processing this file
-                        } else {
-                            await fsp.writeFile(targetPath, translatedContent);
-                            logMessage("💾 Translation result written");
-                            wasTranslated = translatedContent !== content;
-                        }
+                    // If NO_NEED_TRANSLATE was detected, copy original and record the decision
+                    if (returnCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                        logMessage("⏭️ No translation needed, copying original file");
+                        // Cache the decision for this (source,targetLang,targetPath) in this session
+                        const decisionKey = this.getDecisionCacheKey(sourcePath, targetPath, targetLang);
+                        this.noTranslateCache.set(decisionKey, true);
+                        this.translationDecisionCache.set(decisionKey, { shouldTranslate: false, timestamp: Date.now() });
+                        await fsp.writeFile(targetPath, content);
+                        await this.translationDb.updateTranslationTime(sourcePath, targetPath, targetLang);
+                        this.processedFilesCount++;
+                        return; // Done for this file
+                    } else {
+                        await fsp.writeFile(targetPath, translatedContent);
+                        logMessage("💾 Translation result written");
+                        wasTranslated = translatedContent !== content;
+                    }
                 }
             }
 

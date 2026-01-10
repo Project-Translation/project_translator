@@ -2,7 +2,7 @@ package translator
 
 // AI 返回码
 const (
-	ReturnCodeOK             = "OK"
+	ReturnCodeOK              = "OK"
 	ReturnCodeNoNeedTranslate = "727d2eb8-8683-42bd-a1d0-f604fcd82163"
 )
 
@@ -14,11 +14,16 @@ type Message struct {
 
 // ChatRequest 聊天请求
 type ChatRequest struct {
-	Model       string    `json:"model"`
-	Messages    []Message `json:"messages"`
-	Temperature *float64  `json:"temperature,omitempty"`
-	TopP        *float64  `json:"top_p,omitempty"`
-	Stream      bool      `json:"stream,omitempty"`
+	Model          string          `json:"model"`
+	Messages       []Message       `json:"messages"`
+	Temperature    *float64        `json:"temperature,omitempty"`
+	TopP           *float64        `json:"top_p,omitempty"`
+	Stream         bool            `json:"stream,omitempty"`
+	ResponseFormat *ResponseFormat `json:"response_format,omitempty"`
+}
+
+type ResponseFormat struct {
+	Type string `json:"type"`
 }
 
 // ChatResponse 聊天响应
@@ -33,10 +38,10 @@ type ChatResponse struct {
 
 // Choice 选择项
 type Choice struct {
-	Index        int         `json:"index"`
+	Index        int          `json:"index"`
 	Message      DeltaMessage `json:"message,omitempty"`
 	Delta        DeltaMessage `json:"delta,omitempty"`
-	FinishReason string      `json:"finish_reason,omitempty"`
+	FinishReason string       `json:"finish_reason,omitempty"`
 }
 
 // DeltaMessage 增量消息（用于流式响应）
@@ -65,7 +70,7 @@ type StreamChunk struct {
 type ChoiceStream struct {
 	Index        int          `json:"index"`
 	Delta        DeltaMessage `json:"delta"`
-	FinishReason *string     `json:"finish_reason"`
+	FinishReason *string      `json:"finish_reason"`
 }
 
 // ProgressCallback 进度回调函数
@@ -73,8 +78,20 @@ type ProgressCallback func(chunk string)
 
 // TranslationResult 翻译结果
 type TranslationResult struct {
-	ReturnCode string
-	Content    string
+	ReturnCode   string
+	Content      string
 	InputTokens  int
 	OutputTokens int
+}
+
+// JSONDiffChange/JSONDiffResult match the extension's diff JSON protocol.
+type JSONDiffChange struct {
+	StartLine int    `json:"start_line"`
+	Search    string `json:"search"`
+	Replace   string `json:"replace"`
+}
+
+type JSONDiffResult struct {
+	HasChanges bool             `json:"has_changes"`
+	Changes    []JSONDiffChange `json:"changes"`
 }

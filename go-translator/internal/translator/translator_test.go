@@ -1,6 +1,7 @@
 package translator
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/project-translator/go-translator/internal/config"
@@ -45,8 +46,8 @@ func TestTranslator_NewWithNilPrompts(t *testing.T) {
 		t.Errorf("当传入 nil 时，systemPrompts 应为空数组，实际长度为 %d", len(tr.systemPrompts))
 	}
 
-	if len(tr.userPrompts) != 0 {
-		t.Errorf("当传入 nil 时，userPrompts 应为空数组，实际长度为 %d", len(tr.userPrompts))
+	if len(tr.customPrompts) != 0 {
+		t.Errorf("当传入 nil 时，customPrompts 应为空数组，实际长度为 %d", len(tr.customPrompts))
 	}
 }
 
@@ -107,17 +108,17 @@ func TestBuildMessages_FirstSegment(t *testing.T) {
 		"You are a translator.",
 		"Translate accurately.",
 	}
-	userPrompts := []string{
+	customPrompts := []string{
 		"Keep the format.",
 	}
 
-	tr := NewTranslator(vendor, systemPrompts, userPrompts)
+	tr := NewTranslator(vendor, systemPrompts, customPrompts)
 
 	messages := tr.buildMessages("Hello world", "en", "zh", true)
 
-	// 应该有: system(2合并) + user(content) + user(custom) + user(instruction) = 4
-	if len(messages) != 4 {
-		t.Errorf("期望 4 条消息，实际为 %d", len(messages))
+	// 应该有: system(2合并+custom) + user(content) + user(instruction) = 3
+	if len(messages) != 3 {
+		t.Errorf("期望 3 条消息，实际为 %d", len(messages))
 	}
 
 	if messages[0].Role != "system" {
@@ -128,6 +129,12 @@ func TestBuildMessages_FirstSegment(t *testing.T) {
 	systemContent := messages[0].Content
 	if systemContent == "" {
 		t.Error("系统提示词不应为空")
+	}
+	if !strings.Contains(systemContent, "You are a translator.") || !strings.Contains(systemContent, "Translate accurately.") {
+		t.Error("系统提示词应包含两部分系统提示词")
+	}
+	if !strings.Contains(systemContent, "Keep the format.") {
+		t.Error("系统提示词应包含自定义提示词内容")
 	}
 }
 
@@ -142,9 +149,9 @@ func TestBuildMessages_SubsequentSegment(t *testing.T) {
 		"You are a translator.",
 		"Translate accurately.",
 	}
-	userPrompts := []string{}
+	customPrompts := []string{}
 
-	tr := NewTranslator(vendor, systemPrompts, userPrompts)
+	tr := NewTranslator(vendor, systemPrompts, customPrompts)
 
 	// 后续片段只使用第一个系统提示词
 	messages := tr.buildMessages("Hello world", "en", "zh", false)
@@ -202,34 +209,21 @@ func TestBuildMessages_WithUserPrompts(t *testing.T) {
 		Timeout: 30,
 	}
 
-	userPrompts := []string{
+	customPrompts := []string{
 		"Keep the formatting.",
 		"Preserve code blocks.",
 	}
 
-	tr := NewTranslator(vendor, []string{}, userPrompts)
+	tr := NewTranslator(vendor, []string{}, customPrompts)
 
 	messages := tr.buildMessages("Hello world", "en", "zh", true)
 
-	// 查找用户自定义提示词
-	foundUserPrompt1 := false
-	foundUserPrompt2 := false
-
-	for _, msg := range messages {
-		if msg.Content == "Keep the formatting." {
-			foundUserPrompt1 = true
-		}
-		if msg.Content == "Preserve code blocks." {
-			foundUserPrompt2 = true
-		}
+	systemContent := messages[0].Content
+	if !strings.Contains(systemContent, "Keep the formatting.") {
+		t.Error("系统提示词应包含第一个自定义提示词")
 	}
-
-	if !foundUserPrompt1 {
-		t.Error("应包含第一个用户自定义提示词")
-	}
-
-	if !foundUserPrompt2 {
-		t.Error("应包含第二个用户自定义提示词")
+	if !strings.Contains(systemContent, "Preserve code blocks.") {
+		t.Error("系统提示词应包含第二个自定义提示词")
 	}
 }
 

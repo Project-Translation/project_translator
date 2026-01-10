@@ -43,7 +43,9 @@ export OPENAI_API_KEY="your_api_key_here"
 translator config init
 ```
 
-或手动创建 `~/.translator/config.json`：
+默认会在当前项目目录生成 `project.translation.json`（与 VSCode 插件完全兼容）。
+
+也可以手动创建 `project.translation.json`：
 
 ```json
 {
@@ -91,6 +93,8 @@ translator config init
   ]
 }
 ```
+
+> 兼容说明：旧版 `~/.translator/config.json` 仍可通过 `-config` 显式指定使用。
 
 ## 命令使用
 
@@ -175,7 +179,7 @@ translator config show -json
 translator config path
 
 # 导出配置到文件
-translator config export -o custom-config.json
+translator config export -o project.translation.json
 
 # 初始化配置文件
 translator config init

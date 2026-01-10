@@ -10,16 +10,18 @@ import (
 	"strings"
 
 	"github.com/project-translator/go-translator/internal/config"
+	"github.com/project-translator/go-translator/internal/fileprocessor"
+	"github.com/project-translator/go-translator/internal/translationdb"
 	"github.com/project-translator/go-translator/internal/translator"
 )
 
 // TranslateCommand 翻译命令
 type TranslateCommand struct {
-	root      *RootCommand
-	fs        *flag.FlagSet
-	source    string
-	target    string
-	noStream  bool
+	root       *RootCommand
+	fs         *flag.FlagSet
+	source     string
+	target     string
+	noStream   bool
 	showTokens bool
 }
 
@@ -193,7 +195,11 @@ func (c *TranslateCommand) doTranslate(content, sourceInfo, outputFile string) e
 	log.Printf("源语言: %s, 目标语言: %s", c.source, c.target)
 
 	// 创建翻译器
-	tr := translator.NewTranslator(vendor, cfg.SystemPrompts, cfg.UserPrompts)
+	systemPrompts, customPrompts, err := c.loadPrompts(cfg)
+	if err != nil {
+		return err
+	}
+	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts)
 	defer func() {
 		if c.showTokens {
 			input, output, total := tr.GetTokenCounts()
@@ -282,8 +288,11 @@ func (c *TranslateCommand) translateProject(args []string) error {
 		vendor.StreamMode = false
 	}
 
-	// 创建翻译器
-	tr := translator.NewTranslator(vendor, cfg.SystemPrompts, cfg.UserPrompts)
+	systemPrompts, customPrompts, err := c.loadPrompts(cfg)
+	if err != nil {
+		return err
+	}
+	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts)
 	defer func() {
 		if c.showTokens {
 			input, output, total := tr.GetTokenCounts()
@@ -291,53 +300,16 @@ func (c *TranslateCommand) translateProject(args []string) error {
 		}
 	}()
 
-	processedCount := 0
-	skippedCount := 0
-	failedCount := 0
-
-	// 翻译配置的文件
-	for _, fileCfg := range cfg.SpecifiedFiles {
-		sourcePath := fileCfg.SourceFile.Path
-		sourceLang := fileCfg.SourceFile.Lang
-
-		for _, target := range fileCfg.TargetFiles {
-			targetPath := target.Path
-			targetLang := target.Lang
-
-			log.Printf("\n[文件] %s -> %s", sourcePath, targetPath)
-
-			if err := c.translateFileToPath(tr, sourcePath, sourceLang, targetPath, targetLang); err != nil {
-				log.Printf("错误: %v", err)
-				failedCount++
-			} else {
-				processedCount++
-			}
-		}
+	db, err := translationdb.New(cfg.WorkspaceRoot)
+	if err != nil {
+		return err
 	}
+	fp := fileprocessor.New(cfg, db, tr)
+	fp.TranslateProject()
 
-	// 翻译配置的文件夹
-	for _, folderCfg := range cfg.SpecifiedFolders {
-		sourcePath := folderCfg.SourceFolder.Path
-		sourceLang := folderCfg.SourceFolder.Lang
-
-		for _, target := range folderCfg.TargetFolders {
-			targetPath := target.Path
-			targetLang := target.Lang
-
-			log.Printf("\n[文件夹] %s -> %s", sourcePath, targetPath)
-
-			count, err := c.translateDirectory(tr, sourcePath, sourceLang, targetPath, targetLang)
-			if err != nil {
-				log.Printf("错误: %v", err)
-				failedCount++
-			} else {
-				processedCount += count
-			}
-		}
-	}
-
+	st := fp.Stats()
 	log.Printf("\n项目翻译完成!")
-	log.Printf("处理: %d, 跳过: %d, 失败: %d", processedCount, skippedCount, failedCount)
+	log.Printf("处理: %d, 跳过: %d, 失败: %d", st.Processed, st.Skipped, st.Failed)
 
 	return nil
 }
@@ -366,8 +338,11 @@ func (c *TranslateCommand) translateFolders(args []string) error {
 		vendor.StreamMode = false
 	}
 
-	// 创建翻译器
-	tr := translator.NewTranslator(vendor, cfg.SystemPrompts, cfg.UserPrompts)
+	systemPrompts, customPrompts, err := c.loadPrompts(cfg)
+	if err != nil {
+		return err
+	}
+	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts)
 	defer func() {
 		if c.showTokens {
 			input, output, total := tr.GetTokenCounts()
@@ -375,34 +350,46 @@ func (c *TranslateCommand) translateFolders(args []string) error {
 		}
 	}()
 
-	processedCount := 0
-	failedCount := 0
+	db, err := translationdb.New(cfg.WorkspaceRoot)
+	if err != nil {
+		return err
+	}
+	fp := fileprocessor.New(cfg, db, tr)
+	fp.TranslateSpecifiedFolders()
 
-	// 翻译配置的文件夹
-	for _, folderCfg := range cfg.SpecifiedFolders {
-		sourcePath := folderCfg.SourceFolder.Path
-		sourceLang := folderCfg.SourceFolder.Lang
+	st := fp.Stats()
+	log.Printf("\n文件夹翻译完成!")
+	log.Printf("处理: %d, 跳过: %d, 失败: %d", st.Processed, st.Skipped, st.Failed)
 
-		for _, target := range folderCfg.TargetFolders {
-			targetPath := target.Path
-			targetLang := target.Lang
+	return nil
+}
 
-			log.Printf("\n[文件夹] %s -> %s", sourcePath, targetPath)
-
-			count, err := c.translateDirectory(tr, sourcePath, sourceLang, targetPath, targetLang)
-			if err != nil {
-				log.Printf("错误: %v", err)
-				failedCount++
-			} else {
-				processedCount += count
+func (c *TranslateCommand) loadPrompts(cfg *config.Config) ([]string, []string, error) {
+	// Prefer shared prompt files under workspace root.
+	if cfg != nil {
+		if dir, ok := config.ResolvePromptsDir(cfg.WorkspaceRoot); ok {
+			p1, p2, err := config.LoadSystemPromptParts(dir)
+			if err == nil {
+				custom := append([]string{}, cfg.CustomPrompts...)
+				// Backward compatibility: treat old userPrompts as custom prompts
+				if len(cfg.UserPrompts) > 0 {
+					custom = append(custom, cfg.UserPrompts...)
+				}
+				return []string{p1, p2}, custom, nil
 			}
 		}
 	}
 
-	log.Printf("\n文件夹翻译完成!")
-	log.Printf("处理: %d, 失败: %d", processedCount, failedCount)
+	// Fallback: legacy config embeds system prompts
+	if cfg != nil && len(cfg.SystemPrompts) > 0 {
+		custom := append([]string{}, cfg.CustomPrompts...)
+		if len(cfg.UserPrompts) > 0 {
+			custom = append(custom, cfg.UserPrompts...)
+		}
+		return cfg.SystemPrompts, custom, nil
+	}
 
-	return nil
+	return nil, nil, fmt.Errorf("无法加载系统提示词：未找到 prompts 目录或提示词文件")
 }
 
 // translateFileToPath 翻译文件到指定路径

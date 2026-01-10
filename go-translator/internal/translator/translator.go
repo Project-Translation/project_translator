@@ -17,18 +17,18 @@ import (
 
 // Translator 翻译服务
 type Translator struct {
-	vendor           *config.VendorConfig
-	client           *http.Client
-	lastRequestTime  time.Time
-	mu               sync.Mutex
+	vendor            *config.VendorConfig
+	client            *http.Client
+	lastRequestTime   time.Time
+	mu                sync.Mutex
 	totalInputTokens  int
 	totalOutputTokens int
-	systemPrompts    []string
-	userPrompts      []string
+	systemPrompts     []string
+	customPrompts     []string
 }
 
 // NewTranslator 创建翻译服务
-func NewTranslator(vendor *config.VendorConfig, systemPrompts, userPrompts []string) *Translator {
+func NewTranslator(vendor *config.VendorConfig, systemPrompts []string, customPrompts []string) *Translator {
 	timeout := time.Duration(vendor.Timeout) * time.Second
 	if timeout == 0 {
 		timeout = 30 * time.Second
@@ -37,15 +37,15 @@ func NewTranslator(vendor *config.VendorConfig, systemPrompts, userPrompts []str
 	if systemPrompts == nil {
 		systemPrompts = []string{}
 	}
-	if userPrompts == nil {
-		userPrompts = []string{}
+	if customPrompts == nil {
+		customPrompts = []string{}
 	}
 
 	return &Translator{
 		vendor:        vendor,
 		client:        &http.Client{Timeout: timeout},
 		systemPrompts: systemPrompts,
-		userPrompts:   userPrompts,
+		customPrompts: customPrompts,
 	}
 }
 
@@ -94,6 +94,179 @@ func (t *Translator) TranslateContent(
 	return t.standardTranslate(req, apiKey, content)
 }
 
+func buildDiffUserPrompt(sourceLang string, targetLang string, sourcePath string) string {
+	return fmt.Sprintf(`# 差异化翻译任务
+
+## 文件信息
+
+- **源文件（SOURCE）**：%s (%s)
+- **目标文件（TARGET）**：%s (%s)
+- **源语言**：%s
+- **目标语言**：%s
+
+## 任务目标
+
+对比SOURCE和TARGET，识别差异并生成JSON格式的SEARCH/REPLACE操作来同步变更。
+
+## 执行步骤
+
+### 步骤1：内容对比
+
+- 逐段对比SOURCE和TARGET的内容
+- 识别三种差异类型：
+  - **新增**：SOURCE有但TARGET没有的内容
+  - **修改**：SOURCE和TARGET都有但内容不同的部分
+  - **删除**：TARGET有但SOURCE没有的内容
+
+### 步骤2：生成JSON差异对象
+
+为每个差异生成change对象：
+
+**新增内容**：
+- 在TARGET中找到合适的插入位置
+- search匹配插入位置附近的现有内容
+- replace包含现有文本+新增内容的翻译
+
+**修改内容**：
+- search精确匹配TARGET中的现有内容
+- replace包含SOURCE内容的正确翻译
+
+**删除内容**：
+- search匹配TARGET中需要删除的内容
+- replace设为空字符串
+
+### 步骤3：验证输出
+
+检查生成的JSON：
+- 是否符合指定的JSON格式
+- search是否精确匹配TARGET（包括空格、缩进、换行）
+- replace是否是正确的翻译
+- 是否包含所有必要的差异
+
+### 步骤4：返回结果
+
+输出完整的JSON对象，包含：
+- has_changes: 布尔值，表示是否有变化
+- changes: change对象数组
+
+## 注意事项
+
+1. **翻译质量**：确保翻译准确、自然、符合目标语言习惯
+2. **格式保持**：保留所有格式标记、缩进、空行
+3. **代码处理**：代码部分保持不变，只翻译注释和说明
+4. **专有名词**：保留专有名词、API名称、技术术语
+5. **JSON格式**：确保输出是有效的JSON，不要添加markdown围栏或其他说明
+
+现在开始对比SOURCE和TARGET，生成JSON格式的差异对象。
+`, sourcePath, sourceLang, sourcePath, targetLang, sourceLang, targetLang)
+}
+
+// GenerateDiffJSON requests a JSON diff object (has_changes + changes[]).
+// It mirrors the VSCode extension diff-apply protocol.
+func (t *Translator) GenerateDiffJSON(
+	sourceContent string,
+	targetContent string,
+	sourcePath string,
+	sourceLang string,
+	targetLang string,
+	diffSystemPrompt string,
+) (*JSONDiffResult, error) {
+	apiKey, err := t.vendor.GetAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("获取 API Key 失败: %w", err)
+	}
+	if err := t.handleRpmLimit(); err != nil {
+		return nil, err
+	}
+
+	temperature := t.vendor.Temperature
+	req := ChatRequest{
+		Model: t.vendor.Model,
+		Messages: []Message{
+			{
+				Role: "system",
+				Content: func() string {
+					base := strings.Join(t.systemPrompts, "\n")
+					if strings.TrimSpace(diffSystemPrompt) != "" {
+						base += "\n" + diffSystemPrompt
+					}
+					if len(t.customPrompts) > 0 {
+						base += "\n\n# 用户自定义翻译要求\n\n"
+						base += strings.Join(t.customPrompts, "\n\n")
+					}
+					return base
+				}(),
+			},
+			{Role: "system", Content: buildDiffUserPrompt(sourceLang, targetLang, sourcePath)},
+			{Role: "user", Content: fmt.Sprintf("SOURCE BEGIN\n%s\nSOURCE END", sourceContent)},
+			{Role: "user", Content: fmt.Sprintf("TARGET BEGIN\n%s\nTARGET END", targetContent)},
+		},
+		Temperature:    &temperature,
+		ResponseFormat: &ResponseFormat{Type: "json_object"},
+	}
+	if t.vendor.TopP > 0 {
+		req.TopP = &t.vendor.TopP
+	}
+
+	reqJSON, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("编码请求失败: %w", err)
+	}
+
+	httpReq, err := http.NewRequest("POST", t.vendor.APIEndpoint+"/chat/completions", bytes.NewReader(reqJSON))
+	if err != nil {
+		return nil, fmt.Errorf("创建请求失败: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+apiKey)
+
+	resp, err := t.client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("请求失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("读取响应失败: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API 错误 (状态码 %d): %s", resp.StatusCode, string(body))
+	}
+
+	var chatResp ChatResponse
+	if err := json.Unmarshal(body, &chatResp); err != nil {
+		return nil, fmt.Errorf("解析响应失败: %w", err)
+	}
+
+	t.mu.Lock()
+	t.lastRequestTime = time.Now()
+	inputTokens := chatResp.Usage.PromptTokens
+	outputTokens := chatResp.Usage.CompletionTokens
+	t.totalInputTokens += inputTokens
+	t.totalOutputTokens += outputTokens
+	t.mu.Unlock()
+
+	if len(chatResp.Choices) == 0 {
+		return &JSONDiffResult{HasChanges: false, Changes: []JSONDiffChange{}}, nil
+	}
+
+	content := strings.TrimSpace(chatResp.Choices[0].Message.Content)
+	if content == "" {
+		return &JSONDiffResult{HasChanges: false, Changes: []JSONDiffChange{}}, nil
+	}
+
+	var diff JSONDiffResult
+	if err := json.Unmarshal([]byte(content), &diff); err != nil {
+		log.Printf("diff JSON 解析失败: %v", err)
+		return nil, fmt.Errorf("diff JSON 解析失败: %w", err)
+	}
+	if diff.Changes == nil {
+		diff.Changes = []JSONDiffChange{}
+	}
+	return &diff, nil
+}
+
 // buildMessages 构建消息列表
 func (t *Translator) buildMessages(content, sourceLang, targetLang string, isFirstSegment bool) []Message {
 	// 系统提示词
@@ -107,18 +280,14 @@ func (t *Translator) buildMessages(content, sourceLang, targetLang string, isFir
 	}
 
 	mergedSystemPrompt := strings.Join(systemPrompts, "\n")
+	if len(t.customPrompts) > 0 {
+		mergedSystemPrompt += "\n\n# 用户自定义翻译要求\n\n"
+		mergedSystemPrompt += strings.Join(t.customPrompts, "\n\n")
+	}
 
 	messages := []Message{
 		{Role: "system", Content: mergedSystemPrompt},
 		{Role: "user", Content: content},
-	}
-
-	// 添加用户自定义提示词
-	for _, prompt := range t.userPrompts {
-		messages = append(messages, Message{
-			Role:    "user",
-			Content: prompt,
-		})
 	}
 
 	// 添加翻译指令

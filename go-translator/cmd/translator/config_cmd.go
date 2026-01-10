@@ -79,7 +79,7 @@ func (c *ConfigCommand) printUsage() {
 	fmt.Printf("  path     显示配置文件路径\n\n")
 	fmt.Printf("示例:\n")
 	fmt.Printf("  translator config show\n")
-	fmt.Printf("  translator config export -o ~/.translator/config.json\n")
+	fmt.Printf("  translator config export -o project.translation.json\n")
 	fmt.Printf("  translator config init\n")
 	fmt.Printf("  translator config path\n")
 }

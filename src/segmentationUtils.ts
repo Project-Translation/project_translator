@@ -17,7 +17,7 @@ const DEFAULT_SEGMENTATION_MARKERS: Record<string, string[]> = {
     'rust': ['^fn\\s+\\w+', '^struct\\s+\\w+', '^enum\\s+\\w+'], // Rust functions, structs, enums
     'swift': ['^func\\s+\\w+', '^class\\s+\\w+', '^struct\\s+\\w+'], // Swift functions, classes, structs
     'kotlin': ['^fun\\s+\\w+', '^class\\s+\\w+'], // Kotlin functions and classes
-    'plaintext': ['^\\s*\\n'] // Plain text - segment on empty lines
+    'plaintext': ['^\\s*$'] // Plain text - segment on empty lines
 };
 
 // Extension to language mapping
@@ -79,7 +79,7 @@ export function estimateTokenCount(text: string): number {
  * @returns Array of text segments
  */
 export function segmentText(text: string, filePath: string, maxTokens?: number): string[] {
-    const ext = path.extname(filePath).toLowerCase();
+    const ext = path.extname(filePath).toLowerCase().replace(/^\./, '');
     const language = EXTENSION_TO_LANGUAGE_MAP[ext] || 'plaintext';
     
     // Get configuration values

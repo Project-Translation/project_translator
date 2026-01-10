@@ -244,8 +244,8 @@ func TestConfigCommand_Path(t *testing.T) {
 		t.Error("showPath 应该输出路径")
 	}
 
-	if !strings.Contains(output, ".translator") {
-		t.Errorf("输出路径应包含 '.translator'，实际为 '%s'", output)
+	if !strings.Contains(output, config.ProjectConfigFileName) {
+		t.Errorf("输出路径应包含 '%s'，实际为 '%s'", config.ProjectConfigFileName, output)
 	}
 }
 

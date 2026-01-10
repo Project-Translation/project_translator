@@ -173,10 +173,8 @@ func TestGetDefaultConfigPath(t *testing.T) {
 	if path == "" {
 		t.Error("配置文件路径不应为空")
 	}
-
-	// 检查路径是否包含 .translator
-	if filepath.Base(filepath.Dir(path)) != ".translator" {
-		t.Errorf("期望路径包含 .translator 目录，实际为 '%s'", path)
+	if filepath.Base(path) != ProjectConfigFileName {
+		t.Errorf("期望默认配置文件名为 '%s'，实际为 '%s'", ProjectConfigFileName, filepath.Base(path))
 	}
 }
 
@@ -196,7 +194,7 @@ func TestSaveConfig(t *testing.T) {
 		},
 		SpecifiedFiles: []SpecifiedFile{
 			{
-				SourceFile: SourceFileConfig{Path: "test.txt", Lang: "en"},
+				SourceFile:  SourceFileConfig{Path: "test.txt", Lang: "en"},
 				TargetFiles: []TargetFile{{Path: "test_zh.txt", Lang: "zh"}},
 			},
 		},
@@ -307,13 +305,20 @@ func TestDefaultConfig(t *testing.T) {
 	if len(cfg.Vendors) == 0 {
 		t.Error("默认配置应该有供应商")
 	}
-
-	if len(cfg.SystemPrompts) < 2 {
-		t.Error("默认配置应该有系统提示词")
+	if cfg.TranslationIntervalDays != -1 {
+		t.Errorf("默认 translationIntervalDays 应为 -1，实际为 %d", cfg.TranslationIntervalDays)
 	}
-
-	if cfg.Timeout == 0 {
-		t.Error("默认配置应该有超时设置")
+	if len(cfg.CopyOnly.Extensions) == 0 || cfg.CopyOnly.Extensions[0] != ".svg" {
+		t.Errorf("默认 copyOnly.extensions 应包含 '.svg'，实际为 %+v", cfg.CopyOnly.Extensions)
+	}
+	if len(cfg.Ignore.Paths) == 0 {
+		t.Error("默认 ignore.paths 不应为空")
+	}
+	if cfg.DiffApply.AutoBackup != true {
+		t.Errorf("默认 diffApply.autoBackup 应为 true，实际为 %v", cfg.DiffApply.AutoBackup)
+	}
+	if len(cfg.SkipFrontMatter.Markers) == 0 {
+		t.Error("默认 skipFrontMatter.markers 不应为空")
 	}
 }
 

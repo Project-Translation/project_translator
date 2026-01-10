@@ -5,21 +5,36 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-// VendorConfig AI 供应商配置
+// VendorConfig AI 供应商配置（归一化后的有效配置）
 type VendorConfig struct {
-	Name               string  `json:"name"`
-	APIEndpoint        string  `json:"apiEndpoint"`
-	APIKey             string  `json:"apiKey,omitempty"`
-	APIKeyEnvVarName   string  `json:"apiKeyEnvVarName,omitempty"`
-	Model              string  `json:"model"`
-	RPM                int     `json:"rpm,omitempty"`
-	MaxTokensPerSegment int    `json:"maxTokensPerSegment,omitempty"`
-	Timeout            int     `json:"timeout,omitempty"`
-	Temperature        float64 `json:"temperature,omitempty"`
-	TopP              float64 `json:"top_p,omitempty"`
-	StreamMode        bool    `json:"streamMode,omitempty"`
+	Name                string  `json:"name"`
+	APIEndpoint         string  `json:"apiEndpoint"`
+	APIKey              string  `json:"apiKey,omitempty"`
+	APIKeyEnvVarName    string  `json:"apiKeyEnvVarName,omitempty"`
+	Model               string  `json:"model"`
+	RPM                 int     `json:"rpm,omitempty"`
+	MaxTokensPerSegment int     `json:"maxTokensPerSegment,omitempty"`
+	Timeout             int     `json:"timeout,omitempty"`
+	Temperature         float64 `json:"temperature,omitempty"`
+	TopP                float64 `json:"top_p,omitempty"`
+	StreamMode          bool    `json:"streamMode,omitempty"`
+}
+
+type rawVendorConfig struct {
+	Name                string   `json:"name"`
+	APIEndpoint         *string  `json:"apiEndpoint,omitempty"`
+	APIKey              string   `json:"apiKey,omitempty"`
+	APIKeyEnvVarName    *string  `json:"apiKeyEnvVarName,omitempty"`
+	Model               *string  `json:"model,omitempty"`
+	RPM                 *int     `json:"rpm,omitempty"`
+	MaxTokensPerSegment *int     `json:"maxTokensPerSegment,omitempty"`
+	Timeout             *int     `json:"timeout,omitempty"`
+	Temperature         *float64 `json:"temperature,omitempty"`
+	TopP                *float64 `json:"top_p,omitempty"`
+	StreamMode          *bool    `json:"streamMode,omitempty"`
 }
 
 // TargetFile 目标文件配置
@@ -36,8 +51,8 @@ type SourceFileConfig struct {
 
 // SpecifiedFile 指定文件配置
 type SpecifiedFile struct {
-	SourceFile SourceFileConfig `json:"sourceFile"`
-	TargetFiles []TargetFile    `json:"targetFiles"`
+	SourceFile  SourceFileConfig `json:"sourceFile"`
+	TargetFiles []TargetFile     `json:"targetFiles"`
 }
 
 // DestFolder 目标文件夹配置
@@ -54,71 +69,472 @@ type SourceFolderConfig struct {
 
 // SpecifiedFolder 指定文件夹配置
 type SpecifiedFolder struct {
-	SourceFolder SourceFolderConfig `json:"sourceFolder"`
-	TargetFolders []DestFolder      `json:"targetFolders"`
+	SourceFolder  SourceFolderConfig `json:"sourceFolder"`
+	TargetFolders []DestFolder       `json:"targetFolders"`
 }
 
-// Config 翻译器配置
+// CopyOnlyConfig 完全复制（不翻译）的文件/目录配置
+type CopyOnlyConfig struct {
+	Paths      []string `json:"paths,omitempty"`
+	Extensions []string `json:"extensions,omitempty"`
+}
+
+// IgnoreConfig 忽略（不复制、不翻译）的文件/目录配置
+type IgnoreConfig struct {
+	Paths      []string `json:"paths,omitempty"`
+	Extensions []string `json:"extensions,omitempty"`
+}
+
+// FrontMatterMarker front matter 标记配置
+type FrontMatterMarker struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+// SkipFrontMatterConfig front matter 跳过配置
+type SkipFrontMatterConfig struct {
+	Enabled bool                `json:"enabled"`
+	Markers []FrontMatterMarker `json:"markers,omitempty"`
+}
+
+// DiffApplyConfig 差异化翻译配置
+type DiffApplyConfig struct {
+	Enabled              bool   `json:"enabled"`
+	ValidationLevel      string `json:"validationLevel,omitempty"`      // normal | strict
+	AutoBackup           bool   `json:"autoBackup,omitempty"`           // default true
+	MaxOperationsPerFile int    `json:"maxOperationsPerFile,omitempty"` // retained for compatibility
+}
+
+type rawDiffApplyConfig struct {
+	Enabled              *bool   `json:"enabled,omitempty"`
+	ValidationLevel      *string `json:"validationLevel,omitempty"`
+	AutoBackup           *bool   `json:"autoBackup,omitempty"`
+	MaxOperationsPerFile *int    `json:"maxOperationsPerFile,omitempty"`
+}
+
+// LogFileConfig 调试日志文件配置
+type LogFileConfig struct {
+	Enabled   bool   `json:"enabled"`
+	Path      string `json:"path,omitempty"`
+	MaxSizeKB int    `json:"maxSizeKB,omitempty"`
+	MaxFiles  int    `json:"maxFiles,omitempty"`
+}
+
+type rawLogFileConfig struct {
+	Enabled   *bool   `json:"enabled,omitempty"`
+	Path      *string `json:"path,omitempty"`
+	MaxSizeKB *int    `json:"maxSizeKB,omitempty"`
+	MaxFiles  *int    `json:"maxFiles,omitempty"`
+}
+
+// Config 翻译器配置（对齐 VSCode 插件的 project.translation.json）
 type Config struct {
-	Vendors            []VendorConfig   `json:"vendors"`
-	CurrentVendorName  string           `json:"currentVendor,omitempty"`
-	SystemPrompts      []string         `json:"systemPrompts,omitempty"`
-	UserPrompts        []string         `json:"userPrompts,omitempty"`
-	Debug              bool             `json:"debug,omitempty"`
-	Timeout            int              `json:"timeout,omitempty"`
-	SpecifiedFiles     []SpecifiedFile  `json:"specifiedFiles,omitempty"`
-	SpecifiedFolders   []SpecifiedFolder `json:"specifiedFolders,omitempty"`
+	Vendors                 []VendorConfig        `json:"vendors"`
+	CurrentVendorName       string                `json:"currentVendor,omitempty"`
+	SpecifiedFiles          []SpecifiedFile       `json:"specifiedFiles,omitempty"`
+	SpecifiedFolders        []SpecifiedFolder     `json:"specifiedFolders,omitempty"`
+	TranslationIntervalDays int                   `json:"translationIntervalDays,omitempty"`
+	CustomPrompts           []string              `json:"customPrompts,omitempty"`
+	SegmentationMarkers     map[string][]string   `json:"segmentationMarkers,omitempty"`
+	CopyOnly                CopyOnlyConfig        `json:"copyOnly,omitempty"`
+	Ignore                  IgnoreConfig          `json:"ignore,omitempty"`
+	DiffApply               DiffApplyConfig       `json:"diffApply,omitempty"`
+	SkipFrontMatter         SkipFrontMatterConfig `json:"skipFrontMatter,omitempty"`
+	Debug                   bool                  `json:"debug,omitempty"`
+	LogFile                 LogFileConfig         `json:"logFile,omitempty"`
+
+	// Legacy fields (backward compatibility with early Go CLI configs)
+	SystemPrompts []string `json:"systemPrompts,omitempty"`
+	UserPrompts   []string `json:"userPrompts,omitempty"`
+
+	// Runtime metadata (not serialized)
+	ConfigPath    string `json:"-"`
+	WorkspaceRoot string `json:"-"`
+}
+
+type rawConfig struct {
+	Vendors                 []rawVendorConfig      `json:"vendors"`
+	CurrentVendorName       string                 `json:"currentVendor,omitempty"`
+	SpecifiedFiles          []SpecifiedFile        `json:"specifiedFiles,omitempty"`
+	SpecifiedFolders        []SpecifiedFolder      `json:"specifiedFolders,omitempty"`
+	TranslationIntervalDays *int                   `json:"translationIntervalDays,omitempty"`
+	CustomPrompts           []string               `json:"customPrompts,omitempty"`
+	SegmentationMarkers     map[string][]string    `json:"segmentationMarkers,omitempty"`
+	CopyOnly                *CopyOnlyConfig        `json:"copyOnly,omitempty"`
+	Ignore                  *IgnoreConfig          `json:"ignore,omitempty"`
+	DiffApply               *rawDiffApplyConfig    `json:"diffApply,omitempty"`
+	SkipFrontMatter         *SkipFrontMatterConfig `json:"skipFrontMatter,omitempty"`
+	SkipFrontMatterMarkers  *SkipFrontMatterConfig `json:"skipFrontMatterMarkers,omitempty"`
+	Debug                   bool                   `json:"debug,omitempty"`
+	LogFile                 *rawLogFileConfig      `json:"logFile,omitempty"`
+
+	// Legacy fields
+	SystemPrompts []string `json:"systemPrompts,omitempty"`
+	UserPrompts   []string `json:"userPrompts,omitempty"`
+}
+
+func normalizeConfigPath(p string) string {
+	if p == "" {
+		return p
+	}
+	return strings.ReplaceAll(p, "\\", "/")
+}
+
+func defaultVendorConfig() VendorConfig {
+	return VendorConfig{
+		Name:                "deepseek",
+		APIEndpoint:         "https://api.deepseek.com/v1",
+		APIKeyEnvVarName:    "DEEPSEEK_API_KEY",
+		Model:               "deepseek-chat",
+		RPM:                 20,
+		MaxTokensPerSegment: 3000,
+		Timeout:             30,
+		Temperature:         0.7,
+		TopP:                0.95,
+		StreamMode:          true,
+	}
+}
+
+func defaultCopyOnlyConfig() CopyOnlyConfig {
+	return CopyOnlyConfig{
+		Paths:      []string{},
+		Extensions: []string{".svg"},
+	}
+}
+
+func defaultIgnoreConfig() IgnoreConfig {
+	return IgnoreConfig{
+		Paths: []string{
+			"**/node_modules/**",
+			"**/.git/**",
+			"**/.github/**",
+			"**/.vscode/**",
+			"**/.nuxt/**",
+			"**/.next/**",
+		},
+		Extensions: []string{},
+	}
+}
+
+func defaultDiffApplyConfig() DiffApplyConfig {
+	return DiffApplyConfig{
+		Enabled:              false,
+		ValidationLevel:      "normal",
+		AutoBackup:           true,
+		MaxOperationsPerFile: 100,
+	}
+}
+
+func defaultSkipFrontMatterConfig() SkipFrontMatterConfig {
+	return SkipFrontMatterConfig{
+		Enabled: false,
+		Markers: []FrontMatterMarker{
+			{Key: "draft", Value: "true"},
+		},
+	}
+}
+
+func defaultLogFileConfig() LogFileConfig {
+	return LogFileConfig{
+		Enabled:   false,
+		MaxSizeKB: 10240,
+		MaxFiles:  5,
+	}
+}
+
+func normalizeEnvVarNameFromVendorName(name string) string {
+	baseCandidate := strings.TrimSpace(name)
+	if baseCandidate == "" {
+		baseCandidate = "VENDOR"
+	}
+	var b strings.Builder
+	for _, r := range baseCandidate {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+		} else {
+			b.WriteRune('_')
+		}
+	}
+	return strings.ToUpper(b.String()) + "_API_KEY"
+}
+
+func normalizeVendors(vendors []rawVendorConfig) []VendorConfig {
+	def := defaultVendorConfig()
+	if len(vendors) == 0 {
+		return []VendorConfig{def}
+	}
+
+	out := make([]VendorConfig, 0, len(vendors))
+	for _, rv := range vendors {
+		v := def
+		if strings.TrimSpace(rv.Name) != "" {
+			v.Name = strings.TrimSpace(rv.Name)
+		}
+		if rv.APIEndpoint != nil && strings.TrimSpace(*rv.APIEndpoint) != "" {
+			v.APIEndpoint = strings.TrimSpace(*rv.APIEndpoint)
+		}
+		v.APIKey = rv.APIKey
+		if rv.Model != nil && strings.TrimSpace(*rv.Model) != "" {
+			v.Model = strings.TrimSpace(*rv.Model)
+		}
+		if rv.RPM != nil {
+			v.RPM = *rv.RPM
+		}
+		if rv.MaxTokensPerSegment != nil {
+			v.MaxTokensPerSegment = *rv.MaxTokensPerSegment
+		}
+		if rv.Timeout != nil {
+			v.Timeout = *rv.Timeout
+		}
+		if rv.Temperature != nil {
+			v.Temperature = *rv.Temperature
+		}
+		if rv.TopP != nil {
+			v.TopP = *rv.TopP
+		}
+		if rv.StreamMode != nil {
+			v.StreamMode = *rv.StreamMode
+		}
+
+		// Ensure apiKeyEnvVarName is present (even if user only provided name)
+		if rv.APIKeyEnvVarName != nil && strings.TrimSpace(*rv.APIKeyEnvVarName) != "" {
+			v.APIKeyEnvVarName = strings.TrimSpace(*rv.APIKeyEnvVarName)
+		} else {
+			v.APIKeyEnvVarName = normalizeEnvVarNameFromVendorName(v.Name)
+		}
+
+		out = append(out, v)
+	}
+	return out
+}
+
+func normalizeSpecifiedFiles(files []SpecifiedFile) []SpecifiedFile {
+	if files == nil {
+		return []SpecifiedFile{}
+	}
+	out := make([]SpecifiedFile, 0, len(files))
+	for _, g := range files {
+		g.SourceFile.Path = normalizeConfigPath(g.SourceFile.Path)
+		for i := range g.TargetFiles {
+			g.TargetFiles[i].Path = normalizeConfigPath(g.TargetFiles[i].Path)
+		}
+		out = append(out, g)
+	}
+	return out
+}
+
+func normalizeSpecifiedFolders(folders []SpecifiedFolder) []SpecifiedFolder {
+	if folders == nil {
+		return []SpecifiedFolder{}
+	}
+	out := make([]SpecifiedFolder, 0, len(folders))
+	for _, g := range folders {
+		g.SourceFolder.Path = normalizeConfigPath(g.SourceFolder.Path)
+		for i := range g.TargetFolders {
+			g.TargetFolders[i].Path = normalizeConfigPath(g.TargetFolders[i].Path)
+		}
+		out = append(out, g)
+	}
+	return out
+}
+
+func normalizeCopyOnly(cfg *CopyOnlyConfig) CopyOnlyConfig {
+	if cfg == nil {
+		return defaultCopyOnlyConfig()
+	}
+	out := CopyOnlyConfig{
+		Paths:      cfg.Paths,
+		Extensions: cfg.Extensions,
+	}
+	if out.Paths == nil {
+		out.Paths = []string{}
+	}
+	if out.Extensions == nil {
+		out.Extensions = []string{}
+	}
+	return out
+}
+
+func normalizeIgnore(cfg *IgnoreConfig) IgnoreConfig {
+	if cfg == nil {
+		return defaultIgnoreConfig()
+	}
+	out := IgnoreConfig{
+		Paths:      cfg.Paths,
+		Extensions: cfg.Extensions,
+	}
+	if out.Paths == nil {
+		out.Paths = []string{}
+	}
+	if out.Extensions == nil {
+		out.Extensions = []string{}
+	}
+	return out
+}
+
+func normalizeDiffApply(cfg *rawDiffApplyConfig) DiffApplyConfig {
+	def := defaultDiffApplyConfig()
+	if cfg == nil {
+		return def
+	}
+	out := def
+	if cfg.Enabled != nil {
+		out.Enabled = *cfg.Enabled
+	}
+	if cfg.ValidationLevel != nil && strings.TrimSpace(*cfg.ValidationLevel) != "" {
+		out.ValidationLevel = strings.TrimSpace(*cfg.ValidationLevel)
+	}
+	if cfg.AutoBackup != nil {
+		out.AutoBackup = *cfg.AutoBackup
+	}
+	if cfg.MaxOperationsPerFile != nil {
+		out.MaxOperationsPerFile = *cfg.MaxOperationsPerFile
+	}
+	return out
+}
+
+func normalizeSkipFrontMatter(cfg *SkipFrontMatterConfig, alias *SkipFrontMatterConfig) SkipFrontMatterConfig {
+	def := defaultSkipFrontMatterConfig()
+	if cfg == nil && alias == nil {
+		return def
+	}
+	selected := cfg
+	if selected == nil {
+		selected = alias
+	}
+	if selected == nil {
+		return def
+	}
+	out := *selected
+	if out.Markers == nil {
+		out.Markers = []FrontMatterMarker{}
+	}
+	return out
+}
+
+func normalizeLogFile(cfg *rawLogFileConfig) LogFileConfig {
+	def := defaultLogFileConfig()
+	if cfg == nil {
+		return def
+	}
+	out := def
+	if cfg.Enabled != nil {
+		out.Enabled = *cfg.Enabled
+	}
+	if cfg.Path != nil {
+		out.Path = *cfg.Path
+	}
+	if cfg.MaxSizeKB != nil {
+		out.MaxSizeKB = *cfg.MaxSizeKB
+	}
+	if cfg.MaxFiles != nil {
+		out.MaxFiles = *cfg.MaxFiles
+	}
+	return out
+}
+
+func normalizeRaw(raw rawConfig, configPath string, workspaceRoot string) *Config {
+	cfg := &Config{
+		Vendors:                 normalizeVendors(raw.Vendors),
+		CurrentVendorName:       raw.CurrentVendorName,
+		SpecifiedFiles:          normalizeSpecifiedFiles(raw.SpecifiedFiles),
+		SpecifiedFolders:        normalizeSpecifiedFolders(raw.SpecifiedFolders),
+		CustomPrompts:           raw.CustomPrompts,
+		SegmentationMarkers:     raw.SegmentationMarkers,
+		CopyOnly:                normalizeCopyOnly(raw.CopyOnly),
+		Ignore:                  normalizeIgnore(raw.Ignore),
+		DiffApply:               normalizeDiffApply(raw.DiffApply),
+		SkipFrontMatter:         normalizeSkipFrontMatter(raw.SkipFrontMatter, raw.SkipFrontMatterMarkers),
+		Debug:                   raw.Debug,
+		LogFile:                 normalizeLogFile(raw.LogFile),
+		SystemPrompts:           raw.SystemPrompts,
+		UserPrompts:             raw.UserPrompts,
+		ConfigPath:              configPath,
+		WorkspaceRoot:           workspaceRoot,
+		TranslationIntervalDays: -1,
+	}
+
+	if cfg.CurrentVendorName == "" {
+		cfg.CurrentVendorName = defaultVendorConfig().Name
+	}
+	if raw.TranslationIntervalDays != nil {
+		cfg.TranslationIntervalDays = *raw.TranslationIntervalDays
+	}
+	if cfg.CustomPrompts == nil {
+		cfg.CustomPrompts = []string{}
+	}
+	if cfg.SegmentationMarkers == nil {
+		cfg.SegmentationMarkers = map[string][]string{}
+	}
+
+	return cfg
 }
 
 // LoadConfig 从配置文件加载配置
+// - 当 configPath 为空时，返回默认配置（不读取文件）
+// - 当 configPath 指定但文件不存在/不可读时，返回默认配置
+// - 当 JSON 无法解析时，返回错误
 func LoadConfig(configPath string) (*Config, error) {
-	cfg := &Config{}
-
-	// 如果配置文件存在，从文件加载
-	if configPath != "" {
-		data, err := os.ReadFile(configPath)
+	workspaceRoot := ""
+	absPath := ""
+	if strings.TrimSpace(configPath) != "" {
+		p := filepath.Clean(configPath)
+		ap, err := filepath.Abs(p)
+		if err != nil {
+			absPath = p
+		} else {
+			absPath = ap
+		}
+		workspaceRoot = filepath.Dir(absPath)
+	} else {
+		wd, err := os.Getwd()
 		if err == nil {
-			if err := json.Unmarshal(data, cfg); err != nil {
-				return nil, fmt.Errorf("解析配置文件失败: %w", err)
-			}
-			return cfg, nil
+			workspaceRoot = wd
 		}
 	}
 
-	// 返回默认配置
-	return DefaultConfig(), nil
+	if absPath != "" {
+		data, err := os.ReadFile(absPath)
+		if err == nil {
+			var raw rawConfig
+			if err := json.Unmarshal(data, &raw); err != nil {
+				return nil, fmt.Errorf("解析配置文件失败: %w", err)
+			}
+			return normalizeRaw(raw, absPath, workspaceRoot), nil
+		}
+	}
+
+	cfg := DefaultConfig()
+	cfg.ConfigPath = absPath
+	cfg.WorkspaceRoot = workspaceRoot
+	return cfg, nil
 }
 
-// DefaultConfig 返回默认配置
+// DefaultConfig 返回默认配置（对齐插件默认值）
 func DefaultConfig() *Config {
+	defVendor := defaultVendorConfig()
 	return &Config{
-		Vendors: []VendorConfig{
-			{
-				Name:               "deepseek",
-				APIEndpoint:        "https://api.deepseek.com/v1",
-				APIKeyEnvVarName:   "DEEPSEEK_API_KEY",
-				Model:              "deepseek-chat",
-				RPM:                20,
-				MaxTokensPerSegment: 3000,
-				Timeout:            30,
-				Temperature:        0.7,
-				TopP:               0.95,
-				StreamMode:         true,
-			},
-		},
-		CurrentVendorName: "deepseek",
-		SystemPrompts:     []string{defaultSystemPromptPart1, defaultSystemPromptPart2},
-		UserPrompts:       []string{},
-		Debug:            false,
-		Timeout:          30,
+		Vendors:                 []VendorConfig{defVendor},
+		CurrentVendorName:       defVendor.Name,
+		SpecifiedFiles:          []SpecifiedFile{},
+		SpecifiedFolders:        []SpecifiedFolder{},
+		TranslationIntervalDays: -1,
+		CustomPrompts:           []string{},
+		SegmentationMarkers:     map[string][]string{},
+		CopyOnly:                defaultCopyOnlyConfig(),
+		Ignore:                  defaultIgnoreConfig(),
+		DiffApply:               defaultDiffApplyConfig(),
+		SkipFrontMatter:         defaultSkipFrontMatterConfig(),
+		Debug:                   false,
+		LogFile:                 defaultLogFileConfig(),
 	}
 }
 
 // GetCurrentVendor 获取当前供应商配置
 func (c *Config) GetCurrentVendor() (*VendorConfig, error) {
 	vendorName := c.CurrentVendorName
-	if vendorName == "" {
-		vendorName = "deepseek"
+	if strings.TrimSpace(vendorName) == "" {
+		vendorName = defaultVendorConfig().Name
 	}
 
 	for _, vendor := range c.Vendors {
@@ -138,12 +554,12 @@ func (c *Config) GetCurrentVendor() (*VendorConfig, error) {
 // GetAPIKey 获取 API Key
 func (v *VendorConfig) GetAPIKey() (string, error) {
 	// 优先使用直接配置的 API Key
-	if v.APIKey != "" {
+	if strings.TrimSpace(v.APIKey) != "" {
 		return v.APIKey, nil
 	}
 
 	// 从环境变量获取
-	if v.APIKeyEnvVarName != "" {
+	if strings.TrimSpace(v.APIKeyEnvVarName) != "" {
 		apiKey := os.Getenv(v.APIKeyEnvVarName)
 		if apiKey != "" {
 			return apiKey, nil
@@ -154,79 +570,55 @@ func (v *VendorConfig) GetAPIKey() (string, error) {
 	return "", fmt.Errorf("API Key 未配置")
 }
 
-// GetDefaultConfigPath 获取默认配置文件路径
-func GetDefaultConfigPath() string {
+const ProjectConfigFileName = "project.translation.json"
+
+// FindProjectConfigPath 查找就近的 project.translation.json（向上递归父目录）
+func FindProjectConfigPath(startDir string) (string, bool) {
+	dir := strings.TrimSpace(startDir)
+	if dir == "" {
+		if wd, err := os.Getwd(); err == nil {
+			dir = wd
+		}
+	}
+	if dir == "" {
+		return "", false
+	}
+
+	if abs, err := filepath.Abs(dir); err == nil {
+		dir = abs
+	}
+
+	for {
+		candidate := filepath.Join(dir, ProjectConfigFileName)
+		if st, err := os.Stat(candidate); err == nil && st.Mode().IsRegular() {
+			return candidate, true
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return "", false
+}
+
+// GetLegacyConfigPath 获取旧版 Go CLI 默认配置路径（~/.translator/config.json）
+func GetLegacyConfigPath() string {
 	homeDir, _ := os.UserHomeDir()
 	return filepath.Join(homeDir, ".translator", "config.json")
 }
 
-const (
-	defaultSystemPromptPart1 = `你是一个专业翻译 AI，严格遵守以下准则：
-
-1. **格式绝对优先**：保持原始内容的完整格式(JSON/XML/Markdown 等)，所有格式标记(包括三个连续反引号代码块符号)必须原样保留，数量、位置和形式不得更改
-2. **精准符号控制**：特别关注三重反引号的使用：
-   - 禁止添加或删除任何反引号符号
-   - 代码块内的文本仅当明确语言变化时才翻译
-   - Markdown 中的代码块标识符(如三个反引号python)绝不翻译
-
-
-## 严格禁令
-
-1. 禁止解释判断逻辑
-2. 禁止添加任何前缀/后缀
-3. 禁止将固定 UUID 包裹在任何格式中
-4. 禁止改动原始空白字符(制表符/缩进/空行)
-5. 严格匹配反引号数量：
-   - 如果输入含三个反引号 → 输出必须有相同数量的三个反引号
-   - 如果输入无三个反引号 → 输出禁止添加三个反引号
-
-## 执行样例
-
-输入示例(XML)：
-
-<article>
-  <title>Hello World</title>
-  <content>This needs translation</content>
-</article>
-
-输出(翻译后)：
-
-<article>
-  <title>你好世界</title>
-  <content>这需要翻译</content>
-</article>
-`
-
-	defaultSystemPromptPart2 = `**需要判断是否需要翻译**：
-   - 需要翻译 → 保留格式进行翻译
-   - 不需要翻译 → 返回固定 UUID：727d2eb8-8683-42bd-a1d0-f604fcd82163
-
-## 翻译判断标准(按优先级)
-
-| 判断依据                       | 处理方式             |
-| ------------------------------ | -------------------- |
-| **纯代码/数据**(无自然语言)    | 返回 UUID            |
-| **Markdown 手稿**(draft: true) | 返回 UUID            |
-| **混合语言内容**               | 翻译全部自然语言文本 |
-
-## 响应协议
-
-**不需要翻译**：
-
-- 严格返回纯文本：727d2eb8-8683-42bd-a1d0-f604fcd82163
-- 无任何额外字符/格式
-
-输入示例(Markdown)：
-
----
-draft: true
----
-
-This is a draft.
-
-输出: 727d2eb8-8683-42bd-a1d0-f604fcd82163
-`
-)
+// GetDefaultConfigPath 获取默认配置文件路径（优先使用项目级 project.translation.json）
+func GetDefaultConfigPath() string {
+	if wd, err := os.Getwd(); err == nil && wd != "" {
+		if p, ok := FindProjectConfigPath(wd); ok {
+			return p
+		}
+		return filepath.Join(wd, ProjectConfigFileName)
+	}
+	return ProjectConfigFileName
+}
 
 // SaveConfig 保存配置到文件
 func SaveConfig(cfg *Config, configPath string) error {
@@ -248,3 +640,50 @@ func SaveConfig(cfg *Config, configPath string) error {
 	return nil
 }
 
+// ResolvePromptsDir tries to find the shared prompts directory.
+// Preference:
+// 1) workspaceRoot/prompts
+// 2) current working directory/prompts
+func ResolvePromptsDir(workspaceRoot string) (string, bool) {
+	const probeFile = "system_prompt_part1.md"
+	candidates := []string{}
+	if strings.TrimSpace(workspaceRoot) != "" {
+		candidates = append(candidates, filepath.Join(workspaceRoot, "prompts"))
+	}
+	if wd, err := os.Getwd(); err == nil && wd != "" {
+		candidates = append(candidates, filepath.Join(wd, "prompts"))
+	}
+
+	for _, dir := range candidates {
+		if _, err := os.Stat(filepath.Join(dir, probeFile)); err == nil {
+			return dir, true
+		}
+	}
+	return "", false
+}
+
+const (
+	SystemPromptPart1File = "system_prompt_part1.md"
+	SystemPromptPart2File = "system_prompt_part2.md"
+	DiffSystemPromptFile  = "diff_system_prompt.md"
+)
+
+func LoadSystemPromptParts(promptsDir string) (part1 string, part2 string, err error) {
+	p1Bytes, err := os.ReadFile(filepath.Join(promptsDir, SystemPromptPart1File))
+	if err != nil {
+		return "", "", err
+	}
+	p2Bytes, err := os.ReadFile(filepath.Join(promptsDir, SystemPromptPart2File))
+	if err != nil {
+		return "", "", err
+	}
+	return string(p1Bytes), string(p2Bytes), nil
+}
+
+func LoadDiffSystemPrompt(promptsDir string) (string, error) {
+	b, err := os.ReadFile(filepath.Join(promptsDir, DiffSystemPromptFile))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
