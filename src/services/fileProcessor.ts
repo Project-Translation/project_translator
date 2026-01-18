@@ -576,8 +576,10 @@ export class FileProcessor {
                         this.processedFilesCount++;
                         return; // Skip processing this file
                     } else {
+                        // Rewrite once with sanitized final content to avoid any LLM-added wrappers
+                        await fsp.writeFile(targetPath, translatedContent);
                         logMessage("💾 Stream translation result written");
-                        wasTranslated = streamedContent !== content;
+                        wasTranslated = translatedContent !== content;
                     }
                 } else {
                     logMessage("🔄 Using standard mode for translation...");
@@ -731,8 +733,8 @@ export class FileProcessor {
                     // Determine the final segment content based on return code
                     if (segmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                         translatedSegment = segment;
-                    } else {
-                        // Use the accumulated content from progressCallback
+                    } else if (!translatedSegment) {
+                        // Fallback to accumulated content from progressCallback
                         translatedSegment = currentSegmentContent;
                     }
 
@@ -772,6 +774,8 @@ export class FileProcessor {
             const finalContent = combineSegments(translatedSegments);
             // 确保所有挂起的写入完成
             await lastWritePromise;
+            // Overwrite once with the final combined content (includes any sanitization)
+            await fsp.writeFile(targetPath, finalContent);
             return [AI_RETURN_CODE.OK, finalContent];
         } catch (error) {
             if (error instanceof vscode.CancellationError) {

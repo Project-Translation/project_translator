@@ -81,6 +81,7 @@ export function estimateTokenCount(text: string): number {
 export function segmentText(text: string, filePath: string, maxTokens?: number): string[] {
     const ext = path.extname(filePath).toLowerCase().replace(/^\./, '');
     const language = EXTENSION_TO_LANGUAGE_MAP[ext] || 'plaintext';
+    const isMarkdown = language === 'markdown';
     
     // Get configuration values
     const config = vscode.workspace.getConfiguration('projectTranslator');
@@ -106,6 +107,10 @@ export function segmentText(text: string, filePath: string, maxTokens?: number):
     const segments: string[] = [];
     let currentSegment: string[] = [];
     let currentTokens = 0;
+
+    // Markdown fenced-code tracking (``` ... ```)
+    let inMarkdownCodeFence = false;
+    const isMarkdownFenceLine = (line: string) => isMarkdown && /^\s*```/.test(line);
     
     // Track potential segment break points (markers)
     let lastMarkerIndex = -1;
@@ -114,9 +119,11 @@ export function segmentText(text: string, filePath: string, maxTokens?: number):
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const lineTokens = estimateTokenCount(line);
+
+        const isFenceLine = isMarkdownFenceLine(line);
         
         // Check if this line is a segment marker
-        const isMarker = patterns.some(pattern => pattern.test(line));
+        const isMarker = (!inMarkdownCodeFence && !isFenceLine) && patterns.some(pattern => pattern.test(line));
         
         // If this is a marker, remember it as a potential break point
         if (isMarker) {
@@ -144,10 +151,41 @@ export function segmentText(text: string, filePath: string, maxTokens?: number):
                 currentSegment = [...remainingContent, line];
                 currentTokens = currentTokens - lastMarkerTokens + lineTokens;
             } else {
-                // No good break point, just split here
-                segments.push(currentSegment.join('\n'));
-                currentSegment = [line];
-                currentTokens = lineTokens;
+                // No good break point, just split here.
+                //
+                // Special handling for Markdown code fences: if the next segment would start with a ``` fence line,
+                // carry over at least one line of context so we don't "segment at ```" when possible.
+                if (isFenceLine && currentSegment.length > 0) {
+                    const carried: string[] = [];
+                    let carriedTokens = 0;
+
+                    const popToCarried = () => {
+                        const moved = currentSegment.pop();
+                        if (moved === undefined) {
+                            return;
+                        }
+                        carried.unshift(moved);
+                        const t = estimateTokenCount(moved);
+                        carriedTokens += t;
+                        currentTokens -= t;
+                    };
+
+                    // Move one line, and if we still start with ``` move one more line as context.
+                    popToCarried();
+                    if (carried.length > 0 && isMarkdownFenceLine(carried[0]) && currentSegment.length > 0) {
+                        popToCarried();
+                    }
+
+                    if (currentSegment.length > 0) {
+                        segments.push(currentSegment.join('\n'));
+                    }
+                    currentSegment = [...carried, line];
+                    currentTokens = carriedTokens + lineTokens;
+                } else {
+                    segments.push(currentSegment.join('\n'));
+                    currentSegment = [line];
+                    currentTokens = lineTokens;
+                }
             }
             
             // Reset marker tracking
@@ -157,6 +195,11 @@ export function segmentText(text: string, filePath: string, maxTokens?: number):
             // Otherwise add line to current segment
             currentSegment.push(line);
             currentTokens += lineTokens;
+        }
+
+        // Update fence state after processing the line.
+        if (isFenceLine) {
+            inMarkdownCodeFence = !inMarkdownCodeFence;
         }
     }
     

@@ -5,6 +5,7 @@ import { SupportedLanguage } from "../translationDatabase";
 import { logMessage } from "../extension";
 import * as path from "path";
 import { AI_RETURN_CODE, DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2, DIFF_SYSTEM_PROMPT, getDiffSystemPrompt } from "../config/prompt";
+import { sanitizeUnexpectedCodeFences } from "./translationOutputSanitizer";
 // no fs usage here
 
 // Store the last request timestamp for each vendor
@@ -373,11 +374,16 @@ ${change.replace}
     const translatedContent =
       response.choices[0]?.message?.content || originalContent;
 
+    const sanitizedContent = sanitizeUnexpectedCodeFences(originalContent, translatedContent);
+    if (debug && sanitizedContent !== translatedContent) {
+      logMessage(`🐛 [DEBUG] Stripped unexpected code fences from translation response`);
+    }
+
 
 
     // Check if the response contains the NO_NEED_TRANSLATE return code
-    if (translatedContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE)) {
-      const parsed = this.parseNoNeedTranslateResponse(translatedContent);
+    if (sanitizedContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE)) {
+      const parsed = this.parseNoNeedTranslateResponse(sanitizedContent);
       if (parsed.hasReason) {
         logMessage(
           `🔄 AI indicated no translation needed for this file. Reason: ${parsed.reason}`
@@ -390,7 +396,7 @@ ${change.replace}
       return [AI_RETURN_CODE.NO_NEED_TRANSLATE, originalContent]; // Return the original content unchanged
     }
 
-    return [AI_RETURN_CODE.OK, translatedContent];
+    return [AI_RETURN_CODE.OK, sanitizedContent];
   }
 
   private async streamTranslateContent(
@@ -536,10 +542,15 @@ ${change.replace}
     );
     logMessage(`⏱️ OpenAI streaming API request total duration: ${duration}ms`);
 
+    const sanitizedFullContent = sanitizeUnexpectedCodeFences(originalContent, fullContent);
+    if (debug && sanitizedFullContent !== fullContent) {
+      logMessage(`🐛 [DEBUG] Stripped unexpected code fences from streaming translation response`);
+    }
+
     // Debug: Log complete streaming response
     if (debug) {
       logMessage(`🐛 [DEBUG] Complete Streaming Response Content:`);
-      logMessage(`🐛 [DEBUG] ${fullContent}`);
+      logMessage(`🐛 [DEBUG] ${sanitizedFullContent}`);
     }
 
     // Add estimated tokens to project total
@@ -551,10 +562,10 @@ ${change.replace}
     // Check if the response contains the full or partial UUID code
     if (
       foundNoNeedTranslate ||
-      fullContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
-      fullContent.includes(uuidFirstPart)
+      sanitizedFullContent.includes(AI_RETURN_CODE.NO_NEED_TRANSLATE) ||
+      sanitizedFullContent.includes(uuidFirstPart)
     ) {
-      const parsed = this.parseNoNeedTranslateResponse(fullContent);
+      const parsed = this.parseNoNeedTranslateResponse(sanitizedFullContent);
       if (parsed.hasReason) {
         logMessage(
           `🔄 AI indicated no translation needed for this file. Reason: ${parsed.reason}`
@@ -567,7 +578,7 @@ ${change.replace}
       return [AI_RETURN_CODE.NO_NEED_TRANSLATE, originalContent];
     }
 
-    return [AI_RETURN_CODE.OK, fullContent];
+    return [AI_RETURN_CODE.OK, sanitizedFullContent];
   }
 
   private async handleRpmLimit(
