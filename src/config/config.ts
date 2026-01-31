@@ -23,8 +23,8 @@ export const DEFAULT_VENDOR_CONFIG: VendorConfig = {
   model: "deepseek-chat",
   rpm: 20,
   maxTokensPerSegment: 3000,
-  timeout: 30,
-  temperature: 0.7,
+  timeout: 180,
+  temperature: 0.1,
   top_p: 0.95,
   streamMode: true
 };
@@ -554,4 +554,3 @@ export async function getConfiguration(): Promise<Config> {
 
   return finalConfig;
 }
-

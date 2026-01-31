@@ -151,8 +151,8 @@ A extensão suporta as seguintes opções de configuração:
       "model": "gpt-4o",
       "rpm": "10",
       "maxTokensPerSegment": 4096,
-      "timeout": 30,
-      "temperature": 0.0
+      "timeout": 180,
+      "temperature": 0.1
     }
   ],
   "projectTranslator.userPrompts": [

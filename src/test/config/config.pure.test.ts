@@ -136,8 +136,8 @@ suite('Pure Config Validation Tests', () => {
                 model: 'test-model',
                 rpm: 60,
                 maxTokensPerSegment: 4000,
-                timeout: 30000,
-                temperature: 0.7,
+                timeout: 180,
+                temperature: 0.1,
                 streamMode: false
             };
 

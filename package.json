@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.18.1",
+    "version": "0.18.2",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -150,14 +150,14 @@
                             "timeout": {
                                 "type": "number",
                                 "description": "%config.vendor.timeout.description%",
-                                "default": 30
+                                "default": 180
                             },
                             "temperature": {
                                 "type": "number",
                                 "description": "%config.vendor.temperature.description%",
                                 "minimum": 0,
                                 "maximum": 2,
-                                "default": 0
+                                "default": 0.1
                             },
                             "top_p": {
                                 "type": "number",
@@ -187,8 +187,8 @@
                             "model": "deepseek-chat",
                             "rpm": 20,
                             "maxTokensPerSegment": 3000,
-                            "timeout": 30,
-                            "temperature": 0,
+                            "timeout": 300,
+                            "temperature": 0.1,
                             "top_p": 0.95,
                             "streamMode": true
                         }

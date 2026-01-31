@@ -6,6 +6,8 @@ import { logMessage } from "../extension";
 import * as path from "path";
 import { AI_RETURN_CODE, DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2, DIFF_SYSTEM_PROMPT, getDiffSystemPrompt } from "../config/prompt";
 import { sanitizeUnexpectedCodeFences } from "./translationOutputSanitizer";
+import { shouldWarnZeroEstimatedOutputTokens } from "./translationWarnings";
+import { formatVendorHttpErrorForPopup } from "./vendorHttpError";
 // no fs usage here
 
 // Store the last request timestamp for each vendor
@@ -23,6 +25,7 @@ export class TranslatorService {
   private projectTotalInputTokens = 0;
   private projectTotalOutputTokens = 0;
   private workspaceRoot: string | null = null;
+  private shownVendorHttpErrorKeys: Set<string> = new Set();
 
   constructor(outputChannel: vscode.OutputChannel) {
     this.outputChannel = outputChannel;
@@ -78,10 +81,10 @@ export class TranslatorService {
       baseURL: apiEndpoint,
     };
 
-    const timeoutMs = timeout ? timeout * 1000 : 30000;
+    const timeoutMs = timeout ? timeout * 1000 : 300000;
     logMessage(
       `⏱️ API request timeout setting: ${
-        timeout || 30
+        timeout || 180
       } seconds (${timeoutMs}ms)`
     );
     config.timeout = timeoutMs;
@@ -132,7 +135,7 @@ export class TranslatorService {
     const debug = !!config.debug;
     // Ensure temperature has a sensible default if undefined
     const { model, rpm, streamMode } = currentVendor;
-    const temperature = currentVendor.temperature === undefined ? 0.7 : currentVendor.temperature;
+    const temperature = currentVendor.temperature === undefined ? 0.1 : currentVendor.temperature;
 
     logMessage(`🤖 Using model: ${model}`);
     logMessage(`🌐 Target language: ${targetLang}`);
@@ -213,6 +216,17 @@ export class TranslatorService {
         );
       }
     } catch (error) {
+      const popup = formatVendorHttpErrorForPopup(error, {
+        vendorName: currentVendorName,
+        model,
+        sourcePath,
+        operation: "translate",
+      });
+      if (popup && !this.shownVendorHttpErrorKeys.has(popup.key)) {
+        this.shownVendorHttpErrorKeys.add(popup.key);
+        vscode.window.showErrorMessage(popup.message);
+      }
+
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
       logMessage(`❌ Translation failed: ${errorMessage}`, "error");
@@ -275,7 +289,22 @@ export class TranslatorService {
       response_format: { type: "json_object" },
     };
 
-    const response = await this.openaiClient.chat.completions.create(payload);
+    let response: OpenAI.ChatCompletion;
+    try {
+      response = await this.openaiClient.chat.completions.create(payload);
+    } catch (error) {
+      const popup = formatVendorHttpErrorForPopup(error, {
+        vendorName: currentVendorName,
+        model: currentVendor.model,
+        sourcePath,
+        operation: "diff",
+      });
+      if (popup && !this.shownVendorHttpErrorKeys.has(popup.key)) {
+        this.shownVendorHttpErrorKeys.add(popup.key);
+        vscode.window.showErrorMessage(popup.message);
+      }
+      throw error;
+    }
     vendorLastRequest.set(currentVendorName, Date.now());
     const content = response.choices?.[0]?.message?.content?.trim() || '';
 
@@ -537,6 +566,18 @@ ${change.replace}
     // Record end time and calculate duration for streaming
     const endTime = Date.now();
     const duration = endTime - startTime;
+    if (
+      shouldWarnZeroEstimatedOutputTokens({
+        estimatedOutputTokens,
+        foundNoNeedTranslate,
+        originalContent,
+      })
+    ) {
+      logMessage(
+        `⚠️ Streaming estimated output: ~0 tokens（这通常不正常；可能是模型返回空响应或被过滤）。建议开启 debug 检查响应内容。`,
+        "warn"
+      );
+    }
     logMessage(
       `📥 Streaming translation completed in ${duration}ms (${(duration / 1000).toFixed(2)}s) (estimated input: ~${estimatedInputTokens} tokens, estimated output: ~${estimatedOutputTokens} tokens)`
     );

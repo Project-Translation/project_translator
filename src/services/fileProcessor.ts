@@ -655,6 +655,8 @@ export class FileProcessor {
             logMessage(`📦 Segmented into ${segments.length} parts`);
 
             const translatedSegments: string[] = [];
+            const segmentsWithEmptyTranslation: number[] = [];
+            const segmentsWithWriteIssues: number[] = [];
 
             // 用于保证流式写入的顺序性
             let lastWritePromise: Promise<void> = Promise.resolve();
@@ -666,6 +668,8 @@ export class FileProcessor {
                 const segment = segments[i];
                 let segmentCode: string;
                 let translatedSegment: string;
+                let segmentHadAnyWrite = false;
+                let segmentHadWriteError = false;
 
                 if (streamMode) {
                     // For streaming mode, use a write stream to append content as it arrives
@@ -687,14 +691,19 @@ export class FileProcessor {
                             currentSegmentContent = cleanedChunk;
                             const currentContent = combineSegments([...translatedSegments, currentSegmentContent]);
                             logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
-                            lastWritePromise = lastWritePromise.then(() =>
-                                fsp.writeFile(targetPath, currentContent).catch((err) => {
+                            segmentHadAnyWrite = true;
+                            lastWritePromise = lastWritePromise.then(async () => {
+                                try {
+                                    await fsp.writeFile(targetPath, currentContent);
+                                } catch (err) {
+                                    segmentHadWriteError = true;
+                                    segmentsWithWriteIssues.push(i + 1);
                                     logMessage(`❌ Failed to write segment (no-translate) content: ${err instanceof Error ? err.message : String(err)}`, "error");
-                                })
-                            );
+                                }
+                            });
                             return;
                         }
-
+ 
                         // If no UUID fragments were found, add the chunk to current segment content
                         currentSegmentContent += chunk;
 
@@ -703,8 +712,10 @@ export class FileProcessor {
                             const writeMode = i === 0 ? 'w' : 'a'; // First segment overwrites, others append
                             writeStream = fs.createWriteStream(targetPath, { encoding: 'utf8', flags: writeMode });
                             writeStream.on('error', (err) => {
+                                segmentHadWriteError = true;
                                 logMessage(`❌ Failed to write streaming content for segment: ${err.message}`, "error");
                             });
+                            segmentHadAnyWrite = true;
                         }
 
                         // Append chunk to stream
@@ -740,6 +751,27 @@ export class FileProcessor {
 
                     // Add to translatedSegments for final combination
                     translatedSegments.push(translatedSegment);
+
+                    // 如果流式过程中没有写入任何内容，或写入发生错误，则进行一次“兜底写入”确保目标文件同步
+                    if (
+                        segmentCode !== AI_RETURN_CODE.NO_NEED_TRANSLATE &&
+                        (segmentHadWriteError || (!segmentHadAnyWrite && translatedSegment && translatedSegment.length > 0))
+                    ) {
+                        segmentHadWriteError = true;
+                        segmentsWithWriteIssues.push(i + 1);
+                        logMessage(
+                            `⚠️ Segment ${i + 1}/${segments.length} 在流式写入阶段未能正常写入（将尝试兜底写入以避免目标文件缺段）`,
+                            "warn"
+                        );
+                        const currentContent = combineSegments(translatedSegments);
+                        lastWritePromise = lastWritePromise.then(async () => {
+                            try {
+                                await fsp.writeFile(targetPath, currentContent);
+                            } catch (err) {
+                                logMessage(`❌ Failed to write fallback segment content: ${err instanceof Error ? err.message : String(err)}`, "error");
+                            }
+                        });
+                    }
                 } else {
                     [segmentCode, translatedSegment] = await this.translatorService.translateContent(
                         segment,
@@ -756,12 +788,27 @@ export class FileProcessor {
 
                     // Write progress to file
                     const currentContent: string = combineSegments(translatedSegments);
-                    lastWritePromise = lastWritePromise.then(() =>
-                        fsp.writeFile(targetPath, currentContent).then(() => {
+                    lastWritePromise = lastWritePromise.then(async () => {
+                        try {
+                            await fsp.writeFile(targetPath, currentContent);
                             logMessage(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
-                        }).catch((err) => {
+                        } catch (err) {
+                            segmentsWithWriteIssues.push(i + 1);
                             logMessage(`❌ Failed to write segment content: ${err instanceof Error ? err.message : String(err)}`, "error");
-                        })
+                        }
+                    });
+                }
+
+                // Warn: segment returned empty translation (usually abnormal)
+                if (
+                    segmentCode !== AI_RETURN_CODE.NO_NEED_TRANSLATE &&
+                    segment.trim().length > 0 &&
+                    (!translatedSegment || translatedSegment.trim().length === 0)
+                ) {
+                    segmentsWithEmptyTranslation.push(i + 1);
+                    logMessage(
+                        `⚠️ Segment ${i + 1}/${segments.length} 返回了空翻译内容（这通常不正常；可能是模型返回空响应或被过滤）`,
+                        "warn"
                     );
                 }
 
@@ -776,6 +823,21 @@ export class FileProcessor {
             await lastWritePromise;
             // Overwrite once with the final combined content (includes any sanitization)
             await fsp.writeFile(targetPath, finalContent);
+
+            if (segmentsWithEmptyTranslation.length > 0) {
+                logMessage(
+                    `⚠️ 检测到 ${segmentsWithEmptyTranslation.length} 个分段返回空翻译内容：${segmentsWithEmptyTranslation.join(", ")}（请检查模型响应/提示词/过滤逻辑）`,
+                    "warn"
+                );
+            }
+            if (segmentsWithWriteIssues.length > 0) {
+                // 去重 + 稳定输出
+                const uniq = Array.from(new Set(segmentsWithWriteIssues)).sort((a, b) => a - b);
+                logMessage(
+                    `⚠️ 检测到 ${uniq.length} 个分段在写入目标文件时出现异常：${uniq.join(", ")}（已尝试兜底写入，建议检查磁盘/权限/路径）`,
+                    "warn"
+                );
+            }
             return [AI_RETURN_CODE.OK, finalContent];
         } catch (error) {
             if (error instanceof vscode.CancellationError) {

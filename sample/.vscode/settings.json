@@ -64,6 +64,18 @@
                     "lang": "zh-cn"
                 }
             ]
+        },
+        {
+            "sourceFile": {
+                "path": "resource.resx",
+                "lang": "en-us"
+            },
+            "targetFiles": [
+                {
+                    "path": "i18n/ko-kr/resource.resx",
+                    "lang": "ko-kr"
+                }
+            ]
         }
     ],
     "projectTranslator.diffApply": {

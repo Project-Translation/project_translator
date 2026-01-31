@@ -57,8 +57,8 @@ translator config init
       "apiKeyEnvVarName": "DEEPSEEK_API_KEY",
       "model": "deepseek-chat",
       "rpm": 20,
-      "timeout": 30,
-      "temperature": 0.7,
+      "timeout": 180,
+      "temperature": 0.1,
       "top_p": 0.95,
       "streamMode": true
     }

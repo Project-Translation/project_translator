@@ -254,7 +254,7 @@ func TestMessageStructure(t *testing.T) {
 }
 
 func TestChatRequestStructure(t *testing.T) {
-	temp := 0.7
+	temp := 0.1
 	topP := 0.9
 
 	req := ChatRequest{
@@ -269,7 +269,7 @@ func TestChatRequestStructure(t *testing.T) {
 		t.Errorf("Model 应为 'gpt-4'，实际为 '%s'", req.Model)
 	}
 
-	if req.Temperature == nil || *req.Temperature != 0.7 {
+	if req.Temperature == nil || *req.Temperature != 0.1 {
 		t.Error("Temperature 应设置正确")
 	}
 

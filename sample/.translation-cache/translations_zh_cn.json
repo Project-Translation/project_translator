@@ -10,17 +10,33 @@
     "src_mtime_ms": 1764071825706.9404
   },
   "embeded/embeded.md": {
-    "translate_datetime": "2025-11-25:19:26",
-    "src_hash": "3895a56fb82dae2ae4011a96ca85fd2d"
+    "translate_datetime": "2026-01-31:18:07",
+    "src_hash": "3895a56fb82dae2ae4011a96ca85fd2d",
+    "src_size": 436,
+    "src_mtime_ms": 1744006966906.6504
   },
   "embeded/level1/level1.txt": {
-    "translate_datetime": "2025-11-25:19:26",
-    "src_hash": "e491a9ef5e091462dbf0d2a0fa1099e8"
+    "translate_datetime": "2026-01-31:18:07",
+    "src_hash": "e491a9ef5e091462dbf0d2a0fa1099e8",
+    "src_size": 139,
+    "src_mtime_ms": 1744018473753.332
   },
   "long-stream/news1.md": {
     "translate_datetime": "2026-01-10:14:37",
     "src_hash": "9264ad9ed75a994e3bc5ce0b429f87de",
     "src_size": 8119,
     "src_mtime_ms": 1768026800352.3154
+  },
+  "embeded/level1/level2/level2.txt": {
+    "translate_datetime": "2026-01-31:18:08",
+    "src_hash": "11f6222b845de45389eded677617a91b",
+    "src_size": 143,
+    "src_mtime_ms": 1744018509461.974
+  },
+  "structure/json/various.json": {
+    "translate_datetime": "2026-01-31:18:08",
+    "src_hash": "6465de9a6475e93e76d0089fec2edeb4",
+    "src_size": 2066,
+    "src_mtime_ms": 1743128624172.995
   }
 }

@@ -31,7 +31,7 @@ type Translator struct {
 func NewTranslator(vendor *config.VendorConfig, systemPrompts []string, customPrompts []string) *Translator {
 	timeout := time.Duration(vendor.Timeout) * time.Second
 	if timeout == 0 {
-		timeout = 30 * time.Second
+		timeout = 180 * time.Second
 	}
 
 	if systemPrompts == nil {
@@ -72,9 +72,6 @@ func (t *Translator) TranslateContent(
 
 	// 创建请求
 	temperature := t.vendor.Temperature
-	if temperature == 0 {
-		temperature = 0.7
-	}
 
 	req := ChatRequest{
 		Model:       t.vendor.Model,

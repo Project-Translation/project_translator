@@ -150,8 +150,8 @@ The extension supports the following configuration options:
       "model": "gpt-4o",
       "rpm": "10",
       "maxTokensPerSegment": 4096,
-      "timeout": 30,
-      "temperature": 0.0
+      "timeout": 180,
+      "temperature": 0.1
     }
   ],
   "projectTranslator.userPrompts": [

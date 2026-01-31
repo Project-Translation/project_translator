@@ -188,8 +188,8 @@ func defaultVendorConfig() VendorConfig {
 		Model:               "deepseek-chat",
 		RPM:                 20,
 		MaxTokensPerSegment: 3000,
-		Timeout:             30,
-		Temperature:         0.7,
+		Timeout:             180,
+		Temperature:         0.1,
 		TopP:                0.95,
 		StreamMode:          true,
 	}
