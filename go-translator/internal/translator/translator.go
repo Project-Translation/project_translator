@@ -25,10 +25,11 @@ type Translator struct {
 	totalOutputTokens int
 	systemPrompts     []string
 	customPrompts     []string
+	systemPromptLang  string
 }
 
 // NewTranslator 创建翻译服务
-func NewTranslator(vendor *config.VendorConfig, systemPrompts []string, customPrompts []string) *Translator {
+func NewTranslator(vendor *config.VendorConfig, systemPrompts []string, customPrompts []string, systemPromptLanguage string) *Translator {
 	timeout := time.Duration(vendor.Timeout) * time.Second
 	if timeout == 0 {
 		timeout = 180 * time.Second
@@ -41,11 +42,20 @@ func NewTranslator(vendor *config.VendorConfig, systemPrompts []string, customPr
 		customPrompts = []string{}
 	}
 
+	normalizeLang := func(v string) string {
+		s := strings.ToLower(strings.TrimSpace(v))
+		if s == "zh" || strings.HasPrefix(s, "zh-") || strings.HasPrefix(s, "zh_") || s == "chinese" || s == "chs" {
+			return "zh-cn"
+		}
+		return "en"
+	}
+
 	return &Translator{
-		vendor:        vendor,
-		client:        &http.Client{Timeout: timeout},
-		systemPrompts: systemPrompts,
-		customPrompts: customPrompts,
+		vendor:           vendor,
+		client:           &http.Client{Timeout: timeout},
+		systemPrompts:    systemPrompts,
+		customPrompts:    customPrompts,
+		systemPromptLang: normalizeLang(systemPromptLanguage),
 	}
 }
 
@@ -91,7 +101,34 @@ func (t *Translator) TranslateContent(
 	return t.standardTranslate(req, apiKey, content)
 }
 
-func buildDiffUserPrompt(sourceLang string, targetLang string, sourcePath string) string {
+func buildDiffUserPrompt(systemPromptLang string, sourceLang string, targetLang string, sourcePath string) string {
+	lang := strings.ToLower(strings.TrimSpace(systemPromptLang))
+	if lang == "" {
+		lang = "en"
+	}
+	if lang == "en" {
+		return fmt.Sprintf(`# Differential Translation Task
+
+## File Info
+
+- **Source (SOURCE)**: %s (%s)
+- **Target (TARGET)**: %s (%s)
+- **Source language**: %s
+- **Target language**: %s
+
+## Goal
+
+Compare SOURCE and TARGET, identify differences, and output JSON-formatted SEARCH/REPLACE operations to sync changes.
+
+## Notes
+
+1. **Translation quality**: accurate, natural, target-language appropriate
+2. **Formatting**: preserve all formatting markers, indentation, blank lines
+3. **Code**: keep code unchanged; only translate comments and documentation
+4. **Proper nouns**: keep proper nouns, API names, technical terms
+5. **JSON only**: output valid JSON only; do not add markdown fences or explanations
+`, sourcePath, sourceLang, sourcePath, targetLang, sourceLang, targetLang)
+	}
 	return fmt.Sprintf(`# 差异化翻译任务
 
 ## 文件信息
@@ -155,7 +192,7 @@ func buildDiffUserPrompt(sourceLang string, targetLang string, sourcePath string
 5. **JSON格式**：确保输出是有效的JSON，不要添加markdown围栏或其他说明
 
 现在开始对比SOURCE和TARGET，生成JSON格式的差异对象。
-`, sourcePath, sourceLang, sourcePath, targetLang, sourceLang, targetLang)
+	`, sourcePath, sourceLang, sourcePath, targetLang, sourceLang, targetLang)
 }
 
 // GenerateDiffJSON requests a JSON diff object (has_changes + changes[]).
@@ -188,13 +225,17 @@ func (t *Translator) GenerateDiffJSON(
 						base += "\n" + diffSystemPrompt
 					}
 					if len(t.customPrompts) > 0 {
-						base += "\n\n# 用户自定义翻译要求\n\n"
+						if t.systemPromptLang == "en" {
+							base += "\n\n# User Custom Translation Requirements\n\n"
+						} else {
+							base += "\n\n# 用户自定义翻译要求\n\n"
+						}
 						base += strings.Join(t.customPrompts, "\n\n")
 					}
 					return base
 				}(),
 			},
-			{Role: "system", Content: buildDiffUserPrompt(sourceLang, targetLang, sourcePath)},
+			{Role: "system", Content: buildDiffUserPrompt(t.systemPromptLang, sourceLang, targetLang, sourcePath)},
 			{Role: "user", Content: fmt.Sprintf("SOURCE BEGIN\n%s\nSOURCE END", sourceContent)},
 			{Role: "user", Content: fmt.Sprintf("TARGET BEGIN\n%s\nTARGET END", targetContent)},
 		},
@@ -278,7 +319,11 @@ func (t *Translator) buildMessages(content, sourceLang, targetLang string, isFir
 
 	mergedSystemPrompt := strings.Join(systemPrompts, "\n")
 	if len(t.customPrompts) > 0 {
-		mergedSystemPrompt += "\n\n# 用户自定义翻译要求\n\n"
+		if t.systemPromptLang == "en" {
+			mergedSystemPrompt += "\n\n# User Custom Translation Requirements\n\n"
+		} else {
+			mergedSystemPrompt += "\n\n# 用户自定义翻译要求\n\n"
+		}
 		mergedSystemPrompt += strings.Join(t.customPrompts, "\n\n")
 	}
 

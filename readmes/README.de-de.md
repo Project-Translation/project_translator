@@ -1,116 +1,116 @@
 
-# Project Translator
+# Projektübersetzer
 
-Eine benutzerfreundliche VS Code-Erweiterung für die mehrsprachige Lokalisierung von Projekten.
+Eine benutzerfreundliche VS Code-Erweiterung für mehrsprachige Lokalisierung von Projekten.
 
-Projekt-Repository: `https://github.com/Project-Translation/project_translator`
+Projektrepository: `https://github.com/Project-Translation/project_translator`
 
-<!-- ![example1](./resources/example1.gif) -->
+## Installation
+
+1. Marketplace:
+   - VS Code Extensions Marketplace: [https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)
+   - Open VSX Registry: [https://open-vsx.org/extension/techfetch-dev/project-translator](https://open-vsx.org/extension/techfetch-dev/project-translator)
+2. Suchen Sie nach `techfetch-dev.project-translator` in der VS Code-Erweiterungsansicht und klicken Sie auf Installieren
+
+<!-- ![example1](../resources/example1.gif) -->
 ![example1](https://i.imgur.com/uwRal2I.gif)
 
 ## Verfügbare Übersetzungen
 
 Die Erweiterung unterstützt Übersetzungen in folgende Sprachen:
 
-- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
-- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
-- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
-- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
-- [Français (fr-fr)](./readmes/README.fr-fr.md)
-- [Deutsch (de-de)](./readmes/README.de-de.md)
-- [Español (es-es)](./readmes/README.es-es.md)
-- [Português (pt-br)](./readmes/README.pt-br.md)
-- [Русский (ru-ru)](./readmes/README.ru-ru.md)
-- [العربية (ar-sa)](./readmes/README.ar-sa.md)
-- [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+- [简体中文 (zh-cn)](./README.zh-cn.md)
+- [繁體中文 (zh-tw)](./README.zh-tw.md)
+- [日本語 (ja-jp)](./README.ja-jp.md)
+- [한국어 (ko-kr)](./README.ko-kr.md)
+- [Français (fr-fr)](./README.fr-fr.md)
+- [Deutsch (de-de)](./README.de-de.md)
+- [Español (es-es)](./README.es-es.md)
+- [Português (pt-br)](./README.pt-br.md)
+- [Русский (ru-ru)](./README.ru-ru.md)
+- [العربية (ar-sa)](./README.ar-sa.md)
+- [العربية (ar-ae)](./README.ar-ae.md)
+- [العربية (ar-eg)](./README.ar-eg.md)
 
 ## Beispiele
 
-| Projekt                                                                             | Original-Repository                                                                                       | Beschreibung                                                                                                                                                              | Sterne | Tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:Interaktive Online-Plattform, die Algorithmen aus Code visualisiert                                                                                             | 47301  | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:Algorithmus-Visualisierungen                                                                                                                                | 401    | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | Autonomer Codierungs-Agent direkt in Ihrer IDE, der in der Lage ist, Dateien zu erstellen/bearbeiten, Befehle auszuführen, den Browser zu nutzen und mehr – und das alles mit Ihrer Erlaubnis bei jedem Schritt. | 39572  | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Open-Source-Dokumentation von Cursor                                                                                                                                      | 309    | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go by Example                                                                                                                                                             | 7523   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [Spiegel] Heimat der Websites go.dev und golang.org                                                                                                                       | 402    | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ Teile schnelle Referenz-Cheatsheets für Entwickler.                                                                                                                    | 7808   | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
-| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | Style-Guides für von Google stammende Open-Source-Projekte                                                                                                                | 38055  | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | Öffentliche Dokumentation für Visual Studio Code                                                                                                                           | 5914   | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Projekt                                                                             | Original-Repository                                                                                       | Beschreibung                                                                                                                                                               | Sterne | Tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:Interaktive Online-Plattform zur Visualisierung von Algorithmen aus Code                                                                                       | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:Algorithmus-Visualisierungen                                                                                                                                | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | Autonomer Coding-Agent direkt in Ihrer IDE, der Dateien erstellen/bearbeiten, Befehle ausführen, den Browser nutzen und mehr kann – mit Ihrer Erlaubnis bei jedem Schritt. | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Open-Source-Dokumentation von Cursor                                                                                                                                        | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go by Example                                                                                                                                                             | 7523  | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [Spiegel] Home der go.dev und golang.org Websites                                                                                                                       | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ Schnellreferenz-Cheat-Sheets für Entwickler teilen.                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
+| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | Styleguides für Google-originierte Open-Source-Projekte                                                                                                                   | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | Öffentliche Dokumentation für Visual Studio Code                                                                                                                               | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
-## Projektübersetzung anfordern
+## Übersetzungsanfrage für Projekte
 
-Wenn Sie eine Übersetzung beisteuern oder ein Projekt übersetzt haben möchten:
+Wenn Sie eine Übersetzung beitragen möchten oder ein Projekt übersetzt werden soll:
 
-1.  Erstellen Sie ein Issue mit der folgenden Vorlage:
+1. Erstellen Sie ein Issue mit folgender Vorlage:
 
 ```md
-**Project**: [project_url]
-**Target Language**: [target_lang]
-**Description**: Kurze Beschreibung, warum diese Übersetzung wertvoll wäre
+**Projekt**: [project_url]
+**Zielsprache**: [target_lang]
+**Beschreibung**: Kurze Beschreibung, warum diese Übersetzung wertvoll wäre
 ```
 
-2.  Arbeitsablauf:
+2. Workflow:
 
 ```mermaid
 sequenceDiagram
   Contributor->>Project Translator: Übersetzungs-Issue erstellen
-  Project Translator->>Community: Issue überprüfen
+  Project Translator->>Community: Issue prüfen
   Community-->>Contributor: Genehmigen/Kommentieren
-  Contributor->>New Project: Übersetzung beginnen
-  Contributor->>New Project: An New Project einreichen
-  Contributor->>Project Translator: Pull Request erstellen, README.Samples ändern
-  Project Translator-->>Project Translator: Überprüfen & Zusammenführen
+  Contributor->>New Project: Übersetzung starten
+  Contributor->>New Project: Zu New Project einreichen
+  Contributor->>Project Translator: Pull Request erstellen, README.Samples anpassen
+  Project Translator-->>Project Translator: Prüfen & Mergen
 ```
 
-3.  Nachdem der PR zusammengeführt wurde, wird die Übersetzung zum Abschnitt "Beispiele" hinzugefügt.
+3. Nach dem Merge wird die Übersetzung dem Beispielabschnitt hinzugefügt.
 
 Aktuelle Übersetzungen in Arbeit: [Issues ansehen](https://github.com/Project-Translation/project_translator/issues)
 
 ## Funktionen
 
-- 📁 Unterstützung für die Übersetzung auf Ordnerebene
-  - Ganze Projektordner in mehrere Sprachen übersetzen
-  - Originalordnerstruktur und -hierarchie beibehalten
-  - Unterstützung für die rekursive Übersetzung von Unterordnern
-  - Automatische Erkennung von übersetzbaren Inhalten
-  - Stapelverarbeitung für effiziente Großübersetzungen
-- 📄 Unterstützung für die Übersetzung auf Dateiebene
-  - Einzelne Dateien in mehrere Sprachen übersetzen
-  - Originaldateistruktur und -formatierung beibehalten
-  - Unterstützung für sowohl Ordner- als auch Dateiübersetzungsmodi
+- 📁 Ordnerebene Übersetzungsunterstützung
+  - Übersetzt gesamte Projektordner in mehrere Sprachen
+  - Behält originale Ordnerstruktur und Hierarchie bei
+  - Unterstützt rekursive Übersetzung von Unterordnern
+  - Automatische Erkennung übersetzbarer Inhalte
+  - Stapelverarbeitung für effiziente Massenübersetzungen
+- 📄 Dateiebene Übersetzungsunterstützung
+  - Übersetzt einzelne Dateien in mehrere Sprachen
+  - Behält originale Dateistruktur und Formatierung bei
+  - Unterstützt sowohl Ordner- als auch Dateiübersetzungsmodi
 - 💡 Intelligente Übersetzung mit KI
-  - Erhält automatisch die Integrität der Codestruktur
-  - Übersetzt nur Codekommentare, bewahrt die Codelogik
-  - Beibehaltung von JSON/XML- und anderen Datenstrukturformaten
-  - Professionelle Qualität der technischen Dokumentationsübersetzung
+  - Automatische Wahrung der Code-Strukturintegrität
+  - Übersetzt nur Code-Kommentare, behält Code-Logik bei
+  - Behält JSON/XML und andere Datenstrukturformate bei
+  - Professionelle Übersetzungsqualität für technische Dokumentation
 - ⚙️ Flexible Konfiguration
-  - Quellordner und mehrere Zielordner konfigurieren
-  - Unterstützung für benutzerdefinierte Dateiübersetzungsintervalle
+  - Konfigurierbare Quellordner und mehrere Zielordner
+  - Unterstützung für benutzerdefinierte Übersetzungsintervalle
   - Festlegung spezifischer zu ignorierender Dateitypen
-  - Unterstützung für mehrere KI-Modell-Optionen
+  - Unterstützung mehrerer KI-Modelloptionen
 - 🚀 Benutzerfreundliche Bedienung
-  - Anzeige des Übersetzungsfortschritts in Echtzeit
-  - Unterstützung für das Anhalten/Fortsetzen/Beenden der Übersetzung
-  - Automatische Beibehaltung der Zielordnerstruktur
+  - Echtzeit-Fortschrittsanzeige der Übersetzung
+  - Unterstützung für Pause/Fortsetzen/Abbruch der Übersetzung
+  - Automatische Pflege der Zielordnerstruktur
   - Inkrementelle Übersetzung zur Vermeidung doppelter Arbeit
-- 🔄 Differentialübersetzung (Experimentell)
-  - Diff-Apply-Modus für effiziente Aktualisierungen bestehender Übersetzungen
-  - Reduziert die API-Nutzung durch Übersetzung nur geänderter Inhalte
-  - Bewahrt die Versionshistorie mit minimalen Bearbeitungen
-  - ⚠️ Experimentelle Funktion – siehe [Erweiterte Funktionen](#differentialübersetzung-diff-apply-modus) für Details
-
-## Installation
-
-1.  Suchen Sie nach "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" im VS Code-Erweiterungsmarktplatz
-2.  Klicken Sie auf Installieren
-
-Alternativ können Sie vom Visual Studio Marketplace installieren: `https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator` oder suchen Sie nach `techfetch-dev.project-translator` in der Ansicht der VS Code-Erweiterungen.
+- 🔄 Differenzielle Übersetzung (Experimentell)
+  - Diff-Apply-Modus für effiziente Aktualisierung bestehender Übersetzungen
+  - Reduziert API-Nutzung durch Übersetzung nur geänderter Inhalte
+  - Bewahrt Versionsverlauf mit minimalen Änderungen
+  - ⚠️ Experimentelle Funktion - siehe [Erweiterte Funktionen](#differential-translation-diff-apply-mode) für Details
 
 ## Konfiguration
 
-Die Erweiterung unterstützt die folgenden Konfigurationsoptionen:
+Die Erweiterung unterstützt folgende Konfigurationsoptionen:
 
 ```json
 {
@@ -118,12 +118,12 @@ Die Erweiterung unterstützt die folgenden Konfigurationsoptionen:
     {
       "sourceFolder": {
         "path": "Quellordner-Pfad",
-        "lang": "Quellsprach-Code"
+        "lang": "Quellsprachencode"
       },
       "targetFolders": [
         {
           "path": "Zielordner-Pfad",
-          "lang": "Zielsprach-Code"
+          "lang": "Zielsprachencode"
         }
       ]
     }
@@ -132,12 +132,12 @@ Die Erweiterung unterstützt die folgenden Konfigurationsoptionen:
     {
       "sourceFile": {
         "path": "Quelldatei-Pfad",
-        "lang": "Quellsprach-Code"
+        "lang": "Quellsprachencode"
       },
       "targetFiles": [
         {
           "path": "Zieldatei-Pfad",
-          "lang": "Zielsprach-Code"
+          "lang": "Zielsprachencode"
         }
       ]
     }
@@ -156,8 +156,8 @@ Die Erweiterung unterstützt die folgenden Konfigurationsoptionen:
     }
   ],
   "projectTranslator.userPrompts": [
-      "1. Sollte 'Keine Übersetzung erforderlich' zurückgeben, wenn die Markdown-Datei im Front Matter 'draft' auf 'true' gesetzt hat.",
-      "2. './readmes/' in den Sätzen sollte durch './' ersetzt werden.",
+      "1. Sollte keine Übersetzung zurückgeben, wenn die Markdown-Datei im Front Matter 'draft: true' gesetzt hat.",
+      "2. './readmes/' in Sätzen sollte durch './' ersetzt werden",
   ],
   "projectTranslator.ignore": {
     "paths": [
@@ -172,73 +172,74 @@ Die Erweiterung unterstützt die folgenden Konfigurationsoptionen:
 
 Wichtige Konfigurationsdetails:
 
-| Konfigurationsoption                     | Beschreibung                                                                                                   |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`     | Mehrere Quellordner mit ihren entsprechenden Zielordnern für die Übersetzung                                   |
-| `projectTranslator.specifiedFiles`       | Mehrere Quelldateien mit ihren entsprechenden Zieldateien für die Übersetzung                                   |
-| `projectTranslator.translationIntervalDays` | Übersetzungsintervall in Tagen (Standard 7 Tage)                                                              |
-| `projectTranslator.copyOnly`             | Dateien, die nur kopiert, aber nicht übersetzt werden sollen (mit `paths`- und `extensions`-Arrays)            |
-| `projectTranslator.ignore`               | Dateien, die vollständig ignoriert werden sollen (mit `paths`- und `extensions`-Arrays)                        |
-| `projectTranslator.skipFrontMatterMarkers` | Dateien basierend auf Front-Matter-Markern überspringen (mit `enabled`- und `markers`-Arrays)                   |
-| `projectTranslator.currentVendor`        | Der aktuell verwendete API-Anbieter                                                                             |
-| `projectTranslator.vendors`              | Liste der API-Anbieter-Konfigurationen (kann apiKey direkt oder apiKeyEnvVarName für Umgebungsvariablen verwenden) |
-| `projectTranslator.systemPrompts`        | System-Prompt-Array zur Steuerung des Übersetzungsprozesses                                                    |
-| `projectTranslator.userPrompts`          | Benutzerdefiniertes Prompt-Array, diese Prompts werden während der Übersetzung nach den System-Prompts hinzugefügt |
-| `projectTranslator.segmentationMarkers`  | Segmentierungsmarker, nach Dateityp konfiguriert, unterstützt reguläre Ausdrücke                               |
-| `projectTranslator.debug`                | Debug-Modus aktivieren, um alle API-Anfragen und -Antworten im Ausgabekanal zu protokollieren (Standard: false) |
-| `projectTranslator.logFile`              | Konfiguration für Debug-Log-Dateien (siehe [Log-Datei-Funktion](./docs/log-file-feature.md))                   |
-| `projectTranslator.diffApply.enabled`    | Experimentellen Differentialübersetzungsmodus aktivieren (Standard: false)                                    |
+| Konfigurationsoption                        | Beschreibung                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `projectTranslator.specifiedFolders`        | Mehrere Quellordner mit ihren entsprechenden Zielordnern für die Übersetzung           |
+| `projectTranslator.specifiedFiles`          | Mehrere Quelldateien mit ihren entsprechenden Zieldateien für die Übersetzung               |
+| `projectTranslator.translationIntervalDays` | Übersetzungsintervall in Tagen (Standard 7 Tage)                                                  |
+| `projectTranslator.copyOnly`                | Dateien, die nur kopiert, aber nicht übersetzt werden sollen (mit `paths` und `extensions` Arrays)                         |
+| `projectTranslator.ignore`                  | Komplett zu ignorierende Dateien (mit `paths` und `extensions` Arrays)                              |
+| `projectTranslator.skipFrontMatterMarkers`  | Dateien basierend auf Front-Matter-Markern überspringen (mit `enabled` und `markers` Arrays)                 |
+| `projectTranslator.currentVendor`           | Aktuell verwendeter API-Anbieter                                                                      |
+| `projectTranslator.vendors`                 | API-Anbieter-Konfigurationsliste (kann apiKey direkt oder apiKeyEnvVarName für Umgebungsvariablen verwenden) |
+| `projectTranslator.systemPromptLanguage`    | Für integrierte System-Prompts verwendete Sprache (Standard: en). Beeinflusst, wie das Modell instruiert wird, nicht die UI-Sprache |
+| `projectTranslator.systemPrompts`           | System-Prompt-Array zur Steuerung des Übersetzungsprozesses                                        |
+| `projectTranslator.userPrompts`             | Benutzerdefiniertes Prompt-Array, diese Prompts werden während der Übersetzung nach System-Prompts hinzugefügt |
+| `projectTranslator.segmentationMarkers`     | Segmentierungsmarker nach Dateityp konfiguriert, unterstützt reguläre Ausdrücke                     |
+| `projectTranslator.debug`                   | Debug-Modus aktivieren, um alle API-Anfragen und Antworten im Ausgabekanal zu protokollieren (Standard: false)     |
+| `projectTranslator.logFile`                 | Konfiguration für Debug-Protokolldateien (siehe [Log-Datei-Funktion](./docs/log-file-feature.md))         |
+| `projectTranslator.diffApply.enabled`       | Experimentellen differenziellen Übersetzungsmodus aktivieren (Standard: false)                             |
 
 ## Verwendung
 
-1.  Befehlspalette öffnen (Strg+Umschalt+P / Cmd+Umschalt+P)
-2.  "Translate Project" eingeben und den Befehl auswählen
-3.  Wenn der Quellordner nicht konfiguriert ist, erscheint ein Ordnerauswahldialog
-4.  Warten Sie, bis die Übersetzung abgeschlossen ist
+1. Öffnen Sie die Befehlspalette (Strg+Umschalt+P / Cmd+Umschalt+P)
+2. Tippen Sie "Translate Project" und wählen Sie den Befehl
+3. Wenn kein Quellordner konfiguriert ist, erscheint ein Ordnerauswahldialog
+4. Warten Sie auf den Abschluss der Übersetzung
 
 Während der Übersetzung:
 
--   Kann die Übersetzung über Schaltflächen in der Statusleiste angehalten/fortgesetzt werden
--   Kann der Übersetzungsprozess jederzeit gestoppt werden
--   Übersetzungsfortschritt wird im Benachrichtigungsbereich angezeigt
--   Detaillierte Protokolle werden im Ausgabefenster angezeigt
+- Übersetzung kann über Statusleisten-Buttons pausiert/fortgesetzt werden
+- Übersetzungsprozess kann jederzeit gestoppt werden
+- Übersetzungsfortschritt wird im Benachrichtigungsbereich angezeigt
+- Detaillierte Protokolle werden im Ausgabebereich angezeigt
 
 ## Entwicklung
 
 ### Build-System
 
-Diese Erweiterung verwendet esbuild für schnelles Bündeln und Entwicklung:
+Diese Erweiterung verwendet esbuild für schnelles Bundling und Entwicklung:
 
 #### Verfügbare Skripte
 
--   `npm run build` - Produktions-Build mit Minifizierung
--   `npm run compile` - Entwicklungs-Build
--   `npm run watch` - Überwachungsmodus für die Entwicklung
--   `npm test` - Tests ausführen
+- `npm run build` - Produktionsbuild mit Minifizierung
+- `npm run compile` - Entwicklungsbuild
+- `npm run watch` - Watch-Modus für Entwicklung
+- `npm test` - Tests ausführen
 
-#### VS Code-Aufgaben
+#### VS Code Tasks
 
--   **Build** (Strg+Umschalt+P → "Tasks: Run Task" → "build") - Bündelt die Erweiterung für die Produktion
--   **Watch** (Strg+Umschalt+P → "Tasks: Run Task" → "watch") - Entwicklungsmodus mit automatischem Neubuild
+- **Build** (Strg+Umschalt+P → "Tasks: Run Task" → "build") - Bündelt die Erweiterung für die Produktion
+- **Watch** (Strg+Umschalt+P → "Tasks: Run Task" → "watch") - Entwicklungsmodus mit automatischem Rebuild
 
-### Entwicklungseinrichtung
+### Entwicklungsumgebung
 
-1.  Repository klonen
-2.  `npm install` ausführen, um Abhängigkeiten zu installieren
-3.  `F5` drücken, um das Debuggen zu starten, oder die "watch"-Aufgabe für die Entwicklung ausführen
+1. Klonen Sie das Repository
+2. Führen Sie `npm install` aus, um Abhängigkeiten zu installieren
+3. Drücken Sie `F5`, um das Debugging zu starten, oder führen Sie den "watch"-Task für die Entwicklung aus
 
 Die esbuild-Konfiguration:
 
--   Bündelt alle TypeScript-Dateien in eine einzige `out/extension.js`
--   Schließt die VS Code API aus (als extern markiert)
+- Bündelt alle TypeScript-Dateien in eine einzelne `out/extension.js`
+- Schließt VS Code-API aus (als extern markiert)
 
 ## Erweiterte Funktionen
 
 ### Verwendung von Umgebungsvariablen für API-Schlüssel
 
-Project Translator unterstützt die Verwendung von Umgebungsvariablen für API-Schlüssel, was ein sichererer Ansatz ist als das Speichern von API-Schlüsseln direkt in Konfigurationsdateien:
+Project Translator unterstützt die Verwendung von Umgebungsvariablen für API-Schlüssel, was sicherer ist als die direkte Speicherung in Konfigurationsdateien:
 
-1.  Konfigurieren Sie Ihren Anbieter mit einer `apiKeyEnvVarName`-Eigenschaft:
+1. Konfigurieren Sie Ihren Anbieter mit einer `apiKeyEnvVarName`-Eigenschaft:
 
 ```json
 {
@@ -259,21 +260,21 @@ Project Translator unterstützt die Verwendung von Umgebungsvariablen für API-S
 }
 ```
 
-2.  Setzen Sie die Umgebungsvariable in Ihrem System:
-    -   Unter Windows: `set OPENAI_API_KEY=your_api_key`
-    -   Unter macOS/Linux: `export OPENAI_API_KEY=your_api_key`
+2. Setzen Sie die Umgebungsvariable in Ihrem System:
+   - Windows: `set OPENAI_API_KEY=your_api_key`
+   - macOS/Linux: `export OPENAI_API_KEY=your_api_key`
 
-3.  Wenn die Erweiterung läuft, wird sie:
-    -   Zuerst prüfen, ob `apiKey` direkt in der Konfiguration angegeben ist
-    -   Wenn nicht, wird sie nach der durch `apiKeyEnvVarName` angegebenen Umgebungsvariable suchen
+3. Wenn die Erweiterung läuft:
+   - Prüft zuerst, ob `apiKey` direkt in der Konfiguration angegeben ist
+   - Falls nicht, sucht sie nach der durch `apiKeyEnvVarName` angegebenen Umgebungsvariable
 
-Dieser Ansatz hält Ihre API-Schlüssel aus Konfigurationsdateien und Versionskontrollsystemen heraus.
+Dieser Ansatz hält Ihre API-Schlüssel aus Konfigurationsdateien und Versionskontrollsystemen fern.
 
 ### Übersetzung basierend auf Front Matter überspringen
 
-Project Translator kann die Übersetzung von Markdown-Dateien basierend auf ihren Front-Matter-Metadaten überspringen. Dies ist nützlich für Entwurfsdokumente oder Dateien, die als nicht übersetzungsbedürftig markiert sind.
+Project Translator kann die Übersetzung von Markdown-Dateien basierend auf ihren Front-Matter-Metadaten überspringen. Dies ist nützlich für Entwurfsdokumente oder als nicht übersetzbar markierte Dateien.
 
-Um diese Funktion zu aktivieren, konfigurieren Sie die Option `projectTranslator.skipFrontMatterMarkers`:
+Aktivieren Sie diese Funktion durch Konfiguration der `projectTranslator.skipFrontMatterMarkers`-Option:
 
 ```json
 {
@@ -293,9 +294,9 @@ Um diese Funktion zu aktivieren, konfigurieren Sie die Option `projectTranslator
 }
 ```
 
-Mit dieser Konfiguration wird jede Markdown-Datei mit Front Matter, das `draft: true` oder `translate: false` enthält, während der Übersetzung übersprungen und direkt an den Zielspeicherort kopiert.
+Mit dieser Konfiguration wird jede Markdown-Datei mit Front Matter, das `draft: true` oder `translate: false` enthält, während der Übersetzung übersprungen und direkt an den Zielort kopiert.
 
-Beispiel für eine Markdown-Datei, die übersprungen würde:
+Beispiel-Markdown-Datei, die übersprungen würde:
 ```
 ---
 draft: true
@@ -305,24 +306,24 @@ title: "Entwurfsdokument"
 Dieses Dokument ist ein Entwurf und sollte nicht übersetzt werden.
 ```
 
-### Differentialübersetzung (Diff-Apply) Modus
+### Differenzielle Übersetzung (Diff-Apply) Modus
 
-> **⚠️ Warnung für experimentelle Funktion**: Der Differentialübersetzungsmodus ist derzeit eine experimentelle Funktion und kann Stabilitäts- und Kompatibilitätsprobleme aufweisen. Es wird empfohlen, ihn in Produktionsumgebungen mit Vorsicht zu verwenden und wichtige Dateien immer zu sichern.
+> **⚠️ Experimentelle Funktionswarnung**: Der differenzielle Übersetzungsmodus ist derzeit experimentell und kann Stabilitäts- und Kompatibilitätsprobleme aufweisen. Es wird empfohlen, ihn in Produktionsumgebungen mit Vorsicht zu verwenden und wichtige Dateien immer zu sichern.
 
-Die Erweiterung unterstützt einen optionalen Differentialübersetzungsmodus (Diff-Apply). Wenn dieser aktiviert ist, sendet die Erweiterung sowohl den Quellinhalt als auch die vorhandene übersetzte Zieldatei an das Modell. Das Modell sollte einen oder mehrere SEARCH/REPLACE-Blöcke (Nur-Text, keine Code-Zäune) zurückgeben. Die Erweiterung wendet diese Blöcke lokal an, um Änderungen zu minimieren, die API-Nutzung zu reduzieren und die Versionshistorie besser zu bewahren.
+Die Erweiterung unterstützt einen optionalen differenziellen Übersetzungsmodus (diff-apply). Wenn aktiviert, sendet die Erweiterung sowohl den Quellinhalt als auch die bestehende übersetzte Zieldatei an das Modell. Das Modell sollte einen oder mehrere SEARCH/REPLACE-Blöcke (Klartext, ohne Code-Umrandung) zurückgeben. Die Erweiterung wendet diese Blöcke lokal an, um Änderungen zu minimieren, API-Nutzung zu reduzieren und den Versionsverlauf besser zu erhalten.
 
--   **Umschalten**: Konfigurieren Sie `projectTranslator.diffApply.enabled` in den VS Code-Einstellungen oder `project.translation.json` (Standard: `false`).
--   **Optionen**:
-    -   `validationLevel`: `normal` oder `strict` (Standard: `normal`). Im `strict`-Modus führen ungültige Marker oder Matching-Fehler zu einem Fehler, und die Erweiterung fällt auf den Standardübersetzungsablauf zurück.
-    -   `autoBackup`: Wenn true, wird vor dem Anwenden von Bearbeitungen eine `.bak`-Sicherung der Zieldatei erstellt (Standard: `true`).
-    -   `maxOperationsPerFile`: (aus Kompatibilitätsgründen beibehalten) wird von der neuen Strategie nicht verwendet.
+- **Umschalter**: Konfigurieren Sie `projectTranslator.diffApply.enabled` in den VS Code-Einstellungen oder `project.translation.json` (Standard: `false`).
+- **Optionen**:
+  - `validationLevel`: `normal` oder `strict` (Standard: `normal`). Im `strict`-Modus führen ungültige Marker oder Übereinstimmungsfehler zu einem Fehler, und die Erweiterung fällt auf den Standard-Übersetzungsfluss zurück.
+  - `autoBackup`: Wenn true, wird vor dem Anwenden von Änderungen eine `.bak`-Sicherung der Zieldatei erstellt (Standard: `true`).
+  - `maxOperationsPerFile`: (Zur Kompatibilität beibehalten) wird von der neuen Strategie nicht verwendet.
 
-Arbeitsablauf:
-1.  Wenn `diffApply.enabled` `true` ist und die Zieldatei existiert, liest die Erweiterung sowohl Quell- als auch Zielinhalte.
-2.  Sie ruft das Modell mit einem Differential-Prompt auf und erfordert die Rückgabe von Nur-Text-SEARCH/REPLACE-Blöcken.
-3.  Lokal analysiert und wendet die Erweiterung die SEARCH/REPLACE-Blöcke an. Wenn das Anwenden fehlschlägt, fällt sie auf die normale vollständige Übersetzung zurück und überschreibt die Zieldatei.
+Workflow:
+1. Wenn `diffApply.enabled` `true` ist und die Zieldatei existiert, liest die Erweiterung sowohl Quell- als auch Zielinhalte.
+2. Sie ruft das Modell mit einem differenziellen Prompt auf und erfordert die Rückgabe von Klartext-SEARCH/REPLACE-Blöcken.
+3. Die Erweiterung parst und wendet die SEARCH/REPLACE-Blöcke lokal an. Bei Anwendungsfehlern fällt sie auf die normale Vollübersetzung zurück und überschreibt die Zieldatei.
 
-Beispiel SEARCH/REPLACE (mehrere Blöcke erlaubt):
+Beispiel SEARCH/REPLACE (mehrere Blöcke möglich):
 
 ```
 <<<<<<< SEARCH
@@ -347,51 +348,49 @@ function foo() {
 ```
 
 Hinweise:
--   Verwenden Sie den exakten Inhalt einschließlich Einrückung und Leerzeichen in SEARCH-Abschnitten. Wenn Sie unsicher sind, verwenden Sie den neuesten Dateiinhalt.
--   Halten Sie eine einzelne Zeile `=======` zwischen SEARCH und REPLACE.
--   Wenn keine Änderung erforderlich ist, sollte das Modell einen leeren String zurückgeben.
+- Verwenden Sie exakte Inhalte einschließlich Einrückung und Leerzeichen in SEARCH-Abschnitten. Im Zweifelsfall verwenden Sie den neuesten Dateiinhalt.
+- Halten Sie eine einzelne Zeile `=======` zwischen SEARCH und REPLACE ein.
+- Wenn keine Änderung benötigt wird, sollte das Modell eine leere Zeichenkette zurückgeben.
 
-Warum die Differentialübersetzung derzeit schlecht abschneidet (Erklärung)
+Warum differenzielle Übersetzung derzeit schlecht abschneidet (Erklärung)
 
--   **Herausforderungen bei der跨sprachigen Ausrichtung und dem Vergleich**: Die Differentialübersetzung erfordert das Senden sowohl des ursprünglichen Quelldokuments als auch des vorhandenen übersetzten Dokuments an das Modell, und das muss sie sprachübergreifend vergleichen, um zu entscheiden, welche Teile der Übersetzung geändert werden müssen. Dies ist eine grundlegend schwierigere Aufgabe als das direkte Ändern eines einzelnen Dokuments, da das Modell Segmente in verschiedenen Sprachen genau ausrichten und semantische Unterschiede beurteilen muss.
+- **Herausforderungen bei sprachübergreifender Ausrichtung und Vergleich**: Differenzielle Übersetzung erfordert das Senden sowohl des ursprünglichen Quelldokuments als auch der bestehenden übersetzten Zieldatei an das Modell, und das Modell muss sie sprachübergreifend vergleichen, um zu entscheiden, welche Teile der Übersetzung geändert werden müssen. Dies ist eine grundsätzlich schwierigere Aufgabe als die Änderung eines einzelnen Dokuments, da das Modell Segmente in verschiedenen Sprachen genau ausrichten und semantische Unterschiede beurteilen muss.
 
--   **Komplexität von Format und Grenzerhaltung**: Viele Dokumente enthalten Codeblöcke, Tabellen, Frontend-Marker oder spezielle Platzhalter. Ein zuverlässiger Diff-Workflow muss diese Strukturen bewahren, während er Textbearbeitungen vornimmt. Wenn das Modell nicht konsistent Ergebnisse liefern kann, die dem SEARCH/REPLACE-Format strikt folgen, kann das automatische Anwenden von Bearbeitungen zu Formatregressionen oder strukturellen Fehlern führen.
+- **Komplexität der Format- und Grenzerhaltung**: Viele Dokumente enthalten Codeblöcke, Tabellen, Frontend-Marker oder spezielle Platzhalter. Ein zuverlässiger Diff-Workflow muss diese Strukturen bewahren, während Textteile geändert werden. Wenn das Modell nicht konsistent Ergebnisse liefern kann, die strikt dem SEARCH/REPLACE-Format folgen, kann das automatische Anwenden von Änderungen Formatierungsregressionen oder Strukturfehler verursachen.
 
--   **Probleme mit Kontext und Terminologie-Konsistenz**: Kleine, lokalisierte Bearbeitungen hängen oft vom breiteren Kontext und einem vorhandenen Glossar für Terminologie/Stil ab. Wenn aufgefordert wird, minimale Bearbeitungen zu produzieren, kann das Modell die globale Konsistenz (Terminologie, Stil, Kommentare, Variablennamen) vernachlässigen, was zu inkonsistenten oder semantisch verschobenen Übersetzungen führt.
+- **Kontext- und Terminologiekonsistenzprobleme**: Kleine, lokalisierte Änderungen hängen oft von breiterem Kontext und einem bestehenden Terminologie-/Stil-Glossar ab. Wenn das Modell aufgefordert wird, minimale Änderungen vorzunehmen, kann es globale Konsistenz (Terminologie, Stil, Kommentare, Variablennamen) vernachlässigen, was zu inkonsistenten oder semantisch verschobenen Übersetzungen führt.
 
--   **Modellstabilität und Kostenausgleich**: Eine zuverlässige Differentialübersetzung erfordert Modelle mit starken Vergleichsfähigkeiten und stabilen, vorhersagbaren Ausgabeformaten. Aktuelle Mainstream-Modelle bieten nicht zuverlässig sowohl robuste跨sprachige Ausrichtung als auch streng formatierte Outputs zu angemessenen Kosten, sodass Systeme oft auf eine vollständige Neuübersetzung zurückgreifen, um Korrektheit zu gewährleisten.
+- **Modellstabilität und Kostenabwägungen**: Um eine zuverlässige differenzielle Übersetzung zu erreichen, benötigt man Modelle mit starken vergleichenden Denkfähigkeiten und stabilen, vorhersagbaren Ausgabeformaten. Aktuelle Mainstream-Modelle bieten beides nicht zuverlässig bei angemessenen Kosten, daher greifen Systeme oft auf eine vollständige Neuübersetzung zurück, um Korrektheit zu gewährleisten.
 
-Daher kann die Differentialübersetzung theoretisch teure Output-Tokens reduzieren und die Versionshistorie besser bewahren, ist aber derzeit durch die跨sprachigen Vergleichsfähigkeiten und die Ausgabestabilität der Modelle begrenzt. Diese Funktion bleibt experimentell; empfohlene Abhilfemaßnahmen sind das automatische Erstellen von Sicherungen (`autoBackup: true`), die Verwendung eines toleranten Validierungslevels (`validationLevel: "normal"`) und das Zurückfallen auf eine vollständige Neuübersetzung, wenn das Matching oder die Formatierung fehlschlägt. In der Zukunft könnten spezialisierte bilinguale Ausrichtungs-Postprozessoren oder benutzerdefinierte kleinere Modelle die Stabilität des Diff-Ansatzes verbessern.
+Daher kann differenzielle Übersetzung zwar theoretisch teure Ausgabe-Tokens reduzieren und den Versionsverlauf besser erhalten, ist aber derzeit durch die sprachübergreifenden Vergleichsfähigkeiten und Ausgabestabilität der Modelle begrenzt. Diese Funktion bleibt experimentell; empfohlene Gegenmaßnahmen umfassen automatische Backups (`autoBackup: true`), einen toleranten Validierungslevel (`validationLevel: "normal"`) und Rückfall auf Vollübersetzung bei Übereinstimmungs- oder Formatierungsfehlern. In Zukunft könnten spezialisierte bilinguale Ausrichtungspostprozessoren oder angepasste kleinere Modelle die Stabilität des Diff-Ansatzes verbessern.
 
 Kosteneinsparungen und warum es hilft
 
--   **Input- vs. Output-Token-Kosten**: Large-Model-APIs berechnen oft unterschiedlich für Input- (Prompt) und Output- (Completion) Tokens. Oft sind Output-Tokens deutlich teurer, weil das Modell längeren Text generiert. Diff-Apply hilft, weil wir das **aktualisierte Quellmaterial (Input)** und die **vorhandene übersetzte Datei (Input)** an das Modell senden und ein kompaktes JSON der Bearbeitungen anfordern. Die Antwort des Modells ist ein kleines JSON (wenige Output-Tokens) anstelle einer vollständig neuübersetzten Datei (viele Output-Tokens), sodass Sie viel weniger für den teuren Output-Anteil zahlen.
+- **Input vs Output Token-Kosten**: Große Modell-APIs berechnen häufig unterschiedlich für Input- (Prompt) und Output- (Completion) Tokens. Oft sind Output-Tokens deutlich teurer, da das Modell längeren Text generiert. Diff-apply hilft, weil wir die **aktualisierte Quelle (Input)** und die **bestehende übersetzte Datei (Input)** an das Modell senden und um ein kompaktes JSON mit Änderungen bitten. Die Antwort des Modells ist ein kleines JSON (wenige Output-Tokens) statt einer vollständig neu übersetzten Datei (viele Output-Tokens), sodass Sie viel weniger für den teuren Output-Teil zahlen.
 
--   **Nur senden, was sich geändert hat**: Anstatt die gesamte Datei bei kleinen Änderungen neu zu übersetzen, weist Diff-Apply das Modell an, die minimalen Bearbeitungsvorgänge zu berechnen, um die vorhandene Übersetzung zu aktualisieren. Dies ist besonders effektiv für Dateien, die bereits übersetzt wurden und nur inkrementelle Bearbeitungen erhalten.
+- **Nur senden, was geändert wurde**: Anstatt die gesamte Datei bei kleinen Änderungen neu zu übersetzen, weist diff-apply das Modell an, minimale Bearbeitungsoperationen zur Aktualisierung der bestehenden Übersetzung zu berechnen. Dies ist besonders effektiv für Dateien, die bereits übersetzt wurden und nur inkrementelle Änderungen erhalten.
 
--   **Am besten für formatierte Dateien**: Dateien mit strenger Formatierung (JSON, XML, Markdown mit Codeblöcken) profitieren stark, da Diff-Apply die Struktur bewahrt und nur Textteile ändert, die eine Übersetzung benötigen. Dies reduziert die Chance auf formatbedingte Regressionen und zusätzliche Output-Tokens durch Modellneuformatierung.
+- **Am besten für formatierte Dateien**: Dateien mit strenger Formatierung (JSON, XML, Markdown mit Codeblöcken) profitieren stark, weil diff-apply die Struktur bewahrt und nur Textteile ändert, die übersetzt werden müssen. Das reduziert das Risiko von Formatierungsregressionen und zusätzlichen Output-Tokens durch Modellreformatierung.
 
--   **Zeilenorientierte Basiseinheit, intelligentere Aggregation**: Das Werkzeug behandelt die grundlegende Übersetzungseinheit als "Zeile", und die SEARCH/REPLACE-Strategie wendet exaktes oder unscharfes Matching in der Nähe von `:start_line:` an. Verwenden Sie `validationLevel: "normal"` für tolerantes Verhalten und `"strict"`, wenn Sie konservative, exakte Bearbeitungen benötigen.
+- **Zeilenorientierte Basiseinheit, intelligentere Aggregation**: Das Tool behandelt die grundlegende Übersetzungseinheit als "Zeile", und die SEARCH/REPLACE-Strategie wendet exakte oder unscharfe Übereinstimmungen nahe `:start_line:` an. Verwenden Sie `validationLevel: "normal"` für tolerantes Verhalten und `"strict"`, wenn Sie konservative, exakte Änderungen benötigen.
 
-Wann man Diff-Apply verwendet:
+Wann diff-apply verwenden:
 
--   Verwenden Sie es, wenn die Zieldatei bereits existiert und zuvor übersetzt wurde.
--   Verwenden Sie es für große, formatierte Dokumente, bei denen eine Neuübersetzung der gesamten Datei teuer wäre.
--   Vermeiden Sie es für brandneue Dateien ohne vorherige Übersetzung oder wenn Sie eine frische Neuübersetzung wünschen.
-
-
+- Verwenden Sie, wenn die Zieldatei bereits existiert und zuvor übersetzt wurde.
+- Verwenden Sie für große, formatierte Dokumente, bei denen eine Neuübersetzung der gesamten Datei teuer wäre.
+- Vermeiden Sie für brandneue Dateien ohne vorherige Übersetzung oder wenn Sie eine frische Neuübersetzung wünschen.
 
 ### Designdokumentation
 
--   Erzeugt Source-Maps für Entwicklungs-Builds
--   Minifiziert Code für Produktions-Builds
--   Bietet Problem-Matcher-Integration für VS Code
+- Generiert Source Maps für Entwicklungsbuilds
+- Minifiziert Code für Produktionsbuilds
+- Bietet Problem Matcher-Integration für VS Code
 
 ## Hinweise
 
--   Sorgen Sie für ausreichendes API-Nutzungskontingent
--   Es wird empfohlen, zuerst mit kleinen Projekten zu testen
--   Verwenden Sie dedizierte API-Schlüssel und entfernen Sie sie nach Abschluss
+- Stellen Sie ausreichendes API-Nutzungskontingent sicher
+- Empfohlen, zuerst mit kleinen Projekten zu testen
+- Verwenden Sie dedizierte API-Schlüssel und entfernen Sie sie nach Abschluss
 
 ## Lizenz
 

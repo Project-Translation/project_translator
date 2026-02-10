@@ -17,6 +17,7 @@ export class LogFileManager {
     private currentLogFile: string;
     private writeQueue: string[] = [];
     private isWriting = false;
+    private logDirEnsured = false;
 
 	    constructor(config: LogFileConfig, workspaceRoot?: string) {
         this.config = {
@@ -38,7 +39,23 @@ export class LogFileManager {
         }
 
 	        this.currentLogFile = path.join(this.logDir, "debug.log");
-	        this.ensureLogDirectory();
+    }
+
+    /**
+     * Ensure log directory exists.
+     * 注意：不要在构造函数/配置更新时创建目录，避免用户“只改设置”就产生文件系统副作用。
+     * 我们只在真正写入日志时创建目录/文件。
+     */
+    private ensureLogDirectoryOnce(): void {
+        if (this.logDirEnsured) {
+            return;
+        }
+        try {
+            fs.mkdirSync(this.logDir, { recursive: true });
+            this.logDirEnsured = true;
+        } catch (error) {
+            console.error("Failed to create log directory:", error);
+        }
     }
 
     /**
@@ -84,6 +101,7 @@ export class LogFileManager {
      */
 	    private async writeToFile(entry: string): Promise<void> {
 	        try {
+                this.ensureLogDirectoryOnce();
 	            // Check if rotation is needed
 	            await this.checkAndRotateLog();
 	
@@ -121,6 +139,7 @@ export class LogFileManager {
      */
 	    private async rotateLogFiles(): Promise<void> {
 	        try {
+                this.ensureLogDirectoryOnce();
 	            const maxFiles = this.config.maxFiles!;
 	            
 	            // Remove oldest log file if we've reached the limit
@@ -159,14 +178,10 @@ export class LogFileManager {
 	    }
 
 	    /**
-	     * Ensure log directory exists（在构造时调用，频率较低）
+	     * Ensure log directory exists（保留兼容：不再在构造时调用）
 	     */
 	    private ensureLogDirectory(): void {
-	        try {
-	            fs.mkdirSync(this.logDir, { recursive: true });
-	        } catch (error) {
-	            console.error("Failed to create log directory:", error);
-	        }
+            this.ensureLogDirectoryOnce();
 	    }
 
     /**
@@ -218,7 +233,8 @@ export class LogFileManager {
         // Update current log file path if directory changed
         if (oldLogDir !== this.logDir) {
             this.currentLogFile = path.join(this.logDir, "debug.log");
-            this.ensureLogDirectory();
+            // 仅更新路径，不在这里创建目录；目录会在首次写入时创建
+            this.logDirEnsured = false;
         }
     }
 }

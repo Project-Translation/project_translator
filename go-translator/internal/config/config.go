@@ -142,6 +142,7 @@ type Config struct {
 	SkipFrontMatter         SkipFrontMatterConfig `json:"skipFrontMatter,omitempty"`
 	Debug                   bool                  `json:"debug,omitempty"`
 	LogFile                 LogFileConfig         `json:"logFile,omitempty"`
+	SystemPromptLanguage    string                `json:"systemPromptLanguage,omitempty"`
 
 	// Legacy fields (backward compatibility with early Go CLI configs)
 	SystemPrompts []string `json:"systemPrompts,omitempty"`
@@ -167,6 +168,7 @@ type rawConfig struct {
 	SkipFrontMatterMarkers  *SkipFrontMatterConfig `json:"skipFrontMatterMarkers,omitempty"`
 	Debug                   bool                   `json:"debug,omitempty"`
 	LogFile                 *rawLogFileConfig      `json:"logFile,omitempty"`
+	SystemPromptLanguage    *string                `json:"systemPromptLanguage,omitempty"`
 
 	// Legacy fields
 	SystemPrompts []string `json:"systemPrompts,omitempty"`
@@ -178,6 +180,18 @@ func normalizeConfigPath(p string) string {
 		return p
 	}
 	return strings.ReplaceAll(p, "\\", "/")
+}
+
+func normalizeSystemPromptLanguage(v string) string {
+	s := strings.ToLower(strings.TrimSpace(v))
+	switch s {
+	case "en", "en-us", "en_us", "english":
+		return "en"
+	case "zh", "zh-cn", "zh_cn", "zh-hans", "zh_hans", "chinese", "chs":
+		return "zh-cn"
+	default:
+		return "en"
+	}
 }
 
 func defaultVendorConfig() VendorConfig {
@@ -447,6 +461,7 @@ func normalizeRaw(raw rawConfig, configPath string, workspaceRoot string) *Confi
 		SkipFrontMatter:         normalizeSkipFrontMatter(raw.SkipFrontMatter, raw.SkipFrontMatterMarkers),
 		Debug:                   raw.Debug,
 		LogFile:                 normalizeLogFile(raw.LogFile),
+		SystemPromptLanguage:    "",
 		SystemPrompts:           raw.SystemPrompts,
 		UserPrompts:             raw.UserPrompts,
 		ConfigPath:              configPath,
@@ -466,6 +481,11 @@ func normalizeRaw(raw rawConfig, configPath string, workspaceRoot string) *Confi
 	if cfg.SegmentationMarkers == nil {
 		cfg.SegmentationMarkers = map[string][]string{}
 	}
+	rawLang := ""
+	if raw.SystemPromptLanguage != nil {
+		rawLang = *raw.SystemPromptLanguage
+	}
+	cfg.SystemPromptLanguage = normalizeSystemPromptLanguage(rawLang)
 
 	return cfg
 }
@@ -527,6 +547,7 @@ func DefaultConfig() *Config {
 		SkipFrontMatter:         defaultSkipFrontMatterConfig(),
 		Debug:                   false,
 		LogFile:                 defaultLogFileConfig(),
+		SystemPromptLanguage:    "en",
 	}
 }
 
@@ -645,7 +666,10 @@ func SaveConfig(cfg *Config, configPath string) error {
 // 1) workspaceRoot/prompts
 // 2) current working directory/prompts
 func ResolvePromptsDir(workspaceRoot string) (string, bool) {
-	const probeFile = "system_prompt_part1.md"
+	probeFiles := []string{
+		"system_prompt_part1.en.md",
+		"system_prompt_part1.md",
+	}
 	candidates := []string{}
 	if strings.TrimSpace(workspaceRoot) != "" {
 		candidates = append(candidates, filepath.Join(workspaceRoot, "prompts"))
@@ -655,35 +679,73 @@ func ResolvePromptsDir(workspaceRoot string) (string, bool) {
 	}
 
 	for _, dir := range candidates {
-		if _, err := os.Stat(filepath.Join(dir, probeFile)); err == nil {
-			return dir, true
+		for _, probe := range probeFiles {
+			if _, err := os.Stat(filepath.Join(dir, probe)); err == nil {
+				return dir, true
+			}
 		}
 	}
 	return "", false
 }
 
 const (
-	SystemPromptPart1File = "system_prompt_part1.md"
-	SystemPromptPart2File = "system_prompt_part2.md"
-	DiffSystemPromptFile  = "diff_system_prompt.md"
+	systemPromptPart1Base = "system_prompt_part1"
+	systemPromptPart2Base = "system_prompt_part2"
+	diffSystemPromptBase  = "diff_system_prompt"
 )
 
-func LoadSystemPromptParts(promptsDir string) (part1 string, part2 string, err error) {
-	p1Bytes, err := os.ReadFile(filepath.Join(promptsDir, SystemPromptPart1File))
-	if err != nil {
-		return "", "", err
+func promptFileName(base string, lang string) string {
+	if normalizeSystemPromptLanguage(lang) == "en" {
+		return base + ".en.md"
 	}
-	p2Bytes, err := os.ReadFile(filepath.Join(promptsDir, SystemPromptPart2File))
-	if err != nil {
-		return "", "", err
-	}
-	return string(p1Bytes), string(p2Bytes), nil
+	return base + ".md"
 }
 
-func LoadDiffSystemPrompt(promptsDir string) (string, error) {
-	b, err := os.ReadFile(filepath.Join(promptsDir, DiffSystemPromptFile))
-	if err != nil {
-		return "", err
+func readPromptWithFallback(promptsDir string, base string, lang string) (string, error) {
+	primary := promptFileName(base, lang)
+	b, err := os.ReadFile(filepath.Join(promptsDir, primary))
+	if err == nil && strings.TrimSpace(string(b)) != "" {
+		return string(b), nil
 	}
-	return string(b), nil
+	// Fallback to the other language file
+	fallbackLang := "zh-cn"
+	if normalizeSystemPromptLanguage(lang) == "zh-cn" {
+		fallbackLang = "en"
+	}
+	fallback := promptFileName(base, fallbackLang)
+	b2, err2 := os.ReadFile(filepath.Join(promptsDir, fallback))
+	if err2 != nil {
+		// Prefer returning the primary error if it exists.
+		if err != nil {
+			return "", err
+		}
+		return "", err2
+	}
+	return string(b2), nil
+}
+
+func LoadSystemPromptPartsWithLanguage(promptsDir string, lang string) (part1 string, part2 string, err error) {
+	p1, err := readPromptWithFallback(promptsDir, systemPromptPart1Base, lang)
+	if err != nil {
+		return "", "", err
+	}
+	p2, err := readPromptWithFallback(promptsDir, systemPromptPart2Base, lang)
+	if err != nil {
+		return "", "", err
+	}
+	return p1, p2, nil
+}
+
+// LoadSystemPromptParts 保持兼容：默认按英文加载（若缺失则回退到中文）。
+func LoadSystemPromptParts(promptsDir string) (part1 string, part2 string, err error) {
+	return LoadSystemPromptPartsWithLanguage(promptsDir, "en")
+}
+
+func LoadDiffSystemPromptWithLanguage(promptsDir string, lang string) (string, error) {
+	return readPromptWithFallback(promptsDir, diffSystemPromptBase, lang)
+}
+
+// LoadDiffSystemPrompt 保持兼容：默认按英文加载（若缺失则回退到中文）。
+func LoadDiffSystemPrompt(promptsDir string) (string, error) {
+	return LoadDiffSystemPromptWithLanguage(promptsDir, "en")
 }

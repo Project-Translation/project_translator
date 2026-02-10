@@ -10,7 +10,6 @@ import {
 } from "../types/types";
 import * as path from "path";
 import * as fs from "fs";
-import { DEFAULT_SYSTEM_PROMPT_PART1, DEFAULT_SYSTEM_PROMPT_PART2 } from "./prompt";
 // process env used in translatorService, not needed here
 
 const fsp = fs.promises;
@@ -71,6 +70,7 @@ export interface Config {
   currentVendor: VendorConfig; // Current vendor configuration (derived from vendors array)
   customPrompts?: string[]; // Custom prompts for translation (appended to default system prompt)
   segmentationMarkers?: Record<string, string[]>; // Segmentation markers configured by file type
+  systemPromptLanguage: string; // Language of system prompts (e.g. "en", "zh-cn")
 
   debug?: boolean; // Enable debug mode to log API requests and responses
   logFile?: LogFileConfig; // Configuration for debug log file output
@@ -170,6 +170,7 @@ export async function exportSettingsToConfigFile(): Promise<void> {
       // intentionally exclude enableMetrics from export
       "debug",
       "logFile",
+      "systemPromptLanguage",
       "specifiedFiles",
       "specifiedFolders",
       "translationIntervalDays",
@@ -387,6 +388,7 @@ export async function getConfiguration(): Promise<Config> {
     customPrompts: vscodeConfig.get("customPrompts"),
     segmentationMarkers: vscodeConfig.get("segmentationMarkers"),
     diffApply: vscodeConfig.get("diffApply"),
+    systemPromptLanguage: vscodeConfig.get("systemPromptLanguage"),
 
     debug: vscodeConfig.get("debug"),
     logFile: vscodeConfig.get("logFile"),
@@ -485,6 +487,11 @@ export async function getConfiguration(): Promise<Config> {
   const segmentationMarkers = configData.segmentationMarkers;
   const debug = configData.debug || false;
   const diffApplyRaw = configData.diffApply as DiffApplyConfig | undefined;
+  const systemPromptLanguage =
+    typeof configData.systemPromptLanguage === "string" &&
+    configData.systemPromptLanguage.trim().length > 0
+      ? configData.systemPromptLanguage.trim()
+      : "en";
 
   // Get logFile configuration with default values
   const logFile = configData.logFile || {
@@ -525,6 +532,7 @@ export async function getConfiguration(): Promise<Config> {
     specifiedFolders: specifiedFolders || [],
     translationIntervalDays,
     segmentationMarkers: segmentationMarkers || {},
+    systemPromptLanguage,
     debug,
     diffApply,
 

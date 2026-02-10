@@ -56,7 +56,11 @@ func New(cfg *config.Config, db *translationdb.TranslationDatabase, tr *translat
 
 	diffPrompt := ""
 	if dir, ok := config.ResolvePromptsDir(root); ok {
-		if s, err := config.LoadDiffSystemPrompt(dir); err == nil {
+		lang := "en"
+		if cfg != nil && strings.TrimSpace(cfg.SystemPromptLanguage) != "" {
+			lang = cfg.SystemPromptLanguage
+		}
+		if s, err := config.LoadDiffSystemPromptWithLanguage(dir, lang); err == nil {
 			diffPrompt = s
 		}
 	}

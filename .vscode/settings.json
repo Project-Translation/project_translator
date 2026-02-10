@@ -1,12 +1,4 @@
 {
-    "debug.javascript.autoAttachFilter": "smart",
-    "debug.javascript.terminalOptions": {
-        "skipFiles": [
-            "<node_internals>/**"
-        ]
-    },
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "js/ts.implicitProjectConfig.checkJs": true,
     "projectTranslator.debug": true,
     "projectTranslator.logFile": {
         "enabled": true,

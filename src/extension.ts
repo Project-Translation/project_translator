@@ -30,8 +30,8 @@ export async function activate(context: vscode.ExtensionContext) {
     outputChannel = vscode.window.createOutputChannel("Project Translator");
     logMessage(localize("extension.activated", "Project Translator extension is now active!"));
 
-    // Initialize log file manager
-    await initializeLogFileManager();
+    // 不在 activate/改设置时创建日志目录/文件；仅在真正启动翻译时创建
+    await syncLogFileManagerWithConfig();
 
     // Initialize machine ID
     machineId = await AnalyticsService.getMachineId();
@@ -48,7 +48,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
         if (event.affectsConfiguration('projectTranslator.logFile') || 
             event.affectsConfiguration('projectTranslator.debug')) {
-            await initializeLogFileManager();
+            // 仅同步状态（必要时关闭现有日志），不要在此创建目录/文件
+            await syncLogFileManagerWithConfig();
         }
     });
     context.subscriptions.push(configChangeListener);
@@ -405,6 +406,8 @@ async function handletranslateFolders() {
         // Ensure we pick up latest settings / project.translation.json
         clearConfigurationCache();
 
+        await ensureLogFileManagerForTranslation();
+
         // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
@@ -542,6 +545,8 @@ async function handleTranslateFiles() {
     try {
         // Ensure we pick up latest settings / project.translation.json
         clearConfigurationCache();
+
+        await ensureLogFileManagerForTranslation();
 
         // Show and focus output panel
         outputChannel.clear();
@@ -683,6 +688,8 @@ async function handleTranslateProject() {
     try {
         // Ensure we pick up latest settings / project.translation.json
         clearConfigurationCache();
+
+        await ensureLogFileManagerForTranslation();
 
         // 标记进入项目翻译模式
         isProjectTranslation = true;
@@ -1010,39 +1017,65 @@ function outputSummary(startTime: number, fileProcessor: FileProcessor, translat
 }
 
 /**
- * Initialize or update the log file manager based on current configuration
+ * 同步日志管理器状态（不产生文件系统副作用）。
+ * - 不会在这里创建日志目录/文件
+ * - 仅在禁用时关闭已有的日志写入
  */
-async function initializeLogFileManager(): Promise<void> {
+async function syncLogFileManagerWithConfig(): Promise<void> {
     try {
         const config = await getConfiguration();
         const workspaceFolders = vscode.workspace.workspaceFolders;
         const workspaceRoot = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : undefined;
 
-        if (config.debug && config.logFile && config.logFile.enabled) {
-            if (logFileManager) {
-                // Update existing manager
-                logFileManager.updateConfig(config.logFile, workspaceRoot);
-            } else {
-                // Create new manager
-                logFileManager = new LogFileManager(config.logFile, workspaceRoot);
-            }
-            
-            // Log initialization
-            const logDir = logFileManager.getLogDirectory();
-            logMessage(`Debug log file enabled: ${logFileManager.getCurrentLogFile()}`);
-            logFileManager.writeLog(`=== Project Translator Debug Session Started ===`);
-            logFileManager.writeLog(`Log directory: ${logDir}`);
-            logFileManager.writeLog(`Configuration: ${JSON.stringify(config.logFile, null, 2)}`);
-        } else {
-            // Disable logging
+        const logFile = config.logFile;
+        const enabled = !!(config.debug && logFile && logFile.enabled);
+        if (!enabled) {
             if (logFileManager) {
                 logFileManager.writeLog(`=== Project Translator Debug Session Ended ===`);
                 logFileManager.dispose();
                 logFileManager = null;
             }
+            return;
+        }
+
+        // enabled=true：仅更新已有 manager 配置（若尚未创建，保持懒加载）
+        if (logFileManager) {
+            logFileManager.updateConfig(logFile, workspaceRoot);
         }
     } catch (error) {
-        logMessage(`Failed to initialize log file manager: ${error}`, "error");
+        logMessage(`Failed to sync log file manager: ${error}`, "error");
+    }
+}
+
+/**
+ * 启动翻译任务时确保日志目录/文件创建。
+ * 这是唯一会“创建目录/文件”的入口，满足：改设置不落盘，启动翻译才落盘。
+ */
+async function ensureLogFileManagerForTranslation(): Promise<void> {
+    try {
+        const config = await getConfiguration();
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        const workspaceRoot = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : undefined;
+
+        const logFile = config.logFile;
+        if (!(config.debug && logFile && logFile.enabled)) {
+            return;
+        }
+
+        if (logFileManager) {
+            logFileManager.updateConfig(logFile, workspaceRoot);
+        } else {
+            logFileManager = new LogFileManager(logFile, workspaceRoot);
+        }
+
+        // 写入一条 session 头，触发目录/文件创建
+        const logDir = logFileManager.getLogDirectory();
+        logMessage(`Debug log file enabled: ${logFileManager.getCurrentLogFile()}`);
+        logFileManager.writeLog(`=== Project Translator Debug Session Started ===`);
+        logFileManager.writeLog(`Log directory: ${logDir}`);
+        logFileManager.writeLog(`Configuration: ${JSON.stringify(logFile, null, 2)}`);
+    } catch (error) {
+        logMessage(`Failed to ensure log file manager for translation: ${error}`, "error");
     }
 }
 

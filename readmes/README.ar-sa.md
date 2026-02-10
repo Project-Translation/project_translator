@@ -1,129 +1,129 @@
 
-# Project Translator
+# مترجم المشروع
 
-امتداد vscode سهل الاستخدام للتوطين متعدد اللغات للمشاريع.
+امتداد سهل الاستخدام لـ VS Code لترجمة المشاريع إلى لغات متعددة.
 
 مستودع المشروع: `https://github.com/Project-Translation/project_translator`
 
-<!-- ![example1](./resources/example1.gif) -->
+## التثبيت
+
+1. السوق:
+   - سوق امتدادات VS Code: [https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)
+   - سجل Open VSX: [https://open-vsx.org/extension/techfetch-dev/project-translator](https://open-vsx.org/extension/techfetch-dev/project-translator)
+2. ابحث عن `techfetch-dev.project-translator` في نافذة امتدادات VS Code وقم بالتثبيت
+
+<!-- ![example1](../resources/example1.gif) -->
 ![example1](https://i.imgur.com/uwRal2I.gif)
 
-## Available Translations
+## اللغات المتاحة
 
-يدد الامتداد الترجمة إلى هذه اللغات:
+يدعم الامتداد الترجمة إلى هذه اللغات:
 
-- [简体中文 (zh-cn)](./readmes/README.zh-cn.md)
-- [繁體中文 (zh-tw)](./readmes/README.zh-tw.md)
-- [日本語 (ja-jp)](./readmes/README.ja-jp.md)
-- [한국어 (ko-kr)](./readmes/README.ko-kr.md)
-- [Français (fr-fr)](./readmes/README.fr-fr.md)
-- [Deutsch (de-de)](./readmes/README.de-de.md)
-- [Español (es-es)](./readmes/README.es-es.md)
-- [Português (pt-br)](./readmes/README.pt-br.md)
-- [Русский (ru-ru)](./readmes/README.ru-ru.md)
-- [العربية (ar-sa)](./readmes/README.ar-sa.md)
-- [العربية (ar-ae)](./readmes/README.ar-ae.md)
-- [العربية (ar-eg)](./readmes/README.ar-eg.md)
+- [简体中文 (zh-cn)](./README.zh-cn.md)
+- [繁體中文 (zh-tw)](./README.zh-tw.md)
+- [日本語 (ja-jp)](./README.ja-jp.md)
+- [한국어 (ko-kr)](./README.ko-kr.md)
+- [Français (fr-fr)](./README.fr-fr.md)
+- [Deutsch (de-de)](./README.de-de.md)
+- [Español (es-es)](./README.es-es.md)
+- [Português (pt-br)](./README.pt-br.md)
+- [Русский (ru-ru)](./README.ru-ru.md)
+- [العربية (ar-sa)](./README.ar-sa.md)
+- [العربية (ar-ae)](./README.ar-ae.md)
+- [العربية (ar-eg)](./README.ar-eg.md)
 
-## Samples
+## عينات
 
-| Project                                                                             | Original Repository                                                                                       | Description                                                                                                                                                               | Stars | Tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| المشروع                                                                             | المستودع الأصلي                                                                                       | الوصف                                                                                                                                                               | النجوم | الوسوم                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:منصة تفاعلية عبر الإنترنت لتصور الخوارزميات من الكود                                                                                                             | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:تصورات الخوارزميات                                                                                                                                           | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | وكيل ترميز مستقل في بيئة التطوير المتكاملة الخاصة بك، قادر على إنشاء/تحرير الملفات، وتنفيذ الأوامر، واستخدام المتصفح، والمزيد مع إذنك في كل خطوة.                         | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | الوثائق مفتوحة المصدر لـ Cursor                                                                                                                                          | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:منصة تفاعلية على الإنترنت لتصور الخوارزميات من الكود                                                                                               | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:تصورات الخوارزميات                                                                                                                                    | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | وكيل ترميز مستقل داخل بيئة التطوير الخاص بك، قادر على إنشاء/تحرير الملفات، تنفيذ الأوامر، استخدام المتصفح، والمزيد بإذن منك في كل خطوة. | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | الوثائق مفتوحة المصدر لـ Cursor                                                                                                                                        | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go بالأمثلة                                                                                                                                                             | 7523  | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [mirror] مواقع go.dev و golang.org                                                                                                                                        | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ شارك ورقة غش مرجع سريعة للمطورين.                                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
-| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | أدلة الأسلوب للمشاريع مفتوحة المصدر من Google                                                                                                                            | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | الوثائق العامة لـ Visual Studio Code                                                                                                                                    | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [مرآة] موقعي go.dev و golang.org                                                                                                                       | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ مشاركة ورقة غش سريعة للمرجع للمطورين.                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
+| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | أدلة أسلوب لمشاريع Google مفتوحة المصدر                                                                                                                   | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | الوثائق العامة لـ Visual Studio Code                                                                                                                               | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
-## Requesting Project Translation
+## طلب ترجمة مشروع
 
 إذا كنت ترغب في المساهمة بترجمة أو تحتاج إلى ترجمة مشروع:
 
 1. أنشئ مشكلة باستخدام القالب التالي:
 
 ```md
-**Project**: [project_url]
-**Target Language**: [target_lang]
-**Description**: Brief description of why this translation would be valuable
+**المشروع**: [project_url]
+**اللغة المستهدفة**: [target_lang]
+**الوصف**: وصف موجز عن قيمة هذه الترجمة
 ```
 
 2. سير العمل:
 
 ```mermaid
 sequenceDiagram
-  Contributor->>Project Translator: Create translation issue
-  Project Translator->>Community: Review issue
-  Community-->>Contributor: Approve/Comment
-  Contributor->>New Project: Start translation
-  Contributor->>New Project: Submit to New Project
-  Contributor->>Project Translator: Create Pull Request, modify README.Samples
-  Project Translator-->>Project Translator: Review & Merge
+  المساهم->>مترجم المشروع: إنشاء مشكلة ترجمة
+  مترجم المشروع->>المجتمع: مراجعة المشكلة
+  المجتمع-->>المساهم: الموافقة/التعليق
+  المساهم->>مشروع جديد: بدء الترجمة
+  المساهم->>مشروع جديد: تقديم إلى مشروع جديد
+  المساهم->>مترجم المشروع: إنشاء طلب سحب، تعديل README.Samples
+  مترجم المشروع-->>مترجم المشروع: المراجعة والدمج
 ```
 
-3. بعد دمج الطلب السحبي، ستتم إضافة الترجمة إلى قسم العينات.
+3. بعد دمج الطلب، ستضاف الترجمة إلى قسم العينات.
 
-الترجمات الحالية قيد التقدم: [عرض المشاكل](https://github.com/Project-Translation/project_translator/issues)
+الترجمات قيد التنفيذ حالياً: [عرض المشكلات](https://github.com/Project-Translation/project_translator/issues)
 
-## Features
+## الميزات
 
 - 📁 دعم الترجمة على مستوى المجلد
   - ترجمة مجلدات المشروع بأكملها إلى لغات متعددة
-  - الحفاظ على بنية المجلد الأصلية والتسلسل الهرمي
-  - دعم الترجمة التكرارية للمجلدات الفرعية
+  - الحفاظ على هيكل المجلد الأصلي والتسلسل الهرمي
+  - دعم الترجمة التلقائية للمجلدات الفرعية
   - الكشف التلقائي عن المحتوى القابل للترجمة
-  - المعالجة المجمعة للترجمات واسعة النطاق بكفاءة
+  - معالجة الدُفعات للترجمات واسعة النطاق بكفاءة
 - 📄 دعم الترجمة على مستوى الملف
-  - ترجمة الملفات الفردية إلى لغات متعددة
-  - الحفاظ على بنية الملف الأصلية والتنسيق
-  - دعم كل من وضعي الترجمة للمجلد والملف
-- 💡 ترجمة ذكية بالذكاء الاصطناعي
-  - يحافظ تلقائيًا على سلامة بنية الكود
-  - يترجم فقط تعليقات الكود، يحافظ على منطق الكود
-  - يحافظ على تنسيقات هياكل البيانات مثل JSON/XML
-  - جودة احترافية لترجمة الوثائق التقنية
+  - ترجمة ملفات فردية إلى لغات متعددة
+  - الحفاظ على هيكل الملف الأصلي وتنسيقه
+  - دعم كل من أوضاع ترجمة المجلد والملف
+- 💡 ترجمة ذكية باستخدام الذكاء الاصطناعي
+  - الحفاظ تلقائياً على سلامة هيكل الكود
+  - ترجمة تعليقات الكود فقط، والحفاظ على منطق الكود
+  - الحفاظ على تنسيقات هياكل البيانات مثل JSON/XML وغيرها
+  - جودة ترجمة احترافية للوثائق التقنية
 - ⚙️ تكوين مرن
-  - تكوين المجلد المصدر ومجلدات الهدف المتعددة
-  - دعم فترات ترجمة مخصصة للملفات
+  - تكوين مجلد المصدر ومجلدات الهدف المتعددة
+  - دعم فترات ترجمة ملفات مخصصة
   - تعيين أنواع ملفات محددة لتجاهلها
-  - دعم خيارات نماذج الذكاء الاصطناعي المتعددة
-- 🚀 عمليات سهلة للمستخدم
+  - دعم خيارات نماذج ذكاء اصطناعي متعددة
+- 🚀 عمليات سهلة الاستخدام
   - عرض تقدم الترجمة في الوقت الفعلي
-  - دعم الإيقاف المؤقت/الاستئناف/إيقاف الترجمة
-  - الصيانة التلقائية لبنية المجلد الهدف
-  - الترجمة التزايدية لتجنب العمل المكرر
-- 🔄 الترجمة التفاضلية (تجريبي)
-  - وضع diff-apply لتحديثات فعالة للترجمات الموجودة
-  - يقلل من استخدام API عن طريق ترجمة المحتوى المتغير فقط
-  - يحافظ على تاريخ الإصدارات بالحد الأدنى من التعديلات
+  - دعم إيقاف/استئناف/إيقاف الترجمة
+  - صيانة تلقائية لهيكل مجلد الهدف
+  - ترجمة تزايدية لتجنب العمل المكرر
+- 🔄 ترجمة تفاضلية (تجريبية)
+  - وضع Diff-apply لترقية الترجمات الحالية بكفاءة
+  - تقليل استخدام واجهة برمجة التطبيقات عن طريق ترجمة المحتوى المتغير فقط
+  - الحفاظ على سجل الإصدارات مع أقل التعديلات
   - ⚠️ ميزة تجريبية - انظر [الميزات المتقدمة](#differential-translation-diff-apply-mode) للتفاصيل
 
-## Installation
+## التكوين
 
-1. ابحث عن "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" في سوق امتدادات VS Code
-2. انقر على تثبيت
-   
-بدلاً من ذلك، قم بالتثبيت من Visual Studio Marketplace: `https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator` أو ابحث عن `techfetch-dev.project-translator` في عرض امتدادات VS Code.
-
-## Configuration
-
-يدد الامتداد خيارات التكوين التالية:
+يدعم الامتداد خيارات التكوين التالية:
 
 ```json
 {
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "Source folder path",
-        "lang": "Source language code"
+        "path": "مسار مجلد المصدر",
+        "lang": "رمز لغة المصدر"
       },
       "targetFolders": [
         {
-          "path": "Target folder path",
-          "lang": "Target language code"
+          "path": "مسار مجلد الهدف",
+          "lang": "رمز لغة الهدف"
         }
       ]
     }
@@ -131,13 +131,13 @@ sequenceDiagram
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "Source file path",
-        "lang": "Source language code"
+        "path": "مسار ملف المصدر",
+        "lang": "رمز لغة المصدر"
       },
       "targetFiles": [
         {
-          "path": "Target file path",
-          "lang": "Target language code"
+          "path": "مسار ملف الهدف",
+          "lang": "رمز لغة الهدف"
         }
       ]
     }
@@ -146,7 +146,7 @@ sequenceDiagram
   "projectTranslator.vendors": [
     {
       "name": "openai",
-      "apiEndpoint": "API endpoint URL",
+      "apiEndpoint": "رابط نهاية واجهة برمجة التطبيقات",
       "apiKeyEnvVarName": "MY_OPENAI_API_KEY",
       "model": "gpt-4o",
       "rpm": "10",
@@ -156,8 +156,8 @@ sequenceDiagram
     }
   ],
   "projectTranslator.userPrompts": [
-      "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
-      "2. './readmes/' in the sentences should replace with './'",
+      "1. يجب أن يعيد عدم الحاجة للترجمة إذا كان ملف markdown يحتوي على 'draft' مضبوط على 'true' في front matter.",
+      "2. './readmes/' في الجمل يجب استبدالها بـ './'",
   ],
   "projectTranslator.ignore": {
     "paths": [
@@ -172,73 +172,74 @@ sequenceDiagram
 
 تفاصيل التكوين الرئيسية:
 
-| Configuration Option                        | Description                                                                                    |
+| خيار التكوين                        | الوصف                                                                                    |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`        | مجلدات مصدر متعددة مع مجلدات الوجهة المقابلة لها للترجمة                                       |
-| `projectTranslator.specifiedFiles`          | ملفات مصدر متعددة مع ملفات الوجهة المقابلة لها للترجمة                                         |
-| `projectTranslator.translationIntervalDays` | فترة الترجمة بالأيام (الافتراضي 7 أيام)                                                        |
-| `projectTranslator.copyOnly`                | ملفات للنسخ ولكن لا للترجمة (مع مصفوفات `paths` و `extensions`)                               |
-| `projectTranslator.ignore`                  | ملفات لتجاهلها تمامًا (مع مصفوفات `paths` و `extensions`)                                    |
-| `projectTranslator.skipFrontMatterMarkers`  | تخطي الملفات بناءً على علامات front matter (مع مصفوفات `enabled` و `markers`)                  |
-| `projectTranslator.currentVendor`           | مورد API الحالي قيد الاستخدام                                                                  |
-| `projectTranslator.vendors`                 | قائمة تكوين مورد API (يمكن استخدام apiKey مباشرة أو apiKeyEnvVarName للمتغيرات البيئية)      |
-| `projectTranslator.systemPrompts`           | مصفوفة الأوامر النظامية لإرشاد عملية الترجمة                                                  |
-| `projectTranslator.userPrompts`             | مصفوفة الأوامر المعرفة من قبل المستخدم، ستتم إضافة هذه الأوامر بعد أوامر النظام أثناء الترجمة |
-| `projectTranslator.segmentationMarkers`     | علامات التجزئة حسب نوع الملف، تدعم التعبيرات النمطية                                         |
-| `projectTranslator.debug`                   | تفعيل وضع التصحيح لتسجيل جميع طلبات وردود API في قناة الإخراج (الافتراضي: false)             |
-| `projectTranslator.logFile`                 | تكوين ملفات سجل التصحيح (انظر [ميزة ملف السجل](./docs/log-file-feature.md))                   |
-| `projectTranslator.diffApply.enabled`       | تفعيل وضع الترجمة التفاضلية التجريبي (الافتراضي: false)                                       |
+| `projectTranslator.specifiedFolders`        | مجلدات مصدر متعددة مع مجلدات الهدف المقابلة لها للترجمة           |
+| `projectTranslator.specifiedFiles`          | ملفات مصدر متعددة مع ملفات الهدف المقابلة لها للترجمة               |
+| `projectTranslator.translationIntervalDays` | فاصل الترجمة بالأيام (افتراضي 7 أيام)                                                  |
+| `projectTranslator.copyOnly`                | ملفات للنسخ فقط دون ترجمة (مع مصفوفات `paths` و `extensions`)                         |
+| `projectTranslator.ignore`                  | ملفات لتجاهلها تماماً (مع مصفوفات `paths` و `extensions`)                              |
+| `projectTranslator.skipFrontMatterMarkers`  | تخطي الملفات بناءً على علامات front matter (مع `enabled` و `markers` كمصفوفات)                 |
+| `projectTranslator.currentVendor`           | موفر واجهة برمجة التطبيقات الحالي المستخدم                                                                      |
+| `projectTranslator.vendors`                 | قائمة تكوين موفر واجهة برمجة التطبيقات (يمكن استخدام apiKey مباشرة أو apiKeyEnvVarName للمتغيرات البيئية) |
+| `projectTranslator.systemPromptLanguage`    | اللغة المستخدمة في التعليمات المدمجة للنظام (افتراضي: en). يؤثر على كيفية توجيه النموذج، وليس لغة الواجهة |
+| `projectTranslator.systemPrompts`           | مصفوفة التعليمات للنظام لتوجيه عملية الترجمة                                        |
+| `projectTranslator.userPrompts`             | مصفوفة التعليمات المحددة من المستخدم، ستضاف هذه التعليمات بعد تعليمات النظام أثناء الترجمة |
+| `projectTranslator.segmentationMarkers`     | علامات التجزئة المكونة حسب نوع الملف، تدعم التعبيرات العادية                     |
+| `projectTranslator.debug`                   | تمكين وضع التصحيح لتسجيل جميع طلبات واجهة برمجة التطبيقات والاستجابات إلى قناة الإخراج (افتراضي: false)     |
+| `projectTranslator.logFile`                 | تكوين ملفات سجل التصحيح (انظر [ميزة ملف السجل](./docs/log-file-feature.md))         |
+| `projectTranslator.diffApply.enabled`       | تمكين وضع الترجمة التفاضلية التجريبي (افتراضي: false)                             |
 
-## Usage
+## الاستخدام
 
 1. افتح لوحة الأوامر (Ctrl+Shift+P / Cmd+Shift+P)
 2. اكتب "Translate Project" واختر الأمر
-3. إذا لم يتم تكوين المجلد المصدر، ستظهر نافذة حوار اختيار المجلد
+3. إذا لم يتم تكوين مجلد المصدر، ستظهر نافذة اختيار المجلد
 4. انتظر حتى تكتمل الترجمة
 
 أثناء الترجمة:
 
-- يمكن إيقاف الترجمة مؤقتًا/استئنافها عبر أزرار شريط الحالة
+- يمكن إيقاف/استئناف الترجمة عبر أزرار شريط الحالة
 - يمكن إيقاف عملية الترجمة في أي وقت
-- تقدم الترجمة يظهر في منطقة الإشعارات
-- السجلات التفصيلية تعرض في لوحة الإخراج
+- يظهر تقدم الترجمة في منطقة الإشعارات
+- تظهر السجلات التفصيلية في لوحة الإخراج
 
-## Development
+## التطوير
 
-### Build System
+### نظام البناء
 
-يستخدم هذا الامتداد esbuild للحزم السريعة والتطوير:
+يستخدم هذا الامتداد esbuild للبناء السريع والتطوير:
 
-#### Available Scripts
+#### البرامج النصية المتاحة
 
-- `npm run build` - بناء الإنتاج مع الضغط
+- `npm run build` - بناء الإنتاج مع التصغير
 - `npm run compile` - بناء التطوير
 - `npm run watch` - وضع المراقبة للتطوير
 - `npm test` - تشغيل الاختبارات
 
-#### VS Code Tasks
+#### مهام VS Code
 
-- **Build** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - يحزم الامتداد للإنتاج
+- **Build** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - حزمة الامتداد للإنتاج
 - **Watch** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - وضع التطوير مع إعادة البناء التلقائي
 
-### Development Setup
+### إعداد التطوير
 
-1. استنساخ المستودع
-2. تشغيل `npm install` لتثبيت الاعتماديات
-3. اضغط `F5` لبدء التصحيح أو تشغيل مهمة "watch" للتطوير
+1. استنسخ المستودع
+2. قم بتشغيل `npm install` لتثبيت التبعيات
+3. اضغط على `F5` لبدء التصحيح أو قم بتشغيل مهمة "watch" للتطوير
 
 تكوين esbuild:
 
 - يحزم جميع ملفات TypeScript في ملف واحد `out/extension.js`
-- يستثني VS Code API (محدد كخارجي)
+- يستثني واجهة برمجة تطبيقات VS Code (معلمة كخارجية)
 
-## Advanced Features
+## ميزات متقدمة
 
-### Using Environment Variables for API Keys
+### استخدام المتغيرات البيئية لمفاتيح واجهة برمجة التطبيقات
 
-يدد Project Translator استخدام متغيرات البيئة لمفاتيح API، وهو نهج أكثر أمانًا من تخزين مفاتيح API مباشرة في ملفات التكوين:
+يدعم مترجم المشروع استخدام المتغيرات البيئية لمفاتيح واجهة برمجة التطبيقات، وهو نهج أكثر أماناً من تخزين مفاتيح واجهة برمجة التطبيقات مباشرة في ملفات التكوين:
 
-1. قم بتكوين المورد الخاص بك بخاصية `apiKeyEnvVarName`:
+1. قم بتكوين موفرك بخاصية `apiKeyEnvVarName`:
 
 ```json
 {
@@ -259,21 +260,21 @@ sequenceDiagram
 }
 ```
 
-2. قم بتعيين متغير البيئة في نظامك:
+2. قم بتعيين المتغير البيئي في نظامك:
    - على Windows: `set OPENAI_API_KEY=your_api_key`
    - على macOS/Linux: `export OPENAI_API_KEY=your_api_key`
 
-3. عند تشغيل الامتداد، سيفعل ما يلي:
-   - أولاً يتحقق مما إذا تم توفير `apiKey` مباشرة في التكوين
-   - إذا لم يكن كذلك، سيبحث عن متغير البيئة المحدد بواسطة `apiKeyEnvVarName`
+3. عند تشغيل الامتداد، سيقوم بما يلي:
+   - التحقق أولاً مما إذا تم توفير `apiKey` مباشرة في التكوين
+   - إذا لم يكن كذلك، سيبحث عن المتغير البيئي المحدد بواسطة `apiKeyEnvVarName`
 
-هذا النهج يبقي مفاتيح API بعيدًا عن ملفات التكوين وأنظمة التحكم في الإصدار.
+يحافظ هذا النهج على مفاتيح واجهة برمجة التطبيقات خارج ملفات التكوين وأنظمة التحكم في الإصدار.
 
-### Skip Translation Based on Front Matter
+### تخطي الترجمة بناءً على Front Matter
 
-يمكن لـ Project Translator تخطي ترجمة ملفات Markdown بناءً على بيانات وصفية front matter الخاصة بها. هذا مفيد للمستندات المسودة أو الملفات الموسومة بأنها لا تتطلب ترجمة.
+يمكن لمترجم المشروع تخطي ترجمة ملفات Markdown بناءً على بيانات وصفية في front matter. هذا مفيد للمستندات المسودة أو الملفات المحددة على أنها لا تحتاج إلى ترجمة.
 
-لتفعيل هذه الميزة، قم بتكوين خيار `projectTranslator.skipFrontMatterMarkers`:
+لتمكين هذه الميزة، قم بتكوين خيار `projectTranslator.skipFrontMatterMarkers`:
 
 ```json
 {
@@ -293,36 +294,36 @@ sequenceDiagram
 }
 ```
 
-مع هذا التكوين، أي ملف Markdown يحتوي على front matter يحتوي على `draft: true` أو `translate: false` سيتم تخطيه أثناء الترجمة ونسخه مباشرة إلى الموقع الهدف.
+مع هذا التكوين، سيتم تخطي أي ملف Markdown يحتوي على front matter يحتوي على `draft: true` أو `translate: false` أثناء الترجمة ونسخه مباشرة إلى موقع الهدف.
 
-ملف Markdown مثال سيتم تخطيه:
+مثال لملف Markdown سيتم تخطيه:
 ```
 ---
 draft: true
-title: "Draft Document"
+title: "مسودة المستند"
 ---
 
-This document is a draft and should not be translated.
+هذا المستند مسودة ولا يجب ترجمته.
 ```
 
-### Differential Translation (Diff-Apply) Mode
+### وضع الترجمة التفاضلية (Diff-Apply)
 
-> **⚠️ تحذير الميزة التجريبية**: وضع الترجمة التفاضلية هو حاليًا ميزة تجريبية وقد يكون لديه مشاكل في الاستقرار والتوافق. يوصى باستخدامه بحذر في بيئات الإنتاج ودائمًا نسخ الملفات المهمة احتياطيًا.
+> **⚠️ تحذير ميزة تجريبية**: وضع الترجمة التفاضلية حالياً ميزة تجريبية وقد يكون لها مشاكل في الاستقرار والتوافق. يوصى باستخدامها بحذر في بيئات الإنتاج ونسخ الملفات المهمة دائماً.
 
-يدد الامتداد وضع ترجمة تفاضلية اختياري (diff-apply). عند تفعيله، يرسل الامتداد كلًا من المحتوى المصدر وملف الترجمة الهدف الموجود إلى النموذج. يجب أن يُرجع النموذج كتلة واحدة أو أكثر من SEARCH/REPLACE (نص عادي، بدون سياج كود). يطبق الامتداد هذه الكتل محليًا لتقليل التغييرات، وتقليل استخدام API، والحفاظ بشكل أفضل على تاريخ الإصدار.
+يدعم الامتداد وضع ترجمة تفاضلية اختياري (diff-apply). عند التمكين، يرسل الامتداد كل من محتوى المصدر وملف الهدف المترجم الحالي إلى النموذج. يجب أن يعيد النموذج واحداً أو أكثر من كتل SEARCH/REPLACE (نص عادي، بدون أسوار كود). يطبق الامتداد هذه الكتل محلياً لتقليل التغييرات، وتقليل استخدام واجهة برمجة التطبيقات، والحفاظ بشكل أفضل على سجل الإصدارات.
 
-- **تبديل**: قم بتكوين `projectTranslator.diffApply.enabled` في إعدادات VS Code أو `project.translation.json` (الافتراضي: `false`).
+- **تبديل**: قم بتكوين `projectTranslator.diffApply.enabled` في إعدادات VS Code أو `project.translation.json` (افتراضي: `false`).
 - **خيارات**:
-  - `validationLevel`: `normal` أو `strict` (الافتراضي: `normal`). في الوضع `strict`، سيسبب العلامات غير الصالحة أو فشل المطابقة خطأ ويعود الامتداد إلى تدفق الترجمة القياسي.
-  - `autoBackup`: إذا كان true، ينشئ نسخة احتياطية `.bak` من الملف الهدف قبل تطبيق التعديلات (الافتراضي: `true`).
-  - `maxOperationsPerFile`: (محتفظ بها للتوافق) لا تستخدمها الاستراتيجية الجديدة.
+  - `validationLevel`: `normal` أو `strict` (افتراضي: `normal`). في الوضع `strict`، ستسبب العلامات غير الصالحة أو فشل المطابقة خطأً وسيعود الامتداد إلى تدفق الترجمة القياسي.
+  - `autoBackup`: إذا كان true، قم بإنشاء نسخة احتياطية `.bak` لملف الهدف قبل تطبيق التعديلات (افتراضي: `true`).
+  - `maxOperationsPerFile`: (محفوظ للتطابق) غير مستخدم بواسطة الإستراتيجية الجديدة.
 
 سير العمل:
-1. إذا كان `diffApply.enabled` هو `true` وملف الهدف موجود، يقرأ الامتداد كلًا من المحتويات المصدر والهدف.
-2. يستدعي النموذج بموجه تفاضلي ويطالب بإرجاع كتل SEARCH/REPLACE بالنص العادي.
-3. محليًا، يحلل الامتداد ويطبق كتل SEARCH/REPLACE. إذا فشل التطبيق، يعود إلى الترجمة الكاملة العادية ويكتب فوق الملف الهدف.
+1. إذا كان `diffApply.enabled` هو `true` وملف الهدف موجود، يقرأ الامتداد محتويات المصدر والهدف.
+2. يستدعي النموذج مع تعليمات تفاضلية ويتطلب إعادة كتل SEARCH/REPLACE كنص عادي.
+3. محلياً، يحلل الامتداد ويطبق كتل SEARCH/REPLACE. إذا فشل التطبيق، يعود إلى الترجمة الكاملة العادية ويكتب فوق ملف الهدف.
 
-مثال SEARCH/REPLICATE (كتل متعددة مسموح بها):
+مثال SEARCH/REPLACE (يسمح بكتل متعددة):
 
 ```
 <<<<<<< SEARCH
@@ -347,52 +348,50 @@ function foo() {
 ```
 
 ملاحظات:
-- استخدم المحتوى الدقيق بما في ذلك المسافات البادئة والمسافات البيضاء في أقسام SEARCH. إذا لم تكن متأكدًا، استخدم أحدث محتوى للملف.
+- استخدم المحتوى الدقيق بما في ذلك المسافات البادئة والبيضاء في أقسام SEARCH. إذا لم تكن متأكداً، استخدم أحدث محتوى ملف.
 - احتفظ بخط واحد من `=======` بين SEARCH و REPLACE.
-- إذا لم يكن هناك حاجة للتغيير، يجب أن يُرجع النموذج سلسلة فارغة.
+- إذا لم يكن هناك حاجة لتغيير، يجب أن يعيد النموذج سلسلة فارغة.
 
-لماذا الترجمة التفاضلية تؤدي بشكل سيء حاليًا (شرح)
+لماذا تعمل الترجمة التفاضلية حالياً بشكل ضعيف (شرح)
 
-- **تحديات المحاذاة والمقارنة عبر اللغات**: تتطلب الترجمة التفاضلية إرسال المستند المصدر الأصلي والمستند المترجم الموجود إلى النموذج، ويجب على النموذج مقارنتهما عبر اللغات لتحديد أجزاء الترجمة التي تحتاج إلى تغيير. هذه مهمة أصعب بشكل أساسي من تعديل مستند واحد في مكانه لأن النموذج يجب أن يحاذي بدقة مقاطع في لغات مختلفة ويحكم على الاختلافات الدلالية.
+- **تحديات محاذاة ومقارنة اللغات المتعددة**: تتطلب الترجمة التفاضلية إرسال كل من المستند المصدر الأصلي والمستند المترجم الحالي إلى النموذج، ويجب على النموذج مقارنتها عبر اللغات لتحديد أجزاء الترجمة التي تحتاج إلى تغيير. هذه مهمة أصعب بشكل أساسي من تعديل مستند واحد في مكانه لأن النموذج يجب أن يحاذي المقاطع بدقة في لغات مختلفة ويحكم على الاختلافات الدلالية.
 
-- **تعقيد الحفاظ على التنسيق والحدود**: تحتوي العديد من المستندات على كتل كود، جداول، علامات أمامية، أو عناصر نائبة خاصة. يتطلب سير عمل diff موثوق الحفاظ على هذه الهياكل مع إجراء تعديلات نصية. إذا لم يتمكن النموذج من إنتاج نتائج تتبع بدقة تنسيق SEARCH/REPLACE، قد تؤدي التعديلات التلقائية إلى انحدارات في التنسيق أو أخطاء هيكلية.
+- **تعقيد الحفاظ على التنسيق والحدود**: تحتوي العديد من المستندات على كتل كود، جداول، علامات واجهة أمامية، أو عناصر نائبة خاصة. يجب أن يحافظ تدفق diff الموثوق على هذه الهياكل أثناء إجراء التعديلات النصية. إذا لم يتمكن النموذج من إنتاج نتائج تتبع تنسيق SEARCH/REPLACE بدقة، فقد يؤدي التطبيق التلقائي للتعديلات إلى تراجعات في التنسيق أو أخطاء هيكلية.
 
-- **مشاكل الاتساق في السياق والمصطلحات**: غالبًا ما تعتمد التعديلات الصغيرة والموضعية على سياق أوسع وقاموس مصطلحات/أسلوب موجود. عند إجراء تعديلات دقيقة، قد يهمل النموذج الاتساق العالمي (المصطلحات، الأسلوب، التعليقات، أسماء المتغيرات)، مما يؤدي إلى ترجمات غير متسقة أو منحرفة دلاليًا.
+- **مشاكل السياق واتساق المصطلحات**: تعتمد التعديلات الصغيرة المحلية غالباً على سياق أوسع وقائمة مصطلحات/أسلوب موجودة. عند الطلب بإجراء تعديلات طفيفة، قد يهمل النموذج الاتساق العالمي (المصطلحات، الأسلوب، التعليقات، أسماء المتغيرات)، مما يؤدي إلى ترجمات غير متسقة أو منحرفة دلالياً.
 
-- **توازن استقرار النموذج والتكلفة**: يتطلب تحقيق ترجمة تفاضلية موثوقة نماذج ذات استدلال مقارن قوي ومخرجات مستقرة وقابلة للتنبؤ. النماذج السائدة الحالية لا توفر بشكل موثوق كلاً من المحاذاة القوية عبر اللغات والمخرجات المنسقة بدقة بتكلفة معقولة، لذا غالبًا ما تعود الأنظمة إلى إعادة الترجمة الكاملة لضمان الصحة.
+- **مقايضات استقرار النموذج والتكلفة**: تحقيق ترجمة تفاضلية موثوقة يتطلب نماذج ذات تفكير مقارن قوي وتنسيقات إخراج مستقرة ومتوقعة. النماذج السائدة الحالية لا توفر بشكل موثوق كل من المحاذاة ثنائية اللغة القوية وتنسيقات الإخراج الصارمة بتكلفة معقولة، لذا غالباً ما تعود الأنظمة إلى إعادة الترجمة الكاملة لضمان الصحة.
 
-لذلك، بينما يمكن نظريًا للترجمة التفاضلية تقليل رموز الإخراج المكلفة والحفاظ بشكل أفضل على تاريخ الإصدار، هي محدودة حاليًا بقدرات النماذج على المقارنة عبر اللغات واستقرار المخرجات. تبقى هذه الميزة تجريبية؛ التخفيات الموصى بها تشمل الحفاظ على النسخ الاحتياطية التلقائية (`autoBackup: true`)، استخدام مستوى تحقق متسامح (`validationLevel: "normal"`)، والعودة إلى إعادة الترجمة الكاملة عند فشل المطابقة أو التنسيق. في المستقبل، قد تحسن معالجات ما بعد المحاذاة ثنائية اللغة المتخصصة أو نماذج أصغر مخصصة من استقرار نهج diff.
+لذلك، بينما يمكن نظرياً للترجمة التفاضلية تقليل الرموز المكلفة في الإخراج والحفاظ بشكل أفضل على سجل الإصدارات، فإنها محدودة حالياً بقدرات النماذج على المقارنة عبر اللغات واستقرار الإخراج. تظل هذه الميزة تجريبية؛ التوصيات للتخفيف تشمل الاحتفاظ بنسخ احتياطية تلقائية (`autoBackup: true`)، واستخدام مستوى تحمل (`validationLevel: "normal"`)، والرجوع إلى إعادة الترجمة الكاملة عند فشل المطابقة أو التنسيق. في المستقبل، قد تحسن معالجات ما بعد المحاذاة ثنائية اللغة المتخصصة أو النماذج الأصغر المخصصة استقرار نهج diff.
 
-توفير التكلفة ولماذا يساعد
+توفير التكاليف ولماذا يساعد
 
-- **تكلفة رمز الإدخال مقابل الإخراج**: غالبًا ما تفرض واجهات برمجة التطبيقات للنماذج الكبيرة رسومًا مختلفة لرموز الإدخال (الموجه) والإخراج (الإكمال). غالبًا ما تكون رموز الإخراج أكثر تكلفة بشكل كبير لأن النموذج يولد نصًا أطول. يساعد diff-apply لأننا نرسل **المصدر المحدث (إدخال)** و**ملف الترجمة الموجود (إدخال)** إلى النموذج ونطلب JSON مضغوط للتعديلات. استجابة النموذج هي JSON صغير (عدد قليل من رموز الإخراج) بدلاً من ملف مترجم بالكامل (العديد من رموز الإخراج)، لذا تدفع أقل بكثير لجزء الإخراج المكلف.
+- **تكلفة رمز الإدخال مقابل الإخراج**: تفرض واجهات برمجة التطبيقات للنماذج الكبيرة عادةً رسوماً مختلفة لرموز الإدخال (التعليمات) والإخراج (الإكمال). غالباً، تكون رموز الإخراج أكثر تكلفة بشكل كبير لأن النموذج يولد نصاً أطول. يساعد Diff-apply لأننا نرسل **المصدر المحدث (إدخال)** و **ملف الترجمة الحالي (إدخال)** إلى النموذج ونطلب JSON مضغوطاً من التعديلات. استجابة النموذج هي JSON صغير (رموز إخراج قليلة) بدلاً من ملف مترجم كامل (رموز إخراج كثيرة)، لذا تدفع أقل بكثير للجزء المكلف من الإخراج.
 
-- **إرسال ما تغير فقط**: بدلاً من إعادة ترجمة الملف بالكامل كلما حدثت تغييرات صغيرة، يوجه diff-apply النموذج لحساب عمليات التحرير الدنيا لتحديث الترجمة الموجودة. هذا فعال بشكل خاص للملفات التي تمت ترجمتها مسبقًا وتتلقى فقط تعديلات تزايدية.
+- **إرسال ما تغير فقط**: بدلاً من إعادة ترجمة الملف بأكمله عند حدوث تغييرات صغيرة، توجه diff-apply النموذج لحساب عمليات التعديل الدنيا لتحديث الترجمة الحالية. هذا فعال بشكل خاص للملفات التي تمت ترجمتها مسبقاً وتتلقى تعديلات تزايدية فقط.
 
-- **الأفضل للملفات المنسقة**: تستفيد الملفات ذات التنسيق الصارم (JSON, XML, Markdown مع كتل الكود) بشكل كبير لأن diff-apply يحافظ على الهيكل ويغير فقط الأجزاء النصية التي تحتاج إلى ترجمة. هذا يقلل من فرص انحدارات التنسيق ورموز الإخراج الإضافية الناتجة عن إعادة تنسيق النموذج.
+- **الأفضل للملفات المنسقة**: تستفيد الملفات ذات التنسيق الصارم (JSON، XML، Markdown مع كتل كود) بشكل كبير لأن diff-apply يحافظ على الهيكل ويغير فقط الأجزاء النصية التي تحتاج إلى ترجمة. هذا يقلل من فرصة التراجعات المتعلقة بالتنسيق ورموز الإخراج الإضافية الناتجة عن إعادة تنسيق النموذج.
 
-- **وحدة أساسية موجهة للخط، تجميع أكثر ذكاءً**: يعامل الأداة وحدة الترجمة الأساسية كـ "خط"، وتطبق استراتيجية SEARCH/REPLACE المطابقة الدقيقة أو الضبابية بالقرب من `:start_line:`. استخدم `validationLevel: "normal"` للسلوك المتسامح و `"strict"` عندما تحتاج إلى تعديلات محافظة ودقيقة.
+- **وحدة الأساس الموجهة للأسطر، تجميع أذكى**: تعامل الأداة الوحدة الأساسية للترجمة على أنها "سطر"، وتطبق إستراتيجية SEARCH/REPLACE مطابقة دقيقة أو تقريبية بالقرب من `:start_line:`. استخدم `validationLevel: "normal"` للسلوك المتسامح و `"strict"` عندما تحتاج إلى تعديلات محافظة ودقيقة.
 
 متى تستخدم diff-apply:
 
-- استخدم عندما يكون ملف الهدف موجودًا بالفعل وتمت ترجمته مسبقًا.
+- استخدم عندما يكون ملف الهدف موجوداً بالفعل وتمت ترجمته مسبقاً.
 - استخدم للمستندات الكبيرة المنسقة حيث ستكون إعادة ترجمة الملف بأكمله مكلفة.
-- تجنب للملفات الجديدة تمامًا بدون أي ترجمة سابقة، أو عندما تريد إعادة ترجمة جديدة.
+- تجنب للملفات الجديدة تماماً بدون أي ترجمة سابقة، أو عندما تريد إعادة ترجمة جديدة.
 
-
-
-### Design Documentation
+### وثائق التصميم
 
 - يولد خرائط المصدر لبناء التطوير
-- يضغط الكود لبناء الإنتاج
-- يوفر تكامل مطابقة المشاكل لـ VS Code
+- يصغر الكود لبناء الإنتاج
+- يوفر تكامل مطابق المشاكل لـ VS Code
 
-## Notes
+## ملاحظات
 
-- تأكد من كفاية حصة استخدام API
-- يوصى بالاختبار أولاً بمشاريع صغيرة
-- استخدم مفاتيح API مخصصة وقم بإزالتها بعد الإنجاز
+- تأكد من وجود حصة كافية لاستخدام واجهة برمجة التطبيقات
+- يوصى باختبار المشاريع الصغيرة أولاً
+- استخدم مفاتيح واجهة برمجة التطبيقات المخصصة وأزلها بعد الانتهاء
 
-## License
+## الترخيص
 
-[الرخصة](LICENSE)
+[الترخيص](LICENSE)

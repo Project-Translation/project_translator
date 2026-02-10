@@ -6,6 +6,12 @@
         "1. 如果markdown文件标记draft, 则不必翻译.",
         "2. './readmes/' in the sentences should replace with './'"
     ],
+    "projectTranslator.logFile": {
+        "enabled": true,
+        "path": ".translation-logs",
+        "maxSizeKB": 10240,
+        "maxFiles": 5
+    },
     "projectTranslator.ignore": {
         "paths": [
             "embeded/zh-cn/**"

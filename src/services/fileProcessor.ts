@@ -8,6 +8,7 @@ import { TranslationDatabase } from "../translationDatabase";
 import { DestFolder, SupportedLanguage } from "../types/types";
 import { TranslatorService } from "./translatorService";
 import { SearchReplaceDiffApplier } from './searchReplaceDiffApplier'
+import { formatRawErrorForLog } from "./errorLog";
 
 import { estimateTokenCount, segmentText, combineSegments } from "../segmentationUtils";
 import { getConfiguration } from "../config/config";
@@ -516,6 +517,22 @@ export class FileProcessor {
                     let noTranslateDetected = false;
                     let writeStream: fs.WriteStream | null = null;
                     let writeError: Error | null = null;
+                    let translateError: unknown = null;
+                    // 初始化，避免 strict 模式下“可能未赋值”报错（真正出错时会 throw）
+                    returnCode = AI_RETURN_CODE.OK;
+                    translatedContent = '';
+
+                    const closeWriteStreamIfAny = async () => {
+                        if (!writeStream) return;
+                        await new Promise<void>((resolve, reject) => {
+                            if (writeError) {
+                                reject(writeError);
+                            } else {
+                                writeStream?.end(() => resolve());
+                            }
+                        });
+                        writeStream = null;
+                    };
 
                     // Define progress callback for streaming - appends to file as chunks arrive
                     const progressCallback = (chunk: string) => {
@@ -537,25 +554,38 @@ export class FileProcessor {
                     };
 
                     logMessage("🔄 Using stream mode for translation...");
-                    [returnCode, translatedContent] = await this.translatorService.translateContent(
-                        content,
-                        sourceLang,
-                        targetLang,
-                        sourcePath,
-                        this.cancellationToken,
-                        progressCallback,
-                        true // isFirstSegment = true for single file translation
-                    );
+                    try {
+                        [returnCode, translatedContent] = await this.translatorService.translateContent(
+                            content,
+                            sourceLang,
+                            targetLang,
+                            sourcePath,
+                            this.cancellationToken,
+                            progressCallback,
+                            true // isFirstSegment = true for single file translation
+                        );
+                    } catch (e) {
+                        translateError = e;
+                    }
 
-                    // Close the write stream if it was created
-                    if (writeStream) {
-                        await new Promise<void>((resolve, reject) => {
-                            if (writeError) {
-                                reject(writeError);
-                            } else {
-                                writeStream?.end(() => resolve());
-                            }
-                        });
+                    // 无论成功失败，都要关闭写流，避免文件句柄泄漏/锁死
+                    try {
+                        await closeWriteStreamIfAny();
+                    } catch (e) {
+                        translateError = translateError || e;
+                    }
+
+                    // 若翻译失败且已写入过部分内容，清理不完整目标文件，继续处理下一个文件
+                    if (translateError && streamedContent.length > 0) {
+                        try {
+                            await fsp.unlink(targetPath);
+                        } catch {
+                            // ignore
+                        }
+                    }
+
+                    if (translateError) {
+                        throw translateError;
                     }
 
                     // If NO_NEED_TRANSLATE was detected, copy the original file and update cache records
@@ -576,10 +606,22 @@ export class FileProcessor {
                         this.processedFilesCount++;
                         return; // Skip processing this file
                     } else {
-                        // Rewrite once with sanitized final content to avoid any LLM-added wrappers
-                        await fsp.writeFile(targetPath, translatedContent);
+                        // Rewrite once with sanitized final content to avoid any LLM-added wrappers.
+                        // 防御：若思考型模型/供应商流式字段不兼容导致 translateContent 返回空，但流式过程中实际收到了内容，
+                        // 则优先使用流式累计内容，避免把目标文件覆盖成空文件。
+                        const finalToWrite =
+                            translatedContent && translatedContent.trim().length > 0
+                                ? translatedContent
+                                : streamedContent;
+                        if (!finalToWrite || finalToWrite.trim().length === 0) {
+                            logMessage(
+                                `⚠️ Stream translation returned empty content; translatedContentLen=${translatedContent ? translatedContent.length : 0}, streamedContentLen=${streamedContent.length}, finalToWriteLen=${finalToWrite ? finalToWrite.length : 0}。请检查 debug 输出中的流式消息/字段。`,
+                                "warn"
+                            );
+                        }
+                        await fsp.writeFile(targetPath, finalToWrite || "");
                         logMessage("💾 Stream translation result written");
-                        wasTranslated = translatedContent !== content;
+                        wasTranslated = (finalToWrite || "") !== content;
                     }
                 } else {
                     logMessage("🔄 Using standard mode for translation...");
@@ -627,6 +669,8 @@ export class FileProcessor {
             if (error instanceof vscode.CancellationError) {
                 throw error;
             }
+            // 打印原始错误对象，避免只看到 "Premature close" 这类简略信息
+            logMessage(`❌ [RAW ERROR] ${formatRawErrorForLog(error)}`, "error");
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             logMessage(`❌ Failed to translate file: ${errorMessage}`, "error");
             this.failedFilesCount++;
@@ -675,6 +719,10 @@ export class FileProcessor {
                     // For streaming mode, use a write stream to append content as it arrives
                     let currentSegmentContent = '';
                     let writeStream: fs.WriteStream | null = null;
+                    let segmentTranslateError: unknown = null;
+                    // 初始化，避免 strict 模式下“可能未赋值”报错（真正出错时会 throw）
+                    segmentCode = AI_RETURN_CODE.OK;
+                    translatedSegment = '';
 
                     // Define progress callback for streaming - appends to file as chunks arrive
                     const progressCallback = (chunk: string) => {
@@ -723,22 +771,34 @@ export class FileProcessor {
                     };
 
                     logMessage(`🔄 Using stream mode for segment ${i + 1}/${segments.length}...`);
-                    [segmentCode, translatedSegment] = await this.translatorService.translateContent(
-                        segment,
-                        sourceLang,
-                        targetLang,
-                        sourcePath,
-                        this.cancellationToken,
-                        progressCallback,
-                        i === 0 // isFirstSegment = true only for the first segment
-                    );
+                    try {
+                        [segmentCode, translatedSegment] = await this.translatorService.translateContent(
+                            segment,
+                            sourceLang,
+                            targetLang,
+                            sourcePath,
+                            this.cancellationToken,
+                            progressCallback,
+                            i === 0 // isFirstSegment = true only for the first segment
+                        );
+                    } catch (e) {
+                        segmentTranslateError = e;
+                    }
 
-                    // Close the write stream for this segment if it was created
+                    // 确保关闭 writeStream，避免异常中断时文件句柄泄漏
                     if (writeStream) {
-                        await new Promise<void>((resolve) => {
-                            writeStream?.end(() => resolve());
-                        });
+                        try {
+                            await new Promise<void>((resolve) => {
+                                writeStream?.end(() => resolve());
+                            });
+                        } catch {
+                            // ignore close errors
+                        }
                         writeStream = null;
+                    }
+
+                    if (segmentTranslateError) {
+                        throw segmentTranslateError;
                     }
 
                     // Determine the final segment content based on return code
@@ -842,6 +902,12 @@ export class FileProcessor {
         } catch (error) {
             if (error instanceof vscode.CancellationError) {
                 throw error;
+            }
+            // 流式大文件/分段翻译过程中一旦出错，目标文件可能只写入了部分内容；清理以避免留下损坏文件
+            try {
+                await fsp.unlink(targetPath);
+            } catch {
+                // ignore
             }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             logMessage(`❌ Failed to translate: ${errorMessage}`, "error");

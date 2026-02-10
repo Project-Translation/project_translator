@@ -199,7 +199,7 @@ func (c *TranslateCommand) doTranslate(content, sourceInfo, outputFile string) e
 	if err != nil {
 		return err
 	}
-	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts)
+	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts, cfg.SystemPromptLanguage)
 	defer func() {
 		if c.showTokens {
 			input, output, total := tr.GetTokenCounts()
@@ -292,7 +292,7 @@ func (c *TranslateCommand) translateProject(args []string) error {
 	if err != nil {
 		return err
 	}
-	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts)
+	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts, cfg.SystemPromptLanguage)
 	defer func() {
 		if c.showTokens {
 			input, output, total := tr.GetTokenCounts()
@@ -342,7 +342,7 @@ func (c *TranslateCommand) translateFolders(args []string) error {
 	if err != nil {
 		return err
 	}
-	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts)
+	tr := translator.NewTranslator(vendor, systemPrompts, customPrompts, cfg.SystemPromptLanguage)
 	defer func() {
 		if c.showTokens {
 			input, output, total := tr.GetTokenCounts()
@@ -368,7 +368,7 @@ func (c *TranslateCommand) loadPrompts(cfg *config.Config) ([]string, []string, 
 	// Prefer shared prompt files under workspace root.
 	if cfg != nil {
 		if dir, ok := config.ResolvePromptsDir(cfg.WorkspaceRoot); ok {
-			p1, p2, err := config.LoadSystemPromptParts(dir)
+			p1, p2, err := config.LoadSystemPromptPartsWithLanguage(dir, cfg.SystemPromptLanguage)
 			if err == nil {
 				custom := append([]string{}, cfg.CustomPrompts...)
 				// Backward compatibility: treat old userPrompts as custom prompts

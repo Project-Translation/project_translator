@@ -4,6 +4,15 @@ An easy-to-use vscode extension for multi-language localization of projects.
 
 Project repository: `https://github.com/Project-Translation/project_translator`
 
+
+## Installation
+
+1. Marketplace:
+   - VS Code Extensions Marketplace: [https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)
+   - Open VSX Registry: [https://open-vsx.org/extension/techfetch-dev/project-translator](https://open-vsx.org/extension/techfetch-dev/project-translator)
+2. Search for `techfetch-dev.project-translator` in the VS Code Extensions view and click install
+
+
 <!-- ![example1](./resources/example1.gif) -->
 ![example1](https://i.imgur.com/uwRal2I.gif)
 
@@ -100,13 +109,6 @@ Current translations in progress: [View Issues](https://github.com/Project-Trans
   - Preserves version history with minimal edits
   - ⚠️ Experimental feature - see [Advanced Features](#differential-translation-diff-apply-mode) for details
 
-## Installation
-
-1. Search for "[Project Translator](https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator)" in VS Code extension marketplace
-2. Click install
-   
-Alternatively, install from Visual Studio Marketplace: `https://marketplace.visualstudio.com/items?itemName=techfetch-dev.project-translator` or search for `techfetch-dev.project-translator` in the VS Code Extensions view.
-
 ## Configuration
 
 The extension supports the following configuration options:
@@ -181,6 +183,7 @@ Key configuration details:
 | `projectTranslator.skipFrontMatterMarkers`  | Skip files based on front matter markers (with `enabled` and `markers` arrays)                 |
 | `projectTranslator.currentVendor`           | Current API vendor in use                                                                      |
 | `projectTranslator.vendors`                 | API vendor configuration list (can use apiKey directly or apiKeyEnvVarName for environment variables) |
+| `projectTranslator.systemPromptLanguage`    | Language used for built-in system prompts (default: en). Affects how the model is instructed, not the UI language |
 | `projectTranslator.systemPrompts`           | System prompt array for guiding the translation process                                        |
 | `projectTranslator.userPrompts`             | User-defined prompt array, these prompts will be added after system prompts during translation |
 | `projectTranslator.segmentationMarkers`     | Segmentation markers configured by file type, supports regular expressions                     |

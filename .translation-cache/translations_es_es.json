@@ -6,15 +6,15 @@
     "src_size": 1897
   },
   "package.nls.json": {
-    "translate_datetime": "2026-01-10:16:19",
-    "src_hash": "8674720c2b03b592f2a1614537b31233",
-    "src_size": 4339,
-    "src_mtime_ms": 1768031336476.612
+    "translate_datetime": "2026-02-09:22:39",
+    "src_hash": "2b4ce38e0f49223177610bf1c2134ad7",
+    "src_size": 4507,
+    "src_mtime_ms": 1770624490056.0354
   },
   "README.md": {
-    "translate_datetime": "2025-11-25:20:52",
-    "src_hash": "c75ecb8fa0455decfa5c0ec708dde2ca",
-    "src_mtime_ms": 1760518575142.4968,
-    "src_size": 28847
+    "translate_datetime": "2026-02-09:22:48",
+    "src_hash": "d632aa2f73a79c4c96d01d5967e0afc2",
+    "src_size": 29093,
+    "src_mtime_ms": 1770625221106.134
   }
 }

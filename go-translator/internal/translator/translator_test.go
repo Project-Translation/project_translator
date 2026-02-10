@@ -14,7 +14,7 @@ func TestTranslator_New(t *testing.T) {
 		Timeout: 30,
 	}
 
-	tr := NewTranslator(vendor, []string{}, []string{})
+	tr := NewTranslator(vendor, []string{}, []string{}, "en")
 
 	if tr == nil {
 		t.Fatal("NewTranslator 不应返回 nil")
@@ -36,7 +36,7 @@ func TestTranslator_NewWithNilPrompts(t *testing.T) {
 		Timeout: 30,
 	}
 
-	tr := NewTranslator(vendor, nil, nil)
+	tr := NewTranslator(vendor, nil, nil, "en")
 
 	if tr == nil {
 		t.Fatal("NewTranslator 不应返回 nil")
@@ -58,7 +58,7 @@ func TestTranslator_GetTokenCounts(t *testing.T) {
 		Timeout: 30,
 	}
 
-	tr := NewTranslator(vendor, []string{}, []string{})
+	tr := NewTranslator(vendor, []string{}, []string{}, "en")
 
 	input, output, total := tr.GetTokenCounts()
 
@@ -82,7 +82,7 @@ func TestTranslator_ResetTokenCounts(t *testing.T) {
 		Timeout: 30,
 	}
 
-	tr := NewTranslator(vendor, []string{}, []string{})
+	tr := NewTranslator(vendor, []string{}, []string{}, "en")
 
 	// 手动设置一些值（模拟已使用）
 	tr.totalInputTokens = 100
@@ -112,7 +112,7 @@ func TestBuildMessages_FirstSegment(t *testing.T) {
 		"Keep the format.",
 	}
 
-	tr := NewTranslator(vendor, systemPrompts, customPrompts)
+	tr := NewTranslator(vendor, systemPrompts, customPrompts, "en")
 
 	messages := tr.buildMessages("Hello world", "en", "zh", true)
 
@@ -151,7 +151,7 @@ func TestBuildMessages_SubsequentSegment(t *testing.T) {
 	}
 	customPrompts := []string{}
 
-	tr := NewTranslator(vendor, systemPrompts, customPrompts)
+	tr := NewTranslator(vendor, systemPrompts, customPrompts, "en")
 
 	// 后续片段只使用第一个系统提示词
 	messages := tr.buildMessages("Hello world", "en", "zh", false)
@@ -176,7 +176,7 @@ func TestBuildMessages_EmptyPrompts(t *testing.T) {
 		Timeout: 30,
 	}
 
-	tr := NewTranslator(vendor, []string{}, []string{})
+	tr := NewTranslator(vendor, []string{}, []string{}, "en")
 
 	messages := tr.buildMessages("Hello world", "en", "zh", true)
 
@@ -214,7 +214,7 @@ func TestBuildMessages_WithUserPrompts(t *testing.T) {
 		"Preserve code blocks.",
 	}
 
-	tr := NewTranslator(vendor, []string{}, customPrompts)
+	tr := NewTranslator(vendor, []string{}, customPrompts, "en")
 
 	messages := tr.buildMessages("Hello world", "en", "zh", true)
 
@@ -320,7 +320,7 @@ func BenchmarkBuildMessages(b *testing.B) {
 		"Translate accurately.",
 	}
 
-	tr := NewTranslator(vendor, systemPrompts, []string{})
+	tr := NewTranslator(vendor, systemPrompts, []string{}, "en")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -335,7 +335,7 @@ func BenchmarkGetTokenCounts(b *testing.B) {
 		Timeout: 30,
 	}
 
-	tr := NewTranslator(vendor, []string{}, []string{})
+	tr := NewTranslator(vendor, []string{}, []string{}, "en")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

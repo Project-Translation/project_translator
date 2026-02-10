@@ -7,6 +7,8 @@ export const AI_RETURN_CODE = {
   NO_NEED_TRANSLATE: "727d2eb8-8683-42bd-a1d0-f604fcd82163",
 };
 
+export type SystemPromptLanguage = "en" | "zh-cn";
+
 const PROMPTS_DIR_CANDIDATES = [
   // Bundled extension: out/extension.js
   path.resolve(__dirname, "../prompts"),
@@ -16,7 +18,11 @@ const PROMPTS_DIR_CANDIDATES = [
 
 function resolvePromptsDir(): string | null {
   for (const dir of PROMPTS_DIR_CANDIDATES) {
-    if (fs.existsSync(path.join(dir, "system_prompt_part1.md"))) {
+    // Probe at least one prompt file.
+    if (
+      fs.existsSync(path.join(dir, "system_prompt_part1.en.md")) ||
+      fs.existsSync(path.join(dir, "system_prompt_part1.md"))
+    ) {
       return dir;
     }
   }
@@ -25,36 +31,174 @@ function resolvePromptsDir(): string | null {
 
 const promptsDir = resolvePromptsDir();
 
+const promptCache: Map<string, string> = new Map();
+
 function readPromptFile(fileName: string): string {
   if (!promptsDir) {
     return "";
   }
+  const cached = promptCache.get(fileName);
+  if (cached !== undefined) {
+    return cached;
+  }
   const filePath = path.join(promptsDir, fileName);
   if (!fs.existsSync(filePath)) {
+    promptCache.set(fileName, "");
     return "";
   }
-  return fs.readFileSync(filePath, "utf-8");
+  const content = fs.readFileSync(filePath, "utf-8");
+  promptCache.set(fileName, content);
+  return content;
 }
 
-// Default system prompt content - First part - general translation guidelines
-export const DEFAULT_SYSTEM_PROMPT_PART1 = readPromptFile("system_prompt_part1.md");
+export function normalizeSystemPromptLanguage(input: unknown): SystemPromptLanguage {
+  const raw = typeof input === "string" ? input.trim().toLowerCase() : "";
+  if (
+    raw === "en" ||
+    raw === "en-us" ||
+    raw === "en_us" ||
+    raw === "english"
+  ) {
+    return "en";
+  }
+  if (
+    raw === "zh" ||
+    raw === "zh-cn" ||
+    raw === "zh_cn" ||
+    raw === "zh-hans" ||
+    raw === "zh_hans" ||
+    raw === "chinese" ||
+    raw === "chs"
+  ) {
+    return "zh-cn";
+  }
+  return "en";
+}
 
-// Default system prompt content - Second part - translation judgment logic
-export const DEFAULT_SYSTEM_PROMPT_PART2 = readPromptFile("system_prompt_part2.md");
+function pickPromptFile(
+  baseNameWithoutExt: string,
+  lang: SystemPromptLanguage
+): string {
+  return lang === "en"
+    ? `${baseNameWithoutExt}.en.md`
+    : `${baseNameWithoutExt}.md`;
+}
 
-// System prompt for generating SEARCH/REPLACE diff blocks in JSON format
-export const DIFF_SYSTEM_PROMPT = readPromptFile("diff_system_prompt.md");
+function readPromptFileByLanguage(
+  baseNameWithoutExt: string,
+  lang: SystemPromptLanguage
+): string {
+  const primary = pickPromptFile(baseNameWithoutExt, lang);
+  const primaryContent = readPromptFile(primary);
+  if (primaryContent.trim().length > 0) {
+    return primaryContent;
+  }
+  // Fallback to the other language file if primary is missing.
+  const fallbackLang: SystemPromptLanguage = lang === "en" ? "zh-cn" : "en";
+  const fallback = pickPromptFile(baseNameWithoutExt, fallbackLang);
+  return readPromptFile(fallback);
+}
 
-// User prompt for differential translation
+export function getSystemPrompts(langInput?: unknown): {
+  part1: string;
+  part2: string;
+  diffSystemPrompt: string;
+  customPromptSectionTitle: string;
+} {
+  const lang = normalizeSystemPromptLanguage(langInput);
+  return {
+    part1: readPromptFileByLanguage("system_prompt_part1", lang),
+    part2: readPromptFileByLanguage("system_prompt_part2", lang),
+    diffSystemPrompt: readPromptFileByLanguage("diff_system_prompt", lang),
+    customPromptSectionTitle:
+      lang === "en" ? "# User Custom Translation Requirements" : "# 用户自定义翻译要求",
+  };
+}
+
+// Backward compatibility: keep old exports (now default to English).
+export const DEFAULT_SYSTEM_PROMPT_PART1 = getSystemPrompts("en").part1;
+export const DEFAULT_SYSTEM_PROMPT_PART2 = getSystemPrompts("en").part2;
+export const DIFF_SYSTEM_PROMPT = getSystemPrompts("en").diffSystemPrompt;
+
+// User prompt for differential translation (task info prompt)
 export function getDiffSystemPrompt(
   sourceLang: string,
   targetLang: string,
-  sourcePath: string
+  sourcePath: string,
+  langInput?: unknown
 ) {
+  const lang = normalizeSystemPromptLanguage(langInput);
+  if (lang === "en") {
+    return `# Differential Translation Task
+
+## File Info
+
+- **Source (SOURCE)**: ${sourcePath} (${sourceLang})
+- **Target (TARGET)**: ${sourcePath} (${targetLang})
+- **Source language**: ${sourceLang}
+- **Target language**: ${targetLang}
+
+## Goal
+
+Compare SOURCE and TARGET, identify differences, and output JSON-formatted SEARCH/REPLACE operations to sync changes.
+
+## Steps
+
+### Step 1: Compare Content
+
+- Compare SOURCE and TARGET section by section
+- Identify three types of differences:
+  - **Additions**: content present in SOURCE but missing in TARGET
+  - **Modifications**: content present in both but different
+  - **Deletions**: content present in TARGET but missing in SOURCE
+
+### Step 2: Generate JSON Diff Objects
+
+For each difference, generate a change object:
+
+**Additions**:
+- Find an appropriate insertion location in TARGET
+- Let search match existing nearby content around the insertion point
+- Let replace include existing text + translation of the added content
+
+**Modifications**:
+- Let search precisely match existing content in TARGET
+- Let replace contain the correct translation of SOURCE content
+
+**Deletions**:
+- Let search match the content to remove in TARGET
+- Let replace be an empty string
+
+### Step 3: Validate Output
+
+Check the generated JSON:
+- It matches the specified JSON format
+- search precisely matches TARGET (including spaces, indentation, newlines)
+- replace is a correct translation
+- It covers all required differences
+
+### Step 4: Return Result
+
+Output a complete JSON object that includes:
+- has_changes: boolean indicating whether there are changes
+- changes: array of change objects
+
+## Notes
+
+1. **Translation quality**: accurate, natural, target-language appropriate
+2. **Formatting**: preserve all formatting markers, indentation, blank lines
+3. **Code**: keep code unchanged; only translate comments and documentation
+4. **Proper nouns**: keep proper nouns, API names, technical terms
+5. **JSON only**: output valid JSON only; do not add markdown fences or explanations
+
+Now compare SOURCE and TARGET and generate the JSON diff object.
+`;
+  }
+
   return `# 差异化翻译任务
-
+	
 ## 文件信息
-
+	
 - **源文件（SOURCE）**：${sourcePath} (${sourceLang})
 - **目标文件（TARGET）**：${sourcePath} (${targetLang})
 - **源语言**：${sourceLang}

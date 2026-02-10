@@ -17,6 +17,7 @@
   "config.translationIntervalDays.description": "Translation interval days, if the target file exists and has been translated within this number of days, it will be skipped",
   "config.currentVendor.description": "Currently used API vendor",
   "config.vendors.description": "API vendor configuration list",
+  "config.systemPromptLanguage.description": "Language used for built-in system prompts (default: en). This affects how the model is instructed, not the UI language.",
   "config.vendor.name.description": "Name of the API vendor",
   "config.vendor.apiEndpoint.description": "API endpoint URL for the vendor",
   "config.vendor.apiKey.description": "API key for authentication with the vendor",
