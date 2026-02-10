@@ -41,7 +41,7 @@ func (c *RootCommand) Run(args []string) error {
 	}
 
 	if c.version {
-		fmt.Printf("Translator CLI v%s\n", version)
+		fmt.Printf("Translator CLI v%s\n", Version)
 		return nil
 	}
 
@@ -75,7 +75,7 @@ func (c *RootCommand) Run(args []string) error {
 }
 
 func (c *RootCommand) printUsage() {
-	fmt.Printf("Translator CLI v%s\n\n", version)
+	fmt.Printf("Translator CLI v%s\n\n", Version)
 	fmt.Printf("用法:\n")
 	fmt.Printf("  translator [全局选项] <命令> [命令选项]\n\n")
 	fmt.Printf("全局选项:\n")

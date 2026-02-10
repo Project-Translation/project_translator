@@ -187,6 +187,108 @@
             },
             "problemMatcher": [],
             "detail": "本地使用 npm 脚本发布到 Open VSX（运行时输入 Token，不写入文件）"
+        },
+        {
+            "label": "go: build",
+            "type": "shell",
+            "command": "VERSION=$(cat VERSION) && go build -ldflags \"-X main.Version=${VERSION}\" -o translator ./cmd/translator",
+            "options": {
+                "cwd": "${workspaceFolder}/go-translator"
+            },
+            "group": "build",
+            "problemMatcher": [
+                "$go"
+            ],
+            "detail": "构建 Go CLI（注入版本号）"
+        },
+        {
+            "label": "go: build (dev)",
+            "type": "shell",
+            "command": "go build -o translator ./cmd/translator",
+            "options": {
+                "cwd": "${workspaceFolder}/go-translator"
+            },
+            "group": "build",
+            "problemMatcher": [
+                "$go"
+            ],
+            "detail": "开发构建 Go CLI（不注入版本号）"
+        },
+        {
+            "label": "go: test",
+            "type": "shell",
+            "command": "go test ./... -v",
+            "options": {
+                "cwd": "${workspaceFolder}/go-translator"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": [
+                "$go"
+            ],
+            "detail": "运行 Go 单元测试"
+        },
+        {
+            "label": "go: test (cover)",
+            "type": "shell",
+            "command": "go test ./... -v -cover",
+            "options": {
+                "cwd": "${workspaceFolder}/go-translator"
+            },
+            "group": "test",
+            "problemMatcher": [
+                "$go"
+            ],
+            "detail": "运行 Go 单元测试并显示覆盖率"
+        },
+        {
+            "label": "go: test (bench)",
+            "type": "shell",
+            "command": "go test ./... -bench=. -benchmem",
+            "options": {
+                "cwd": "${workspaceFolder}/go-translator"
+            },
+            "group": "test",
+            "problemMatcher": [
+                "$go"
+            ],
+            "detail": "运行 Go 基准测试"
+        },
+        {
+            "label": "go: test sample (project)",
+            "type": "shell",
+            "command": "../go-translator/translator -config project.translation.json -debug translate project",
+            "options": {
+                "cwd": "${workspaceFolder}/sample"
+            },
+            "dependsOn": "go: build (dev)",
+            "group": "test",
+            "problemMatcher": [],
+            "detail": "针对 sample 目录运行项目翻译集成测试"
+        },
+        {
+            "label": "go: test sample (folders)",
+            "type": "shell",
+            "command": "../go-translator/translator -config project.translation.json -debug translate folders",
+            "options": {
+                "cwd": "${workspaceFolder}/sample"
+            },
+            "dependsOn": "go: build (dev)",
+            "group": "test",
+            "problemMatcher": [],
+            "detail": "针对 sample 目录运行文件夹翻译集成测试"
+        },
+        {
+            "label": "go: clean",
+            "type": "shell",
+            "command": "rm -f translator && go clean",
+            "options": {
+                "cwd": "${workspaceFolder}/go-translator"
+            },
+            "problemMatcher": [],
+            "detail": "清理 Go 构建产物"
         }
     ],
     "inputs": [

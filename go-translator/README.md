@@ -309,23 +309,80 @@ go run ./cmd/translator translate text "Hello"
 
 ### 构建
 
+VSCode 中可通过 `Terminal > Run Task...` 执行以下任务：
+
+| 任务 | 说明 |
+|------|------|
+| `go: build` | 生产构建（从 VERSION 注入版本号） |
+| `go: build (dev)` | 开发构建（不注入版本号） |
+| `go: clean` | 清理构建产物 |
+
+命令行：
+
 ```bash
+cd go-translator
 go build -o translator ./cmd/translator
+```
+
+## 版本与发布
+
+- Go CLI 的版本号来源于 `go-translator/VERSION` 文件（内容为 `x.y.z`，不带 `v` 前缀）。
+- CI 会在 `go-translator/VERSION` 发生变化并合并到 `main` 后自动：
+  - 创建并推送 git tag：`go-translator/vx.y.z`
+  - 基于该 tag 发布 GitHub Release（并附带各平台构建产物）
+- VSCode 插件仍使用 tag：`vx.y.z`（与 Go CLI 的 tag 前缀不同，避免互相干扰）。
+
+本地构建如需注入版本号：
+
+```bash
+cd go-translator
+VERSION="$(cat VERSION)"
+go build -ldflags "-X main.Version=${VERSION}" -o translator ./cmd/translator
+./translator -version
 ```
 
 ### 测试
 
+#### 单元测试
+
+VSCode 任务或命令行：
+
+| 任务 | 说明 |
+|------|------|
+| `go: test` | 运行所有单元测试 |
+| `go: test (cover)` | 运行测试并显示覆盖率 |
+| `go: test (bench)` | 运行基准测试 |
+
 ```bash
-# 设置测试 API Key
-export DEEPSEEK_API_KEY="test_key"
-
-# 添加测试文件
-echo "Hello World" > test.txt
-translator add file test.txt -source-lang en -target-lang zh-cn
-
-# 运行翻译
-translator translate project
+cd go-translator
+go test ./... -v
 ```
+
+#### 集成测试（sample 目录）
+
+项目提供了 `sample/` 目录作为集成测试数据，包含多种格式的文件和预配置的翻译规则（`project.translation.json`）。
+
+| 任务 | 说明 |
+|------|------|
+| `go: test sample (project)` | 翻译 sample 中所有配置的文件和文件夹 |
+| `go: test sample (folders)` | 仅翻译 sample 中配置的文件夹 |
+
+以上任务会自动先执行 `go: build (dev)` 编译。
+
+命令行运行：
+
+```bash
+# 设置 API Key
+export DEEPSEEK_API_KEY="your_api_key"
+
+cd go-translator && go build -o translator ./cmd/translator
+cd ../sample
+../go-translator/translator -config project.translation.json -debug translate project
+```
+
+sample 目录的 `project.translation.json` 配置了：
+- **指定文件**: `translate_source.json`、`long-stream/news1.md`、`resource.resx`、`structure/md/should_skip.md`
+- **指定文件夹**: `embeded` → `embeded/zh-cn`、`structure/json` → `i18n/zh-cn/structure/json`
 
 ## 依赖
 
