@@ -82,6 +82,18 @@
                     "lang": "ko-kr"
                 }
             ]
+        },
+        {
+            "sourceFile": {
+                "path": "structure/md/should_skip.md",
+                "lang": "en-us"
+            },
+            "targetFiles": [
+                {
+                    "path": "i18n/zh-cn/structure/md/should_skip.md",
+                    "lang": "zh-cn"
+                }
+            ]
         }
     ],
     "projectTranslator.diffApply": {

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { Buffer } from 'buffer';
 import { isBinaryFile } from "isbinaryfile";
 import * as glob from 'glob';
@@ -512,15 +513,86 @@ export class FileProcessor {
             } else {
                 this.checkCancellation();
                 if (streamMode) {
-                    // For streaming mode, use a write stream to append content as it arrives
-                    let streamedContent = '';
-                    let noTranslateDetected = false;
+                    // Stream mode: 边接收边写入目标文件，避免“结束后一次性 writeFile”导致长时间无落盘。
+                    // 仍然保留“必要时最终覆写”的兜底：若流式落盘内容与最终 sanitized 结果不一致，才会覆写一次。
+                    const streamedHash = crypto.createHash('sha256');
+                    let streamedCharCount = 0;
                     let writeStream: fs.WriteStream | null = null;
                     let writeError: Error | null = null;
                     let translateError: unknown = null;
                     // 初始化，避免 strict 模式下“可能未赋值”报错（真正出错时会 throw）
                     returnCode = AI_RETURN_CODE.OK;
                     translatedContent = '';
+
+                    // 写入队列：progressCallback 不能 async/await，这里用队列 + 后台 flush 保证顺序和 backpressure。
+                    const pendingChunks: string[] = [];
+                    let flushing = false;
+                    let flushPromise: Promise<void> | null = null;
+                    const waitDrain = async (ws: fs.WriteStream): Promise<void> => {
+                        await new Promise<void>((resolve, reject) => {
+                            const onDrain = () => {
+                                cleanup();
+                                resolve();
+                            };
+                            const onError = (err: Error) => {
+                                cleanup();
+                                reject(err);
+                            };
+                            const cleanup = () => {
+                                ws.off('drain', onDrain);
+                                ws.off('error', onError);
+                            };
+                            ws.on('drain', onDrain);
+                            ws.on('error', onError);
+                        });
+                    };
+
+                    const ensureWriteStream = () => {
+                        if (writeStream) return;
+                        writeStream = fs.createWriteStream(targetPath, { encoding: 'utf8', flags: 'w' });
+                        writeStream.on('error', (err) => {
+                            writeError = err;
+                            logMessage(`❌ Failed to write streaming content: ${err.message}`, "error");
+                        });
+                    };
+
+                    const flushChunks = async (): Promise<void> => {
+                        ensureWriteStream();
+                        while (pendingChunks.length > 0) {
+                            if (writeError) {
+                                throw writeError;
+                            }
+                            const chunk = pendingChunks.shift();
+                            if (!chunk) {
+                                continue;
+                            }
+                            const ok = writeStream!.write(chunk);
+                            if (!ok) {
+                                await waitDrain(writeStream!);
+                            }
+                        }
+                    };
+
+                    const enqueueChunk = (chunk: string) => {
+                        if (!chunk || writeError) {
+                            return;
+                        }
+                        pendingChunks.push(chunk);
+                        streamedHash.update(chunk, 'utf8');
+                        streamedCharCount += chunk.length;
+
+                        if (!flushing) {
+                            flushing = true;
+                            flushPromise = flushChunks()
+                                .catch((err) => {
+                                    // 记录并延后到 translateError 统一抛出
+                                    writeError = err instanceof Error ? err : new Error(String(err));
+                                })
+                                .finally(() => {
+                                    flushing = false;
+                                });
+                        }
+                    };
 
                     const closeWriteStreamIfAny = async () => {
                         if (!writeStream) return;
@@ -536,21 +608,7 @@ export class FileProcessor {
 
                     // Define progress callback for streaming - appends to file as chunks arrive
                     const progressCallback = (chunk: string) => {
-                        if (!noTranslateDetected && !writeError) {
-                            streamedContent += chunk;
-
-                            // Create write stream on first chunk
-                            if (!writeStream) {
-                                writeStream = fs.createWriteStream(targetPath, { encoding: 'utf8' });
-                                writeStream.on('error', (err) => {
-                                    writeError = err;
-                                    logMessage(`❌ Failed to write streaming content: ${err.message}`, "error");
-                                });
-                            }
-
-                            // Append chunk to stream
-                            writeStream.write(chunk);
-                        }
+                        enqueueChunk(chunk);
                     };
 
                     logMessage("🔄 Using stream mode for translation...");
@@ -568,6 +626,13 @@ export class FileProcessor {
                         translateError = e;
                     }
 
+                    // 等待所有排队 chunk 落盘，再关闭 writeStream
+                    try {
+                        await flushPromise;
+                    } catch (e) {
+                        translateError = translateError || e;
+                    }
+
                     // 无论成功失败，都要关闭写流，避免文件句柄泄漏/锁死
                     try {
                         await closeWriteStreamIfAny();
@@ -576,7 +641,7 @@ export class FileProcessor {
                     }
 
                     // 若翻译失败且已写入过部分内容，清理不完整目标文件，继续处理下一个文件
-                    if (translateError && streamedContent.length > 0) {
+                    if (translateError && streamedCharCount > 0) {
                         try {
                             await fsp.unlink(targetPath);
                         } catch {
@@ -606,22 +671,39 @@ export class FileProcessor {
                         this.processedFilesCount++;
                         return; // Skip processing this file
                     } else {
-                        // Rewrite once with sanitized final content to avoid any LLM-added wrappers.
-                        // 防御：若思考型模型/供应商流式字段不兼容导致 translateContent 返回空，但流式过程中实际收到了内容，
-                        // 则优先使用流式累计内容，避免把目标文件覆盖成空文件。
+                        // 优先使用 translateContent 返回的最终 sanitized 结果；若其为空，则保留流式落盘内容，避免覆盖成空文件。
                         const finalToWrite =
                             translatedContent && translatedContent.trim().length > 0
                                 ? translatedContent
-                                : streamedContent;
-                        if (!finalToWrite || finalToWrite.trim().length === 0) {
-                            logMessage(
-                                `⚠️ Stream translation returned empty content; translatedContentLen=${translatedContent ? translatedContent.length : 0}, streamedContentLen=${streamedContent.length}, finalToWriteLen=${finalToWrite ? finalToWrite.length : 0}。请检查 debug 输出中的流式消息/字段。`,
-                                "warn"
-                            );
+                                : null;
+
+                        if (!finalToWrite) {
+                            if (streamedCharCount === 0) {
+                                logMessage(
+                                    `⚠️ Stream translation returned empty content and no streamed chunks were written; target file may be empty. 请检查 debug 输出中的流式消息/字段。`,
+                                    "warn"
+                                );
+                            }
+                            logMessage("💾 Stream translation result written (stream-only, no final overwrite)");
+                            if (streamedCharCount === 0) {
+                                wasTranslated = false;
+                            } else {
+                                const originalDigest = crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+                                const streamedDigest = streamedHash.digest('hex');
+                                wasTranslated = streamedDigest !== originalDigest;
+                            }
+                        } else {
+                            // 仅当最终结果与流式落盘不一致时才覆写一次，减少“结束后一次性写入”的发生概率。
+                            const streamedDigest = streamedHash.digest('hex');
+                            const finalDigest = crypto.createHash('sha256').update(finalToWrite, 'utf8').digest('hex');
+                            if (streamedDigest !== finalDigest) {
+                                await fsp.writeFile(targetPath, finalToWrite);
+                                logMessage("💾 Stream translation finalized (sanitized overwrite applied)");
+                            } else {
+                                logMessage("💾 Stream translation finalized (no overwrite needed)");
+                            }
+                            wasTranslated = finalToWrite !== content;
                         }
-                        await fsp.writeFile(targetPath, finalToWrite || "");
-                        logMessage("💾 Stream translation result written");
-                        wasTranslated = (finalToWrite || "") !== content;
                     }
                 } else {
                     logMessage("🔄 Using standard mode for translation...");
@@ -701,6 +783,7 @@ export class FileProcessor {
             const translatedSegments: string[] = [];
             const segmentsWithEmptyTranslation: number[] = [];
             const segmentsWithWriteIssues: number[] = [];
+            let needsFinalOverwrite = false;
 
             // 用于保证流式写入的顺序性
             let lastWritePromise: Promise<void> = Promise.resolve();
@@ -724,50 +807,77 @@ export class FileProcessor {
                     segmentCode = AI_RETURN_CODE.OK;
                     translatedSegment = '';
 
+                    const segmentStreamHash = crypto.createHash('sha256');
+                    let segmentStreamCharCount = 0;
+                    const pendingChunks: string[] = [];
+                    let flushing = false;
+                    let flushPromise: Promise<void> | null = null;
+                    const waitDrain = async (ws: fs.WriteStream): Promise<void> => {
+                        await new Promise<void>((resolve, reject) => {
+                            const onDrain = () => {
+                                cleanup();
+                                resolve();
+                            };
+                            const onError = (err: Error) => {
+                                cleanup();
+                                reject(err);
+                            };
+                            const cleanup = () => {
+                                ws.off('drain', onDrain);
+                                ws.off('error', onError);
+                            };
+                            ws.on('drain', onDrain);
+                            ws.on('error', onError);
+                        });
+                    };
+
+                    const ensureWriteStream = () => {
+                        if (writeStream) return;
+                        const writeMode = i === 0 ? 'w' : 'a'; // First segment overwrites, others append
+                        writeStream = fs.createWriteStream(targetPath, { encoding: 'utf8', flags: writeMode });
+                        writeStream.on('error', (err) => {
+                            segmentHadWriteError = true;
+                            logMessage(`❌ Failed to write streaming content for segment: ${err.message}`, "error");
+                        });
+                        segmentHadAnyWrite = true;
+                    };
+
+                    const flushChunks = async (): Promise<void> => {
+                        ensureWriteStream();
+                        while (pendingChunks.length > 0) {
+                            const chunk = pendingChunks.shift();
+                            if (!chunk) {
+                                continue;
+                            }
+                            const ok = writeStream!.write(chunk);
+                            if (!ok) {
+                                await waitDrain(writeStream!);
+                            }
+                        }
+                    };
+
                     // Define progress callback for streaming - appends to file as chunks arrive
                     const progressCallback = (chunk: string) => {
-                        // If we detect UUID fragments, it means the AI returned NO_NEED_TRANSLATE
-                        if (chunk.includes("BEGIN SEGMENT") && chunk.includes("END SEGMENT")) {
-                            // Clean up the chunk to extract the original content between markers
-                            const cleanedChunk = chunk.replace(/[\s\S]*BEGIN SEGMENT[\s\S]*?END SEGMENT[\s\S]*/g, (match) => {
-                                const uuidContentMatch = match.match(/[\s\S]*BEGIN SEGMENT ([\s\S]*?) END SEGMENT[\s\S]*/);
-                                if (uuidContentMatch && uuidContentMatch[1]) {
-                                    return uuidContentMatch[1];
-                                }
-                                return '';
-                            });
-                            currentSegmentContent = cleanedChunk;
-                            const currentContent = combineSegments([...translatedSegments, currentSegmentContent]);
-                            logMessage(`🔄 AI indicated no translation needed for segment ${i + 1}, using original content`);
-                            segmentHadAnyWrite = true;
-                            lastWritePromise = lastWritePromise.then(async () => {
-                                try {
-                                    await fsp.writeFile(targetPath, currentContent);
-                                } catch (err) {
-                                    segmentHadWriteError = true;
-                                    segmentsWithWriteIssues.push(i + 1);
-                                    logMessage(`❌ Failed to write segment (no-translate) content: ${err instanceof Error ? err.message : String(err)}`, "error");
-                                }
-                            });
+                        if (!chunk) {
                             return;
                         }
- 
-                        // If no UUID fragments were found, add the chunk to current segment content
+
                         currentSegmentContent += chunk;
+                        segmentStreamHash.update(chunk, 'utf8');
+                        segmentStreamCharCount += chunk.length;
+                        pendingChunks.push(chunk);
 
-                        // Create write stream on first chunk of this segment
-                        if (!writeStream) {
-                            const writeMode = i === 0 ? 'w' : 'a'; // First segment overwrites, others append
-                            writeStream = fs.createWriteStream(targetPath, { encoding: 'utf8', flags: writeMode });
-                            writeStream.on('error', (err) => {
-                                segmentHadWriteError = true;
-                                logMessage(`❌ Failed to write streaming content for segment: ${err.message}`, "error");
-                            });
-                            segmentHadAnyWrite = true;
+                        if (!flushing) {
+                            flushing = true;
+                            flushPromise = flushChunks()
+                                .catch(() => {
+                                    segmentHadWriteError = true;
+                                    segmentsWithWriteIssues.push(i + 1);
+                                })
+                                .finally(() => {
+                                    flushing = false;
+                                });
                         }
-
-                        // Append chunk to stream
-                        writeStream.write(chunk);
                     };
 
                     logMessage(`🔄 Using stream mode for segment ${i + 1}/${segments.length}...`);
@@ -783,6 +893,14 @@ export class FileProcessor {
                         );
                     } catch (e) {
                         segmentTranslateError = e;
+                    }
+
+                    // 等待该 segment 的所有 chunk 落盘
+                    try {
+                        await flushPromise;
+                    } catch {
+                        segmentHadWriteError = true;
+                        segmentsWithWriteIssues.push(i + 1);
                     }
 
                     // 确保关闭 writeStream，避免异常中断时文件句柄泄漏
@@ -805,12 +923,27 @@ export class FileProcessor {
                     if (segmentCode === AI_RETURN_CODE.NO_NEED_TRANSLATE) {
                         translatedSegment = segment;
                     } else if (!translatedSegment) {
-                        // Fallback to accumulated content from progressCallback
+                        // translateContent 为空时，至少避免把 translatedSegments 塞进空字符串；这里用 segment 原文作为兜底。
+                        // 注意：文件落盘内容可能仍来自 stream；最终是否覆写由 needsFinalRewrite 决定。
                         translatedSegment = currentSegmentContent;
                     }
 
                     // Add to translatedSegments for final combination
                     translatedSegments.push(translatedSegment);
+
+                    // 若流式落盘内容与 translateContent 的最终 sanitized 结果不一致，则在末尾进行一次最终覆写。
+                    if (segmentCode !== AI_RETURN_CODE.NO_NEED_TRANSLATE) {
+                        const streamedDigest = segmentStreamHash.digest('hex');
+                        const expectedDigest = crypto.createHash('sha256').update(translatedSegment || "", 'utf8').digest('hex');
+                        if (segmentStreamCharCount === 0) {
+                            // 没有任何 stream chunk（供应商可能未返回 delta.content），后续用兜底写入保证文件不缺段
+                            segmentHadWriteError = true;
+                            segmentsWithWriteIssues.push(i + 1);
+                        } else if (streamedDigest !== expectedDigest) {
+                            // Stream 写入的是“逐步输出”，最终 sanitized 结果可能略有差异；仅在末尾覆写一次即可，无需每段兜底重写。
+                            needsFinalOverwrite = true;
+                        }
+                    }
 
                     // 如果流式过程中没有写入任何内容，或写入发生错误，则进行一次“兜底写入”确保目标文件同步
                     if (
@@ -881,8 +1014,15 @@ export class FileProcessor {
             const finalContent = combineSegments(translatedSegments);
             // 确保所有挂起的写入完成
             await lastWritePromise;
-            // Overwrite once with the final combined content (includes any sanitization)
-            await fsp.writeFile(targetPath, finalContent);
+            // streamMode 下通常已经边接收边写入了文件，这里只在发现写入异常/不一致时才最终覆写一次。
+            if (streamMode && segmentsWithWriteIssues.length === 0 && !needsFinalOverwrite) {
+                logMessage("💾 Stream translation completed (no final overwrite needed)");
+            } else {
+                await fsp.writeFile(targetPath, finalContent);
+                if (streamMode) {
+                    logMessage("💾 Stream translation finalized (final overwrite applied)");
+                }
+            }
 
             if (segmentsWithEmptyTranslation.length > 0) {
                 logMessage(
