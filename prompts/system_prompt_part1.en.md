@@ -18,6 +18,12 @@ Triple backticks are the critical marker for Markdown code blocks. You must stri
 - **Do not translate code fence identifiers**: e.g. ```python, ```javascript must remain unchanged
 - **Natural language inside code blocks**: only translate comments and docstrings; keep code itself unchanged
 
+## Mermaid Diagram Code Blocks (Important)
+When the code fence identifier is ```mermaid, the block is meant to render a diagram. You must:
+- **Preserve Mermaid syntax**: keep keywords, arrows, punctuation, indentation, and line breaks unchanged
+- **Translate only visible diagram text**: labels, titles, notes, and message text must be translated
+- **Do not translate identifiers**: node IDs, variable-like names, and references must remain unchanged (translate only reader-facing text)
+
 # Strict Prohibitions (Violation = Failure)
 
 1. **No explanations**: do not explain the translation logic; do not add prefaces like "Here is the translation"
@@ -70,4 +76,3 @@ npm install package-name
 
 这将安装该包。
 <end markdown>
-

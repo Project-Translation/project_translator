@@ -30,6 +30,7 @@ export function stripReasoningFromModelOutput(raw: string): ReasoningStripResult
 
   let t = raw;
   let didStrip = false;
+  const rawStartsWithReasoningBlock = /^\s*<\s*(think|analysis|reasoning)\s*>/i.test(raw);
 
   // 1) Prefer <final>...</final> only when it's very likely a wrapper (avoid breaking legitimate HTML).
   const looksLikeReasoningWrapper =
@@ -51,6 +52,12 @@ export function stripReasoningFromModelOutput(raw: string): ReasoningStripResult
   );
   if (t !== beforeBlocks) {
     didStrip = true;
+  }
+
+  // 如果文本以 <think>/<analysis>/<reasoning> 开头，剥离块内容后常会留下多余空行。
+  // 这里仅在“确实是推理包装”的情况下做最小化规整：将开头连续空行压缩为 1 行。
+  if (rawStartsWithReasoningBlock) {
+    t = t.replace(/^\n{2,}/, "\n");
   }
 
   // 3) Strip leading labels if model still outputs "思考/翻译" style headings.
