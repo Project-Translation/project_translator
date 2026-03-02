@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as vscode from 'vscode';
 
 // Default markers for different file types
 // These will be used if custom markers aren't provided in settings
@@ -78,17 +77,21 @@ export function estimateTokenCount(text: string): number {
  * @param maxTokens Maximum tokens per segment, defaults to config value or 3800
  * @returns Array of text segments
  */
-export function segmentText(text: string, filePath: string, maxTokens?: number): string[] {
+export function segmentText(
+    text: string,
+    filePath: string,
+    maxTokens?: number,
+    options: SegmentationOptions = {}
+): string[] {
     const ext = path.extname(filePath).toLowerCase().replace(/^\./, '');
     const language = EXTENSION_TO_LANGUAGE_MAP[ext] || 'plaintext';
     const isMarkdown = language === 'markdown';
     
-    // Get configuration values
-    const config = vscode.workspace.getConfiguration('projectTranslator');
-    const customMarkers = config.get<Record<string, string[]>>('segmentationMarkers') || {};
+    // Use explicit segmentation config instead of reading VSCode settings
+    const customMarkers = options.segmentationMarkers || {};
     
-    // Use provided maxTokens parameter, or get from settings, or use default 3800
-    const configMaxTokens = config.get<number>('maxTokensPerSegment') || 3800;
+    // Use provided maxTokens parameter, or explicit fallback, or default 3800
+    const configMaxTokens = options.defaultMaxTokens || 3800;
     const effectiveMaxTokens = maxTokens || configMaxTokens;
     
     // Combine default markers with custom markers, preferring custom
@@ -219,4 +222,8 @@ export function segmentText(text: string, filePath: string, maxTokens?: number):
 export function combineSegments(segments: string[]): string {
     // Simply join segments with newlines
     return segments.join('\n');
+}
+export interface SegmentationOptions {
+    segmentationMarkers?: Record<string, string[]>;
+    defaultMaxTokens?: number;
 }

@@ -5,9 +5,13 @@ import { FileProcessor } from "./services/fileProcessor";
 import { TranslatorService } from "./services/translatorService";
 import { AnalyticsService } from "./services/analytics";
 import { getConfiguration, exportSettingsToConfigFile, clearConfigurationCache } from "./config/config";
+import { createVscodeConfigProvider } from "./config/config.vscode";
 import { DestFolder } from "./types/types";
 import { LogFileManager } from "./services/logFileManager";
 import * as fs from "fs";
+import { getRuntimeContext, setRuntimeContext } from "./runtime/context";
+import { OperationCancelledError, isOperationCancelledError } from "./runtime/errors";
+import { TranslationRunner, TranslationRunResult } from "./app/translationRunner";
 
 function localize(id: string, defaultMessage: string): string {
     const result = vscode.l10n.t(id)
@@ -27,6 +31,9 @@ let cancellationTokenSource: vscode.CancellationTokenSource | undefined;
 let isProjectTranslation = false; // 标记是否在项目翻译模式
 
 export async function activate(context: vscode.ExtensionContext) {
+    const runtimeContext = buildVscodeRuntimeContext();
+    setRuntimeContext(runtimeContext);
+
     outputChannel = vscode.window.createOutputChannel("Project Translator");
     logMessage(localize("extension.activated", "Project Translator extension is now active!"));
 
@@ -163,6 +170,47 @@ function registerCommands(): vscode.Disposable[] {
         enableAutoTranslateTaskCommand,
         disableAutoTranslateTaskCommand
     ];
+}
+
+function buildVscodeRuntimeContext() {
+    return {
+        workspaceRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
+        logger: {
+            info: (message: string) => {
+                if (outputChannel) {outputChannel.appendLine(message);}
+                if (logFileManager) {logFileManager.writeLog(message);}
+            },
+            warn: (message: string) => {
+                if (outputChannel) {outputChannel.appendLine(message);}
+                if (logFileManager) {logFileManager.writeLog(message);}
+            },
+            error: (message: string) => {
+                if (outputChannel) {outputChannel.appendLine(message);}
+                if (logFileManager) {logFileManager.writeLog(message);}
+            },
+            debug: (message: string) => {
+                if (outputChannel) {outputChannel.appendLine(message);}
+                if (logFileManager) {logFileManager.writeLog(message);}
+            }
+        },
+        notifier: {
+            showInfo: (message: string) => { void vscode.window.showInformationMessage(message); },
+            showWarn: (message: string) => { void vscode.window.showWarningMessage(message); },
+            showError: (message: string) => { void vscode.window.showErrorMessage(message); }
+        },
+        configProvider: createVscodeConfigProvider(),
+        createCancellationController: () => {
+            const source = new vscode.CancellationTokenSource();
+            return {
+                token: source.token,
+                cancel: () => source.cancel(),
+                dispose: () => source.dispose()
+            };
+        },
+        createCancellationError: (message?: string) => new OperationCancelledError(message),
+        isCancellationError: (error: unknown) => isOperationCancelledError(error) || error instanceof vscode.CancellationError,
+        getMachineId: async () => vscode.env.machineId
+    };
 }
 
 /**
@@ -403,134 +451,36 @@ async function handleDisableAutoTranslateOnOpen() {
 
 async function handletranslateFolders() {
     try {
-        // Ensure we pick up latest settings / project.translation.json
+        setRuntimeContext(buildVscodeRuntimeContext());
         clearConfigurationCache();
-
         await ensureLogFileManagerForTranslation();
 
-        // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
         logMessage("==========================================");
 		logMessage("Starting folders translation task");
 		logMessage("==========================================\n");
 
-        const workspace = vscode.workspace.workspaceFolders?.[0];
-        if (!workspace) {
-            throw new Error("Please open a target workspace first");
-        }
-
-        // Initialize services
-        const translatorService = new TranslatorService(outputChannel);
-        await translatorService.initializeOpenAIClient();
-
-        // Get configuration and validate
-        const config = await getConfiguration();
-        const specifiedFolders = config.specifiedFolders || [];
-        if (specifiedFolders.length === 0) {
-            throw new Error("No folder groups configured. Please configure projectTranslator.specifiedFolders in settings.");
-        }
-
-        // Initialize database and ensure it exists
-        const translationDatabase = new TranslationDatabase(workspace.uri.fsPath, outputChannel);
-        translationDb = translationDatabase;
-
-        // Initialize file processor
-        const fileProcessor = new FileProcessor(outputChannel, translationDatabase, translatorService);
-
-        // Create cancellation token source if not already exists
-        const isSharedCancellation = !!cancellationTokenSource;
         if (!cancellationTokenSource) {
             cancellationTokenSource = new vscode.CancellationTokenSource();
         }
         const token = cancellationTokenSource.token;
-
-        // Create status bar buttons
         createStatusBarButtons();
+        const runner = new TranslationRunner(getRuntimeContext());
+        const result = await runner.runFolders(token);
 
-        // Reset state
-        isPaused = false;
-        translatorService.resetTokenCounts();
-
-        // Record start time
-        const startTime = Date.now();
-
-        // Set translation state with our token
-        fileProcessor.setTranslationState(isPaused, token);
-
-        const totalFolderGroups = specifiedFolders.length;
-        let processedGroups = 0;
-
-        try {
-            for (const folderGroup of specifiedFolders) {
-                // Check for cancellation
-                if (token.isCancellationRequested) {
-                    throw new vscode.CancellationError();
-                }
-
-                const sourceFolder = folderGroup.sourceFolder;
-                const targetFolders = folderGroup.targetFolders;
-
-                if (!sourceFolder?.path || !sourceFolder?.lang || !targetFolders?.length) {
-                    logMessage(`⚠️ Skipping invalid folder group configuration`);
-                    continue;
-                }
-
-                logMessage(`\n📂 Processing source folder: ${sourceFolder.path}`);
-
-                // Use absolute path for source folder (avoid mutating config)
-                const resolvedSourceFolderPath = path.isAbsolute(sourceFolder.path)
-                    ? sourceFolder.path
-                    : path.join(workspace.uri.fsPath, sourceFolder.path);
-                try {
-                    const stat = await fs.promises.stat(resolvedSourceFolderPath);
-                    if (!stat.isDirectory()) {
-                        throw new Error(`Source folder is not a directory: ${resolvedSourceFolderPath}`);
-                    }
-                } catch {
-                    throw new Error(`Source folder does not exist: ${resolvedSourceFolderPath}`);
-                }
-                // Register source directory and language
-                translationDatabase.setSourceRoot(resolvedSourceFolderPath);
-
-                // Reset target roots for this folder group
-                translationDatabase.clearTargetRoots();
-                targetFolders.forEach((target: DestFolder) => translationDatabase.setTargetRoot(target.path, target.lang));
-
-                // Process this folder group
-                await fileProcessor.processDirectory(resolvedSourceFolderPath, targetFolders, sourceFolder.lang);
-
-                // Get updated stats after processing this folder group
-                const stats = fileProcessor.getProcessingStats();
-                const totalFilesProcessed = stats.processedFiles + stats.skippedFiles;
-                
-                processedGroups++;
-                updateProgressStatusBar(`文件夹 ${processedGroups}/${totalFolderGroups} (${totalFilesProcessed} 文件)`);
-            }
-            
-            // Get final stats for the completion message
-            const finalStats = fileProcessor.getProcessingStats();
-            const totalProcessed = finalStats.processedFiles + finalStats.skippedFiles;
-            vscode.window.showInformationMessage(`Folders translation completed! (${totalProcessed} files processed)`);
-        } catch (error) {
-            if (error instanceof vscode.CancellationError) {
-                // Get stats for cancellation message
-                const currentStats = fileProcessor.getProcessingStats();
-                const totalProcessed = currentStats.processedFiles + currentStats.skippedFiles;
-                
-                logMessage("⛔ Translation cancelled by user", "warn");
-                vscode.window.showInformationMessage(`Folders translation cancelled! (${totalProcessed} files processed)`);
-                return;
-            }
-            throw error;
+        if (result.cancelled) {
+            logMessage("⛔ Translation cancelled by user", "warn");
+            vscode.window.showInformationMessage("Folders translation cancelled!");
+            return;
         }
 
-        // Output summary
-        outputSummary(startTime, fileProcessor, translatorService);
-
-        // Send analytics
-        const analyticsService = new AnalyticsService(outputChannel, machineId);
-        await sendAnalytics(analyticsService, fileProcessor, translatorService);
+        if (result.fatalError) {
+            throw new Error(result.fatalError);
+        }
+        const totalProcessed = result.processedFiles + result.skippedFiles;
+        vscode.window.showInformationMessage(`Folders translation completed! (${totalProcessed} files processed)`);
+        outputRunnerSummary(result);
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -543,137 +493,34 @@ async function handletranslateFolders() {
 
 async function handleTranslateFiles() {
     try {
-        // Ensure we pick up latest settings / project.translation.json
+        setRuntimeContext(buildVscodeRuntimeContext());
         clearConfigurationCache();
-
         await ensureLogFileManagerForTranslation();
 
-        // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
         logMessage("==========================================");
 		logMessage("Starting files translation task");
 		logMessage("==========================================\n");
 
-        const workspace = vscode.workspace.workspaceFolders?.[0];
-        if (!workspace) {
-            throw new Error("Please open a workspace first");
-        }
-
-        // Initialize services
-        const translatorService = new TranslatorService(outputChannel);
-        await translatorService.initializeOpenAIClient();
-
-        // Get the configuration
-        const config = await getConfiguration();
-        
-        // Get specified files configuration
-        const specifiedFiles = config.specifiedFiles;
-        if (!specifiedFiles || specifiedFiles.length === 0) {
-            throw new Error("No specified files configured. Please configure projectTranslator.specifiedFiles in settings.");
-        }
-
-        // Initialize database
-        const translationDatabase = new TranslationDatabase(workspace.uri.fsPath, outputChannel);
-        translationDb = translationDatabase;
-        
-        // Reset state
-        isPaused = false;
-        translatorService.resetTokenCounts();
-        
-        // Create cancellation token source if not already exists
-        const isSharedCancellation = !!cancellationTokenSource;
         if (!cancellationTokenSource) {
             cancellationTokenSource = new vscode.CancellationTokenSource();
         }
         const token = cancellationTokenSource.token;
-
-        // Create status bar buttons
         createStatusBarButtons();
-        
-        // Record start time
-        const startTime = Date.now();
-
-        // Initialize file processor
-        const fileProcessor = new FileProcessor(outputChannel, translationDatabase, translatorService);
-
-        // Calculate total files to translate
-        let totalFiles = 0;
-        for (const fileGroup of specifiedFiles) {
-            if (fileGroup.sourceFile && fileGroup.sourceFile.path && 
-                fileGroup.targetFiles && fileGroup.targetFiles.length > 0) {
-                totalFiles += fileGroup.targetFiles.length;
-            }
+        const runner = new TranslationRunner(getRuntimeContext());
+        const result = await runner.runFiles(token);
+        if (result.cancelled) {
+            logMessage("⛔ Translation cancelled by user", "warn");
+            vscode.window.showInformationMessage("Files translation cancelled!");
+            return;
         }
-        
-        logMessage(`📊 Found ${totalFiles} files to translate`);
-
-        // Set translation state with our token
-        fileProcessor.setTranslationState(isPaused, token);
-        
-        const totalCount = specifiedFiles.length;
-        let processedCount = 0;
-        let processedFiles = 0;
-
-        try {            
-            for (const fileGroup of specifiedFiles) {
-                // Check for cancellation
-                if (token.isCancellationRequested) {
-                    throw new vscode.CancellationError();
-                }
-
-                const sourceFile = fileGroup.sourceFile;
-                const targetFiles = fileGroup.targetFiles;
-                
-                if (!sourceFile || !sourceFile.path || !targetFiles || targetFiles.length === 0) {
-                    logMessage(`⚠️ Skipping invalid file group configuration`);
-                    continue;
-                }
-                
-                logMessage(`\n📄 Processing source file: ${sourceFile.path}`);
-                
-                // Set source directory and language for this file
-                const sourceDir = path.dirname(sourceFile.path);
-                translationDatabase.setSourceRoot(sourceDir);
-                
-                // Register target directories
-                for (const targetFile of targetFiles) {
-                    const targetDir = path.dirname(targetFile.path);
-                    translationDatabase.setTargetRoot(targetDir, targetFile.lang);
-                }
-                
-                // Process each destination file
-                for (const targetFile of targetFiles) {
-                    // Check for cancellation before each file
-                    if (token.isCancellationRequested) {
-                        throw new vscode.CancellationError();
-                    }
-
-                    await fileProcessor.processFile(sourceFile.path, targetFile.path, sourceFile.lang, targetFile.lang);
-                    processedFiles++;
-                    
-                    // Update status bar progress
-                    updateProgressStatusBar(`文件 ${processedFiles}/${totalFiles}`);
-                }
-                
-                processedCount++;
-            }
-            vscode.window.showInformationMessage(`Files translation completed! (${processedFiles}/${totalFiles} files)`);
-        } catch (error) {
-            if (error instanceof vscode.CancellationError) {
-                logMessage("⛔ Translation cancelled by user", "warn");
-                vscode.window.showInformationMessage(`Files translation cancelled! (${processedFiles}/${totalFiles} files translated)`);
-                return;
-            }
-            throw error;
+        if (result.fatalError) {
+            throw new Error(result.fatalError);
         }
-        
-        // Output summary
-        outputSummary(startTime, fileProcessor, translatorService);
-        
-        // Send analytics
-        const analyticsService = new AnalyticsService(outputChannel, machineId);
-        await sendAnalytics(analyticsService, fileProcessor, translatorService);
+        const totalProcessed = result.processedFiles + result.skippedFiles;
+        vscode.window.showInformationMessage(`Files translation completed! (${totalProcessed} files)`);
+        outputRunnerSummary(result);
         
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -686,75 +533,31 @@ async function handleTranslateFiles() {
 
 async function handleTranslateProject() {
     try {
-        // Ensure we pick up latest settings / project.translation.json
+        setRuntimeContext(buildVscodeRuntimeContext());
         clearConfigurationCache();
-
         await ensureLogFileManagerForTranslation();
 
-        // 标记进入项目翻译模式
-        isProjectTranslation = true;
-
-        // Show and focus output panel
         outputChannel.clear();
         outputChannel.show(true);
         logMessage("==========================================");
 		logMessage("Starting project translation");
 		logMessage("==========================================\n");
 
-        const workspace = vscode.workspace.workspaceFolders?.[0];
-        if (!workspace) {
-            throw new Error("Please open a target workspace first");
-        }
-
-        // Initialize services
-        const translatorService = new TranslatorService(outputChannel);
-        await translatorService.initializeOpenAIClient();
-
-        // Get configuration
-        const config = await getConfiguration();
-
-        const hasFolders = config.specifiedFolders && config.specifiedFolders.length > 0;
-        const hasFiles = config.specifiedFiles && config.specifiedFiles.length > 0;
-
-        // If no tasks configured, show error
-        if (!hasFolders && !hasFiles) {
-            throw new Error("No translation tasks configured. Please configure either projectTranslator.specifiedFolders or projectTranslator.specifiedFiles in settings.");
-        }
-
-        // Reset state
-        isPaused = false;
-        translatorService.resetTokenCounts();
-
-        // Create cancellation token source for the entire project translation
         cancellationTokenSource = new vscode.CancellationTokenSource();
-
-        // Create status bar buttons
         createStatusBarButtons();
 
-        // Execute translation tasks sequentially
-        try {
-            if (hasFolders) {
-                await handletranslateFolders();
-            }
-            
-            // Check for cancellation before starting files
-            if (cancellationTokenSource?.token.isCancellationRequested) {
-                throw new vscode.CancellationError();
-            }
-
-            if (hasFiles) {
-                await handleTranslateFiles();
-            }
-            
-            vscode.window.showInformationMessage("Project translation completed!");
-        } catch (error) {
-            if (error instanceof vscode.CancellationError) {
-                logMessage("⛔ Translation cancelled by user", "warn");
-                vscode.window.showInformationMessage("Project translation cancelled!");
-                return;
-            }
-            throw error;
+        const runner = new TranslationRunner(getRuntimeContext());
+        const result = await runner.runProject(cancellationTokenSource.token);
+        if (result.cancelled) {
+            logMessage("⛔ Translation cancelled by user", "warn");
+            vscode.window.showInformationMessage("Project translation cancelled!");
+            return;
         }
+        if (result.fatalError) {
+            throw new Error(result.fatalError);
+        }
+        vscode.window.showInformationMessage("Project translation completed!");
+        outputRunnerSummary(result);
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -1011,6 +814,34 @@ function outputSummary(startTime: number, fileProcessor: FileProcessor, translat
     logMessage(`   - Total: ${tokenCounts.totalTokens.toLocaleString()} tokens`);
 
     const tokensPerMinute = Math.round(tokenCounts.totalTokens / (Number(totalTimeInSeconds) / 60));
+    if (!isNaN(tokensPerMinute) && isFinite(tokensPerMinute)) {
+        logMessage(`   - Processing speed: ${tokensPerMinute.toLocaleString()} tokens/minute`);
+    }
+}
+
+function outputRunnerSummary(result: TranslationRunResult) {
+    logMessage("\n==========================================");
+    logMessage("Translation Task Summary");
+    logMessage("==========================================");
+    logMessage(`✅ Translated files: ${result.processedFiles}`);
+    logMessage(`⏭️ Skipped files: ${result.skippedFiles}`);
+    logMessage(`❌ Failed files: ${result.failedFiles}`);
+
+    if (result.failedFiles > 0 && result.failedPaths.length > 0) {
+        logMessage("\n❌ Failed files list:");
+        result.failedPaths.forEach((filePath, index) => {
+            logMessage(`   ${index + 1}. ${filePath}`);
+        });
+        logMessage("");
+    }
+
+    logMessage(`⌛ Total time: ${(result.durationMs / 1000).toFixed(2)} seconds`);
+    logMessage(`📊 Total tokens consumed:`);
+    logMessage(`   - Input: ${result.tokenCounts.inputTokens.toLocaleString()} tokens`);
+    logMessage(`   - Output: ${result.tokenCounts.outputTokens.toLocaleString()} tokens`);
+    logMessage(`   - Total: ${result.tokenCounts.totalTokens.toLocaleString()} tokens`);
+
+    const tokensPerMinute = Math.round(result.tokenCounts.totalTokens / (result.durationMs / 1000 / 60));
     if (!isNaN(tokensPerMinute) && isFinite(tokensPerMinute)) {
         logMessage(`   - Processing speed: ${tokensPerMinute.toLocaleString()} tokens/minute`);
     }

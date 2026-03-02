@@ -1,0 +1,9 @@
+<document>
+  <title>差异翻译演示</title>
+  <summary>此XML文件用于可靠地验证具有回退支持的增量翻译。</summary>
+  <items>
+    <item>只有更改的片段应该被更新。</item>
+    <item>未更改的标签和布局必须保持稳定。</item>
+    <item>应在更新之前生成备份文件。</item>
+  </items>
+</document>

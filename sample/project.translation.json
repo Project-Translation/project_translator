@@ -1,0 +1,219 @@
+{
+  "currentVendor": "openrouter",
+  "vendors": [
+    {
+      "apiEndpoint": "https://openrouter.ai/api/v1",
+      "apiKeyEnvVarName": "OPENROUTER_API_KEY",
+      "maxTokensPerSegment": 8000,
+      "model": "stepfun/step-3.5-flash:free",
+      "name": "openrouter",
+      "rpm": 0,
+      "streamMode": true,
+      "timeout": 60
+    }
+  ],
+  "debug": true,
+  "logFile": {
+    "enabled": true,
+    "path": ".translation-logs",
+    "maxSizeKB": 10240,
+    "maxFiles": 5
+  },
+  "systemPromptLanguage": "en",
+  "specifiedFiles": [
+    {
+      "sourceFile": {
+        "path": "translate_source.json",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "translate_source_zh-cn.json",
+          "lang": "zh-cn"
+        }
+      ]
+    },
+    {
+      "sourceFile": {
+        "path": "long-stream/news1.md",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "i18n/zh-cn/long-stream/news1.md",
+          "lang": "zh-cn"
+        }
+      ]
+    },
+    {
+      "sourceFile": {
+        "path": "resource.resx",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "i18n/ko-kr/resource.resx",
+          "lang": "ko-kr"
+        }
+      ]
+    },
+    {
+      "sourceFile": {
+        "path": "structure/md/should_skip.md",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "i18n/zh-cn/structure/md/should_skip.md",
+          "lang": "zh-cn"
+        }
+      ]
+    },
+    {
+      "sourceFile": {
+        "path": "diff-analysis/json/source.en-us.json",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "diff-analysis/json/target.zh-cn.json",
+          "lang": "zh-cn"
+        }
+      ]
+    },
+    {
+      "sourceFile": {
+        "path": "diff-analysis/xml/source.en-us.xml",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "diff-analysis/xml/target.zh-cn.xml",
+          "lang": "zh-cn"
+        }
+      ]
+    }
+  ],
+  "specifiedFolders": [
+    {
+      "sourceFolder": {
+        "path": "embeded",
+        "lang": "en-us"
+      },
+      "targetFolders": [
+        {
+          "path": "embeded/zh-cn",
+          "lang": "zh-cn"
+        }
+      ]
+    },
+    {
+      "sourceFolder": {
+        "path": "structure/json",
+        "lang": "en-us"
+      },
+      "targetFolders": [
+        {
+          "path": "i18n/zh-cn/structure/json",
+          "lang": "zh-cn"
+        }
+      ]
+    }
+  ],
+  "translationIntervalDays": 29,
+  "copyOnly": {
+    "paths": [],
+    "extensions": [
+      ".svg"
+    ]
+  },
+  "ignore": {
+    "paths": [
+      "embeded/zh-cn/**"
+    ],
+    "extensions": [
+      ".log"
+    ]
+  },
+  "customPrompts": [
+    "1. 如果markdown文件标记draft, 则不必翻译.",
+    "2. './readmes/' in the sentences should replace with './'"
+  ],
+  "segmentationMarkers": {
+    "markdown": [
+      "^#\\s",
+      "^##\\s",
+      "^###\\s"
+    ],
+    "html": [
+      "^<h1[^>]*>",
+      "^<h2[^>]*>",
+      "^<h3[^>]*>"
+    ],
+    "javascript": [
+      "^function\\s+\\w+\\(",
+      "^class\\s+\\w+"
+    ],
+    "typescript": [
+      "^function\\s+\\w+\\(",
+      "^class\\s+\\w+",
+      "^interface\\s+\\w+"
+    ],
+    "python": [
+      "^def\\s+\\w+\\(",
+      "^class\\s+\\w+"
+    ],
+    "java": [
+      "^public\\s+(class|interface|enum)\\s+\\w+",
+      "^\\s*public\\s+\\w+\\s+\\w+\\("
+    ],
+    "go": [
+      "^func\\s+\\w+\\(",
+      "^type\\s+\\w+\\s+struct"
+    ],
+    "c#": [
+      "^public\\s+(class|interface|enum)\\s+\\w+",
+      "^\\s*public\\s+\\w+\\s+\\w+\\("
+    ],
+    "php": [
+      "^function\\s+\\w+\\(",
+      "^class\\s+\\w+"
+    ],
+    "ruby": [
+      "^def\\s+\\w+",
+      "^class\\s+\\w+"
+    ],
+    "rust": [
+      "^fn\\s+\\w+",
+      "^struct\\s+\\w+",
+      "^enum\\s+\\w+"
+    ],
+    "swift": [
+      "^func\\s+\\w+",
+      "^class\\s+\\w+",
+      "^struct\\s+\\w+"
+    ],
+    "kotlin": [
+      "^fun\\s+\\w+",
+      "^class\\s+\\w+"
+    ],
+    "plaintext": [
+      "^\\s*$"
+    ]
+  },
+  "diffApply": {
+    "enabled": true,
+    "validationLevel": "normal",
+    "autoBackup": true,
+    "maxOperationsPerFile": 100
+  },
+  "skipFrontMatterMarkers": {
+    "enabled": true,
+    "markers": [
+      {
+        "key": "draft",
+        "value": "true"
+      }
+    ]
+  }
+}

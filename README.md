@@ -205,6 +205,34 @@ During translation:
 - Translation progress shown in notification area
 - Detailed logs displayed in output panel
 
+## CLI Usage
+
+The project now supports CLI execution in addition to the VS Code extension.
+
+Build CLI output:
+
+```bash
+npm run compile
+```
+
+Run translation:
+
+```bash
+npx project-translator translate project --workspace . --config project.translation.json
+```
+
+Manage config:
+
+```bash
+npx project-translator config list --workspace . --config project.translation.json --json
+npx project-translator config set currentVendor deepseek --workspace . --config project.translation.json
+npx project-translator config schema --workspace .
+npx project-translator config validate --workspace . --config project.translation.json
+```
+
+`config schema` will export `project.translation.schema.json` by default.  
+`config validate` performs JSON Schema validation on the config file and returns a non-zero exit code when invalid.
+
 ## Development
 
 ### Build System

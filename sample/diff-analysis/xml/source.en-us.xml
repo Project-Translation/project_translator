@@ -1,0 +1,9 @@
+<document>
+  <title>Diff Translation Demo</title>
+  <summary>This XML file is used to reliably verify incremental translation with fallback support.</summary>
+  <items>
+    <item>Only changed segments should be updated.</item>
+    <item>Unchanged tags and layout must stay stable.</item>
+    <item>Backup files should be generated before updates.</item>
+  </items>
+</document>

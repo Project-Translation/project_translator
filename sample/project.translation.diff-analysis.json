@@ -1,0 +1,78 @@
+{
+  "currentVendor": "openrouter",
+  "vendors": [
+    {
+      "apiEndpoint": "https://openrouter.ai/api/v1",
+      "apiKeyEnvVarName": "OPENROUTER_API_KEY",
+      "maxTokensPerSegment": 8000,
+      "model": "stepfun/step-3.5-flash:free",
+      "name": "openrouter",
+      "rpm": 0,
+      "streamMode": true,
+      "timeout": 60
+    }
+  ],
+  "debug": false,
+  "logFile": {
+    "enabled": true,
+    "path": ".translation-logs",
+    "maxSizeKB": 10240,
+    "maxFiles": 5
+  },
+  "systemPromptLanguage": "en",
+  "specifiedFiles": [
+    {
+      "sourceFile": {
+        "path": "diff-analysis/json/source.en-us.json",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "diff-analysis/json/target.zh-cn.json",
+          "lang": "zh-cn"
+        }
+      ]
+    },
+    {
+      "sourceFile": {
+        "path": "diff-analysis/xml/source.en-us.xml",
+        "lang": "en-us"
+      },
+      "targetFiles": [
+        {
+          "path": "diff-analysis/xml/target.zh-cn.xml",
+          "lang": "zh-cn"
+        }
+      ]
+    }
+  ],
+  "specifiedFolders": [],
+  "translationIntervalDays": -1,
+  "copyOnly": {
+    "paths": [],
+    "extensions": [
+      ".svg"
+    ]
+  },
+  "ignore": {
+    "paths": [],
+    "extensions": []
+  },
+  "customPrompts": [],
+  "segmentationMarkers": {},
+  "diffApply": {
+    "enabled": true,
+    "validationLevel": "normal",
+    "autoBackup": false,
+    "maxOperationsPerFile": 100
+  },
+  "skipFrontMatterMarkers": {
+    "enabled": true,
+    "markers": [
+      {
+        "key": "draft",
+        "value": "true"
+      }
+    ]
+  }
+}

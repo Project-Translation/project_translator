@@ -1,0 +1,13 @@
+{
+  "title": "Project Translator Quickstart",
+  "description": "This guide explains how to run differential translation safely and efficiently.",
+  "steps": [
+    "Enable diffApply in project.translation.json.",
+    "Keep backup enabled for important files.",
+    "Run CLI: project-translator translate files --workspace sample.",
+    "Check generated backups after diff edits are applied.",
+    "For more details, see the documentation.",
+    "Learn more about diff translation best practices in our blog post."
+  ],
+  "updatedAt": "2026-03-04"
+}

@@ -204,6 +204,34 @@ sequenceDiagram
 - 翻译进度显示在通知区域
 - 详细日志显示在输出面板
 
+## CLI 使用方式
+
+项目现在同时支持 VS Code 插件和 CLI 运行。
+
+先构建 CLI：
+
+```bash
+npm run compile
+```
+
+执行翻译：
+
+```bash
+npx project-translator translate project --workspace . --config project.translation.json
+```
+
+配置管理：
+
+```bash
+npx project-translator config list --workspace . --config project.translation.json --json
+npx project-translator config set currentVendor deepseek --workspace . --config project.translation.json
+npx project-translator config schema --workspace .
+npx project-translator config validate --workspace . --config project.translation.json
+```
+
+`config schema` 默认导出 `project.translation.schema.json`。  
+`config validate` 会按 JSON Schema 校验配置文件，校验失败时返回非零退出码。
+
 ## 开发
 
 ### 构建系统

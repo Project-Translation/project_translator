@@ -1,0 +1,13 @@
+{
+  "title": "项目翻译器快速入门",
+  "description": "本指南解释如何安全高效地运行差异翻译。",
+  "steps": [
+    "在 project.translation.json 中启用 diffApply。",
+    "为重要文件保持备份启用。",
+    "运行 CLI: project-translator translate files --workspace sample。",
+    "在差异编辑应用后检查生成的备份。",
+    "更多详情，请参阅文档。",
+    "阅读我们的博客文章，了解更多差异翻译最佳实践。"
+  ],
+  "updatedAt": "2026-03-04"
+}

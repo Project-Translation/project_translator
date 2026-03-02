@@ -2,6 +2,6 @@
     "command.translateProject": "翻译项目",
     "command.translateFiles": "翻译文件",
     "command.pauseTranslation": "暂停翻译",
-    "command.resumeTranslation": "继续翻译",
+    "command.resumeTranslation": "恢复翻译",
     "sentence.6": "你好，世界！"
 }

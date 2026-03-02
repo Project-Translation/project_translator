@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -10,10 +9,12 @@ import { DestFolder, SupportedLanguage } from "../types/types";
 import { TranslatorService } from "./translatorService";
 import { SearchReplaceDiffApplier } from './searchReplaceDiffApplier'
 import { formatRawErrorForLog } from "./errorLog";
+import { CancellationTokenLike, RuntimeContext } from "../runtime/types";
+import { getRuntimeContext } from "../runtime/context";
 
 import { estimateTokenCount, segmentText, combineSegments } from "../segmentationUtils";
 import { getConfiguration } from "../config/config";
-import { logMessage } from '../extension';
+import { logMessage } from '../runtime/logging';
 
 // AI return code.
 const AI_RETURN_CODE = {
@@ -24,7 +25,7 @@ const AI_RETURN_CODE = {
 const fsp = fs.promises;
 
 export class FileProcessor {
-    private outputChannel: vscode.OutputChannel;
+    private runtimeContext: RuntimeContext;
     private translationDb: TranslationDatabase;
     private translatorService: TranslatorService;
 
@@ -33,7 +34,7 @@ export class FileProcessor {
     private failedFilesCount = 0;
     private failedFilePaths: string[] = [];
     private isPaused = false;
-    private cancellationToken?: vscode.CancellationToken;
+    private cancellationToken?: CancellationTokenLike;
     private workspaceRoot: string;
     
     // Cache to store whether a (source,targetLang,targetPath) needs translation
@@ -43,16 +44,16 @@ export class FileProcessor {
     private noTranslateCache: Map<string, boolean> = new Map();
 
     constructor(
-        outputChannel: vscode.OutputChannel,
+        runtimeContext: RuntimeContext | undefined,
         translationDb: TranslationDatabase,
         translatorService: TranslatorService
     ) {
-        this.outputChannel = outputChannel;
+        this.runtimeContext = runtimeContext || getRuntimeContext();
         this.translationDb = translationDb;
         this.translatorService = translatorService;
         
         // Get workspace root path
-        this.workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+        this.workspaceRoot = this.runtimeContext.workspaceRoot || '';
     }
 
     // Resolves a path that might be relative to workspace root
@@ -76,7 +77,7 @@ export class FileProcessor {
         return `${normalize(sourcePath)}::${normalize(targetPath)}::${targetLang}`;
     }
 
-    public setTranslationState(isPaused: boolean, token: vscode.CancellationToken) {
+    public setTranslationState(isPaused: boolean, token: CancellationTokenLike) {
         this.isPaused = isPaused;
         this.cancellationToken = token;
     }
@@ -151,7 +152,7 @@ export class FileProcessor {
     private checkCancellation() {
         if (this.cancellationToken?.isCancellationRequested) {
             logMessage("⛔ Translation cancelled", "warn");
-            throw new vscode.CancellationError();
+            throw this.runtimeContext.createCancellationError();
         }
     }
 
@@ -473,7 +474,7 @@ export class FileProcessor {
                     const { updatedText, appliedCount } = SearchReplaceDiffApplier.apply(
                         currentTarget,
                         searchReplace,
-                        { fuzzyThreshold: 1.0, bufferLines: 40 },
+                        { fuzzyThreshold: 0.98, bufferLines: 40 },
                         (m, lvl = 'info') => logMessage(m, lvl)
                     )
                     logMessage(`🔄 Diff edits applied (${appliedCount} ops)`)                    
@@ -748,7 +749,7 @@ export class FileProcessor {
             this.processedFilesCount++;
             return { success: true, duration };
         } catch (error) {
-            if (error instanceof vscode.CancellationError) {
+            if (this.runtimeContext.isCancellationError(error)) {
                 throw error;
             }
             // 打印原始错误对象，避免只看到 "Premature close" 这类简略信息
@@ -777,7 +778,10 @@ export class FileProcessor {
             const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
 
             // Segment the content
-            const segments = segmentText(content, sourcePath, maxTokensPerSegment);
+            const segments = segmentText(content, sourcePath, maxTokensPerSegment, {
+                segmentationMarkers: config.segmentationMarkers,
+                defaultMaxTokens: maxTokensPerSegment
+            });
             logMessage(`📦 Segmented into ${segments.length} parts`);
 
             const translatedSegments: string[] = [];
@@ -1040,7 +1044,7 @@ export class FileProcessor {
             }
             return [AI_RETURN_CODE.OK, finalContent];
         } catch (error) {
-            if (error instanceof vscode.CancellationError) {
+            if (this.runtimeContext.isCancellationError(error)) {
                 throw error;
             }
             // 流式大文件/分段翻译过程中一旦出错，目标文件可能只写入了部分内容；清理以避免留下损坏文件

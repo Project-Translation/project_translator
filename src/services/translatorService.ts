@@ -1,8 +1,7 @@
-import * as vscode from "vscode";
 import OpenAI from "openai";
 import { getConfiguration } from "../config/config";
 import { SupportedLanguage } from "../translationDatabase";
-import { logMessage } from "../extension";
+import { logMessage } from "../runtime/logging";
 import * as path from "path";
 import { AI_RETURN_CODE, getDiffSystemPrompt, getSystemPrompts } from "../config/prompt";
 import { sanitizeUnexpectedCodeFences } from "./translationOutputSanitizer";
@@ -10,10 +9,13 @@ import { shouldWarnZeroEstimatedOutputTokens } from "./translationWarnings";
 import { formatVendorHttpErrorForPopup } from "./vendorHttpError";
 import { stripReasoningFromModelOutput } from "./translationReasoningStripper";
 import { formatRawErrorForLog } from "./errorLog";
+import { CancellationTokenLike, RuntimeContext } from "../runtime/types";
+import { getRuntimeContext } from "../runtime/context";
 // no fs usage here
 
 // Store the last request timestamp for each vendor
 const vendorLastRequest: Map<string, number> = new Map();
+const structuredOutputCapabilityCache: Map<string, boolean> = new Map();
 
 // AI return codes are now imported from prompt.js
 
@@ -57,6 +59,162 @@ function extractTextFromDeltaContent(deltaContent: unknown): string {
       .join("");
   }
   return "";
+}
+
+function findFirstBalancedJsonObject(text: string): string | null {
+  let start = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === "\\") {
+        escaped = true;
+        continue;
+      }
+      if (ch === "\"") {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (ch === "\"") {
+      inString = true;
+      continue;
+    }
+
+    if (ch === "{") {
+      if (depth === 0) {
+        start = i;
+      }
+      depth++;
+      continue;
+    }
+
+    if (ch === "}") {
+      if (depth === 0) {
+        continue;
+      }
+      depth--;
+      if (depth === 0 && start >= 0) {
+        return text.slice(start, i + 1);
+      }
+    }
+  }
+
+  return null;
+}
+
+function collectJsonCandidates(rawContent: string): string[] {
+  const candidates = new Set<string>();
+  const trimmed = rawContent.trim();
+  if (trimmed.length > 0) {
+    candidates.add(trimmed);
+  }
+
+  const fencedMatches = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/gi);
+  if (fencedMatches) {
+    for (const fencedBlock of fencedMatches) {
+      const innerMatch = fencedBlock.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      const inner = innerMatch?.[1]?.trim();
+      if (inner) {
+        candidates.add(inner);
+      }
+    }
+  }
+
+  const taggedMatch = trimmed.match(/<start json>\s*([\s\S]*?)\s*<end json>/i);
+  if (taggedMatch?.[1]) {
+    candidates.add(taggedMatch[1].trim());
+  }
+
+  const balanced = findFirstBalancedJsonObject(trimmed);
+  if (balanced) {
+    candidates.add(balanced.trim());
+  }
+
+  return Array.from(candidates).filter((candidate) => candidate.length > 0);
+}
+
+function parseDiffJsonResponse(rawContent: string): {
+  has_changes: boolean;
+  changes: Array<{ start_line: number; search: string; replace: string }>;
+} {
+  const candidates = collectJsonCandidates(rawContent);
+  let lastError: unknown = null;
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate) as {
+        has_changes?: unknown;
+        changes?: unknown;
+      };
+      if (!parsed || typeof parsed !== "object") {
+        continue;
+      }
+
+      const hasChanges = !!parsed.has_changes;
+      const rawChanges = Array.isArray(parsed.changes) ? parsed.changes : [];
+
+      const normalizedChanges = rawChanges
+        .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+        .map((item) => {
+          const startLineRaw = item.start_line;
+          const startLine =
+            typeof startLineRaw === "number" && Number.isFinite(startLineRaw)
+              ? Math.max(1, Math.floor(startLineRaw))
+              : 1;
+          const search = typeof item.search === "string" ? item.search : "";
+          const replace = typeof item.replace === "string" ? item.replace : "";
+          return { start_line: startLine, search, replace };
+        })
+        .filter((change) => change.search.length > 0);
+
+      return {
+        has_changes: hasChanges,
+        changes: normalizedChanges,
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) {
+    throw lastError instanceof Error ? lastError : new Error(String(lastError));
+  }
+  throw new Error("No valid JSON object found in model response");
+}
+
+function isBadRequestError(error: unknown): boolean {
+  const maybeError = error as {
+    status?: unknown;
+    statusCode?: unknown;
+    response?: { status?: unknown; statusCode?: unknown } | unknown;
+  };
+  const directStatus =
+    typeof maybeError?.status === "number"
+      ? maybeError.status
+      : typeof maybeError?.statusCode === "number"
+      ? maybeError.statusCode
+      : null;
+  if (directStatus !== null) {
+    return directStatus === 400;
+  }
+
+  const response = maybeError?.response as { status?: unknown; statusCode?: unknown } | undefined;
+  const responseStatus =
+    typeof response?.status === "number"
+      ? response.status
+      : typeof response?.statusCode === "number"
+      ? response.statusCode
+      : null;
+  return responseStatus === 400;
 }
 
 type HiddenTagName = "think" | "analysis" | "reasoning" | null;
@@ -137,10 +295,9 @@ class ReasoningTagStreamFilter {
   }
 }
 
-function isOpenRouterSseCommentLine(line: string): boolean {
-  // OpenRouter SSE comments look like: ": OPENROUTER PROCESSING"
-  // We only filter these very specific lines to avoid corrupting legitimate content.
-  return /^\s*:\s*OPENROUTER\b/i.test(line);
+function isSseCommentLine(line: string): boolean {
+  // Generic SSE comment shape. Keep this strict to avoid filtering normal text.
+  return /^\s*:\s*[A-Z][A-Z0-9 _-]{2,}\s*$/.test(line);
 }
 
 function safeStringifyForLog(x: unknown): string {
@@ -152,21 +309,112 @@ function safeStringifyForLog(x: unknown): string {
   }
 }
 
+function makeModelCapabilityCacheKey(apiEndpoint: string, model: string): string {
+  return `${apiEndpoint}::${model}`;
+}
+
+function extractProviderErrorMessage(error: unknown): string {
+  const err = error as {
+    message?: unknown;
+    error?: { message?: unknown } | unknown;
+    response?: { data?: { error?: { message?: unknown } | unknown } | unknown } | unknown;
+  };
+  const direct = typeof err?.message === "string" ? err.message : "";
+  if (direct) {
+    return direct;
+  }
+  const nestedError = err?.error as { message?: unknown } | undefined;
+  if (nestedError && typeof nestedError.message === "string") {
+    return nestedError.message;
+  }
+  const responseData = (err?.response as { data?: unknown } | undefined)?.data as
+    | { error?: { message?: unknown } | unknown }
+    | undefined;
+  const responseError = responseData?.error as { message?: unknown } | undefined;
+  if (responseError && typeof responseError.message === "string") {
+    return responseError.message;
+  }
+  return "";
+}
+
 export class TranslatorService {
   private openaiClient: OpenAI | null = null;
-  private outputChannel: vscode.OutputChannel;
+  private runtimeContext: RuntimeContext;
   private projectTotalInputTokens = 0;
   private projectTotalOutputTokens = 0;
   private workspaceRoot: string | null = null;
   private shownVendorHttpErrorKeys: Set<string> = new Set();
+  private warnedStructuredDowngradeKeys: Set<string> = new Set();
 
-  constructor(outputChannel: vscode.OutputChannel) {
-    this.outputChannel = outputChannel;
-    // Get workspace root for saving diff responses
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (workspaceFolders && workspaceFolders.length > 0) {
-      this.workspaceRoot = workspaceFolders[0].uri.fsPath;
+  constructor(runtimeContext?: RuntimeContext) {
+    this.runtimeContext = runtimeContext || getRuntimeContext();
+    this.workspaceRoot = this.runtimeContext.workspaceRoot || null;
+  }
+
+  private async requestDiffResponseText(
+    payloadBase: Record<string, unknown>,
+    useStream: boolean,
+    debug: boolean
+  ): Promise<string> {
+    if (!this.openaiClient) {
+      throw new Error("OpenAI client not initialized");
     }
+
+    if (!useStream) {
+      const response = await this.openaiClient.chat.completions.create(
+        payloadBase as unknown as OpenAI.ChatCompletionCreateParamsNonStreaming
+      );
+      return extractTextFromMessageContent(response.choices?.[0]?.message?.content).trim();
+    }
+
+    const streamPayload = {
+      ...payloadBase,
+      stream: true,
+    };
+    const stream = await this.openaiClient.chat.completions.create(
+      streamPayload as unknown as OpenAI.ChatCompletionCreateParamsStreaming
+    );
+
+    let rawContent = "";
+    let rawReasoning = "";
+
+    for await (const chunk of stream) {
+      const delta = (chunk?.choices as any)?.[0]?.delta || {};
+      const deltaText = extractTextFromDeltaContent(delta?.content);
+      if (deltaText) {
+        rawContent += deltaText;
+      }
+
+      const deltaReasoning =
+        (typeof delta?.reasoning_content === "string" ? delta.reasoning_content : "") ||
+        (typeof delta?.thinking === "string" ? delta.thinking : "") ||
+        (typeof delta?.reasoning === "string" ? delta.reasoning : "") ||
+        "";
+      if (deltaReasoning) {
+        rawReasoning += deltaReasoning;
+      }
+
+      if (debug && deltaText) {
+        logMessage(`🐛 [DEBUG] [diff-stream] delta.content: ${deltaText}`);
+      }
+      if (debug && deltaReasoning) {
+        logMessage(`🐛 [DEBUG] [diff-stream] delta.reasoning: ${deltaReasoning}`);
+      }
+    }
+
+    if (rawContent.trim().length > 0) {
+      return rawContent.trim();
+    }
+
+    if (rawReasoning.trim().length > 0) {
+      logMessage(
+        "⚠️ Diff stream returned empty delta.content; fallback to delta.reasoning for JSON extraction",
+        "warn"
+      );
+      return rawReasoning.trim();
+    }
+
+    return "";
   }
 
   public async initializeOpenAIClient() {
@@ -253,7 +501,7 @@ export class TranslatorService {
     sourceLang: SupportedLanguage,
     targetLang: SupportedLanguage,
     sourcePath: string,
-    cancellationToken?: vscode.CancellationToken,
+    cancellationToken?: CancellationTokenLike,
     progressCallback?: TranslationProgressCallback,
     isFirstSegment: boolean = true // Add parameter to indicate if this is the first segment
   ): Promise<[string, string]> {
@@ -366,7 +614,7 @@ export class TranslatorService {
       });
       if (popup && !this.shownVendorHttpErrorKeys.has(popup.key)) {
         this.shownVendorHttpErrorKeys.add(popup.key);
-        vscode.window.showErrorMessage(popup.message);
+        this.runtimeContext.notifier.showError(popup.message);
       }
 
       const errorMessage =
@@ -393,27 +641,24 @@ export class TranslatorService {
       throw new Error(error);
     }
 
-	    const config = await getConfiguration();
-	    const { currentVendorName, currentVendor, customPrompts } = config;
-	    const {
-	      part1,
-	      part2,
-	      diffSystemPrompt,
-	      customPromptSectionTitle,
-	    } = getSystemPrompts(config.systemPromptLanguage);
+    const config = await getConfiguration();
+    const { currentVendorName, currentVendor, customPrompts } = config;
+    const debug = !!config.debug;
+    const {
+      part1,
+      part2,
+      diffSystemPrompt,
+      customPromptSectionTitle,
+    } = getSystemPrompts(config.systemPromptLanguage);
 
-	    // Build system prompt with default prompts and diff prompt
-	    let mergedSystemPrompt = [
-	      part1,
-	      part2,
-	      diffSystemPrompt
-	    ].join("\n");
+    // Build system prompt with default prompts and diff prompt
+    let mergedSystemPrompt = [part1, part2, diffSystemPrompt].join("\n");
 
-	    // Append user custom prompts to system prompt
-	    if (customPrompts && customPrompts.length > 0) {
-	      mergedSystemPrompt += `\n\n${customPromptSectionTitle}\n\n`;
-	      mergedSystemPrompt += customPrompts.join("\n\n");
-	    }
+    // Append user custom prompts to system prompt
+    if (customPrompts && customPrompts.length > 0) {
+      mergedSystemPrompt += `\n\n${customPromptSectionTitle}\n\n`;
+      mergedSystemPrompt += customPrompts.join("\n\n");
+    }
 
     const messages: Array<{ role: string; content: string }> = [
       { role: "system", content: mergedSystemPrompt },
@@ -434,18 +679,44 @@ export class TranslatorService {
     logMessage(`🔄 Sending differential translation request...`);
     logMessage(`🔄 Messages: ${JSON.stringify(messages, null, 2)}`);
 
-    const payload: OpenAI.ChatCompletionCreateParamsNonStreaming = {
+    const diffResponseSchema = {
+      type: "json_schema",
+      json_schema: {
+        name: "translation_diff",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            has_changes: { type: "boolean" },
+            changes: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  start_line: { type: "integer", minimum: 1 },
+                  search: { type: "string" },
+                  replace: { type: "string" },
+                },
+                required: ["start_line", "search", "replace"],
+                additionalProperties: false,
+              },
+            },
+          },
+          required: ["has_changes", "changes"],
+          additionalProperties: false,
+        },
+      },
+    } as const;
+
+    const basePayload: Record<string, unknown> = {
       model: currentVendor.model,
       messages: messages as OpenAI.ChatCompletionMessageParam[],
       temperature: currentVendor.temperature,
       top_p: currentVendor.top_p,
-      response_format: { type: "json_object" },
     };
+    const diffUsesStream = !!currentVendor.streamMode;
 
-    let response: OpenAI.ChatCompletion;
-    try {
-      response = await this.openaiClient.chat.completions.create(payload);
-    } catch (error) {
+    const handleDiffRequestError = (error: unknown): void => {
       logMessage(`❌ [RAW ERROR] ${formatRawErrorForLog(error)}`, "error");
       const popup = formatVendorHttpErrorForPopup(error, {
         vendorName: currentVendorName,
@@ -455,19 +726,65 @@ export class TranslatorService {
       });
       if (popup && !this.shownVendorHttpErrorKeys.has(popup.key)) {
         this.shownVendorHttpErrorKeys.add(popup.key);
-        vscode.window.showErrorMessage(popup.message);
+        this.runtimeContext.notifier.showError(popup.message);
       }
-      throw error;
+    };
+
+    const capabilityKey = makeModelCapabilityCacheKey(
+      currentVendor.apiEndpoint,
+      currentVendor.model
+    );
+    const canUseStructuredOutput = structuredOutputCapabilityCache.get(capabilityKey) !== false;
+
+    const payloadWithStructured: Record<string, unknown> = canUseStructuredOutput
+      ? {
+          ...basePayload,
+          response_format: diffResponseSchema,
+        }
+      : basePayload;
+
+    let content = "";
+    try {
+      content = await this.requestDiffResponseText(
+        payloadWithStructured,
+        diffUsesStream,
+        debug
+      );
+      if (canUseStructuredOutput) {
+        structuredOutputCapabilityCache.set(capabilityKey, true);
+      }
+    } catch (error) {
+      // If structured output is not accepted at runtime, retry without response_format.
+      if (!canUseStructuredOutput || !isBadRequestError(error)) {
+        handleDiffRequestError(error);
+        throw error;
+      }
+
+      structuredOutputCapabilityCache.set(capabilityKey, false);
+      if (!this.warnedStructuredDowngradeKeys.has(capabilityKey)) {
+        this.warnedStructuredDowngradeKeys.add(capabilityKey);
+        const providerMessage = extractProviderErrorMessage(error);
+        logMessage(
+          `⚠️ Structured response_format was rejected by current model/provider; fallback to plain JSON parsing from text stream. ${providerMessage ? `detail: ${providerMessage}` : ""}`.trim(),
+          "warn"
+        );
+      }
+      logMessage(
+        "⚠️ Diff request returned 400 with structured response_format; retrying without response_format",
+        "warn"
+      );
+      try {
+        content = await this.requestDiffResponseText(basePayload, diffUsesStream, debug);
+      } catch (retryError) {
+        handleDiffRequestError(retryError);
+        throw retryError;
+      }
     }
     vendorLastRequest.set(currentVendorName, Date.now());
-    const content = response.choices?.[0]?.message?.content?.trim() || '';
 
     // Parse JSON response and convert to SEARCH/REPLACE format
     try {
-      const diffResult = JSON.parse(content) as {
-        has_changes: boolean;
-        changes: Array<{ start_line: number; search: string; replace: string }>;
-      };
+      const diffResult = parseDiffJsonResponse(content);
 
       if (!diffResult.has_changes || !diffResult.changes || diffResult.changes.length === 0) {
         logMessage("ℹ️ No changes detected in diff");
@@ -593,7 +910,7 @@ ${change.replace}
     currentVendorName: string,
     originalContent: string,
     progressCallback: TranslationProgressCallback,
-    cancellationToken?: vscode.CancellationToken,
+    cancellationToken?: CancellationTokenLike,
     debug: boolean | undefined = false,
     topP: number | undefined = undefined,
     sourcePath: string = "",
@@ -705,7 +1022,7 @@ ${change.replace}
       for await (const chunk of stream) {
       if (cancellationToken?.isCancellationRequested) {
         logMessage("⛔ Translation cancelled", "warn");
-        throw new vscode.CancellationError();
+        throw this.runtimeContext.createCancellationError();
       }
 
       // 收到任何 chunk（包含将被忽略的异常结构）都视为“流仍在活跃”，重置 idle 超时计时器
@@ -716,11 +1033,11 @@ ${change.replace}
         logMessage(`🐛 [DEBUG] [stream] RAW: ${safeStringifyForLog(chunk)}`);
       }
 
-      // OpenRouter streaming is SSE and may include comment lines like ": OPENROUTER PROCESSING".
+      // Some OpenAI-compatible providers use raw SSE comments (e.g. ": PROCESSING").
       // These lines are not JSON/data events and must be ignored without breaking the stream.
       if (typeof chunk === "string") {
-        if (isOpenRouterSseCommentLine(chunk)) {
-          warnIgnoredMalformedChunk("OpenRouter SSE comment line", chunk);
+        if (isSseCommentLine(chunk)) {
+          warnIgnoredMalformedChunk("SSE comment line", chunk);
           continue;
         }
         // Unknown raw line: ignore but keep a breadcrumb in debug.
@@ -773,9 +1090,9 @@ ${change.replace}
         (typeof delta?.reasoning === "string" ? delta.reasoning : "") ||
         deltaReasoningFromDetails;
 
-      if (deltaContent && isOpenRouterSseCommentLine(deltaContent)) {
+      if (deltaContent && isSseCommentLine(deltaContent)) {
         warnIgnoredMalformedChunk(
-          "OpenRouter comment inside delta.content",
+          "SSE comment-like content inside delta.content",
           deltaContent
         );
         deltaContent = "";
@@ -1001,7 +1318,7 @@ ${change.replace}
   private async handleRpmLimit(
     currentVendorName: string,
     rpm: number,
-    cancellationToken?: vscode.CancellationToken
+    cancellationToken?: CancellationTokenLike
   ): Promise<void> {
     const lastRequestTime = vendorLastRequest.get(currentVendorName) || 0;
     const now = Date.now();
@@ -1022,7 +1339,7 @@ ${change.replace}
           logMessage(
             "⛔ Cancel request detected, stopping API rate limit wait"
           );
-          throw new vscode.CancellationError();
+          throw this.runtimeContext.createCancellationError();
         }
         await new Promise((resolve) =>
           globalThis.setTimeout(

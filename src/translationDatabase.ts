@@ -1,10 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
-import * as vscode from "vscode";
 import { SpecifiedFolder, SpecifiedFile } from "./types/types";
 import { getConfiguration } from "./config/config";
-import { logMessage } from "./extension";
+import { logMessage } from "./runtime/logging";
+import { getRuntimeContext } from "./runtime/context";
+import { RuntimeContext } from "./runtime/types";
 
 // Any string with length under 10 characters is now a valid language code
 export type SupportedLanguage = string;
@@ -33,7 +34,7 @@ export class TranslationDatabase {
   private sourceRoot: string | null = null;
   private targetRoots: Map<string, SupportedLanguage> = new Map();
   private translationCache: Map<string, TranslationRecord> = new Map();
-  private outputChannel: vscode.OutputChannel;
+  private runtimeContext: RuntimeContext;
   private readonly fsp = fs.promises;
 
   // Cache current source file info to avoid repeated stat/hash during scans.
@@ -44,14 +45,14 @@ export class TranslationDatabase {
   > = new Map();
   private readonly sourceFileInfoCacheTtlMs = 2000;
 
-  constructor(workspaceRoot: string, outputChannel: vscode.OutputChannel) {
+  constructor(workspaceRoot: string, runtimeContext?: RuntimeContext) {
     this.workspaceRoot = workspaceRoot;
-    this.outputChannel = outputChannel;
+    this.runtimeContext = runtimeContext || getRuntimeContext();
     this.translationCacheDir = path.join(workspaceRoot, ".translation-cache");
 
     // Initialize cache directory and load data
     this.initCache().catch((err) => {
-      vscode.window.showErrorMessage(
+      this.runtimeContext.notifier.showError(
         `Failed to initialize translation cache: ${err}`
       );
     });
@@ -68,13 +69,9 @@ export class TranslationDatabase {
       throw e;
     }
 
-    // Get configuration
-    const config = vscode.workspace.getConfiguration("projectTranslator");
-    const specifiedFolders =
-      config.get<Array<SpecifiedFolder>>("specifiedFolders") || [];
-
-    const specifiedFiles =
-      config.get<Array<SpecifiedFile>>("specifiedFiles") || [];
+    const config = await getConfiguration();
+    const specifiedFolders = (config.specifiedFolders || []) as SpecifiedFolder[];
+    const specifiedFiles = (config.specifiedFiles || []) as SpecifiedFile[];
 
     // Only create caches for languages specified in the configuration
     const configuredLanguages = new Set<SupportedLanguage>();
@@ -87,7 +84,7 @@ export class TranslationDatabase {
             logMessage(`🌐 Found configured language: ${folder.lang}`);
           } else if (folder.lang) {
             logMessage(`⚠️ Invalid language code: ${folder.lang}`, "warn");
-            vscode.window.showWarningMessage(
+            this.runtimeContext.notifier.showWarn(
               `Invalid language code "${folder.lang}". Language codes must be non-empty strings with less than 10 characters.`
             );
           }
@@ -103,7 +100,7 @@ export class TranslationDatabase {
             logMessage(`🌐 Found configured language: ${file.lang}`);
           } else if (file.lang) {
             logMessage(`⚠️ Invalid language code: ${file.lang}`, "warn");
-            vscode.window.showWarningMessage(
+            this.runtimeContext.notifier.showWarn(
               `Invalid language code "${file.lang}". Language codes must be non-empty strings with less than 10 characters.`
             );
           }
@@ -122,7 +119,7 @@ export class TranslationDatabase {
             `❌ Failed to load cache for language ${lang}: ${err}`,
             "error"
           );
-          vscode.window.showErrorMessage(
+          this.runtimeContext.notifier.showError(
             `Failed to load cache for language ${lang}: ${err}`
           );
         })
@@ -131,7 +128,7 @@ export class TranslationDatabase {
       logMessage("✅ Translation cache initialization completed");
     } else {
       logMessage("⚠️ No valid target languages found in configuration", "warn");
-      vscode.window.showWarningMessage(
+      this.runtimeContext.notifier.showWarn(
         "No valid target languages found in configuration"
       );
     }
@@ -142,7 +139,7 @@ export class TranslationDatabase {
         `⚠️ Cannot create cache for invalid language code "${lang}"`,
         "warn"
       );
-      vscode.window.showWarningMessage(
+      this.runtimeContext.notifier.showWarn(
         `Cannot create cache for invalid language code "${lang}"`
       );
       return;
@@ -185,7 +182,7 @@ export class TranslationDatabase {
         `❌ Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`,
         "error"
       );
-      vscode.window.showWarningMessage(
+      this.runtimeContext.notifier.showWarn(
         `Error loading translation cache for ${lang}: ${error}. Starting with empty cache.`
       );
     }
@@ -223,7 +220,7 @@ export class TranslationDatabase {
         `❌ Failed to save translation cache for ${lang}: ${error}`,
         "error"
       );
-      vscode.window.showErrorMessage(
+      this.runtimeContext.notifier.showError(
         `Failed to save translation cache for ${lang}: ${error}`
       );
     }
@@ -476,7 +473,7 @@ export class TranslationDatabase {
       return shouldTranslate;
     } catch (error) {
       logMessage(`❌ Error in shouldTranslate: ${error}`, "error");
-      vscode.window.showErrorMessage(`Error in shouldTranslate: ${error}`);
+      this.runtimeContext.notifier.showError(`Error in shouldTranslate: ${error}`);
       return true; // If there's an error, proceed with translation
     }
   }
