@@ -1,5 +1,5 @@
 {
-    "name": "project-translator",
+    "name": "@techfetch-dev/project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
     "version": "0.19.0",
@@ -866,6 +866,16 @@
         "type": "git",
         "url": "https://github.com/Project-Translation/project_translator"
     },
+    "files": [
+        "out/cli.js",
+        "prompts/**",
+        "l10n/**",
+        "package.nls*.json",
+        "project.translation.schema.json",
+        "resources/project-translator.png",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "npm run esbuild:extension -- --production && npm run esbuild:cli -- --production",
         "compile": "npm run esbuild:extension && npm run esbuild:cli",
@@ -883,6 +893,8 @@
         "pretest": "npm run test-compile",
         "publish:minor": "npm run build && npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
         "publish:patch": "npm run build && npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+        "pack:npm": "npm run build && npm pack",
+        "publish:npm": "npm run build && npm publish --access public",
         "publish:ovsx": "node scripts/ovsx-publish.mjs",
         "package": "npm run build && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
         "deps:install": "npm install --no-fund",
@@ -917,11 +929,33 @@
         "glob": "^11.0.1",
         "isbinaryfile": "^5.0.0",
         "jsonc-parser": "^3.3.1",
-        "minimatch": "^10.0.1",
+        "minimatch": "^10.2.3",
         "openai": "^4.85.3"
     },
     "overrides": {
-        "qs": "6.14.1"
+        "qs": "6.14.2",
+        "serialize-javascript": "7.0.3",
+        "@eslint/config-array": {
+            "minimatch": "3.1.4"
+        },
+        "@eslint/eslintrc": {
+            "minimatch": "3.1.4"
+        },
+        "eslint": {
+            "minimatch": "3.1.4"
+        },
+        "@vscode/vsce": {
+            "minimatch": "3.1.4"
+        },
+        "@typescript-eslint/typescript-estree": {
+            "minimatch": "9.0.7"
+        },
+        "mocha": {
+            "minimatch": "9.0.7"
+        },
+        "glob": {
+            "minimatch": "10.2.3"
+        }
     },
     "capabilities": {
         "virtualWorkspaces": true
