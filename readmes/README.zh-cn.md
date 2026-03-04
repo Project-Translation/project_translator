@@ -16,7 +16,7 @@
 
 ## 可用翻译
 
-该扩展支持翻译到以下语言：
+该扩展支持翻译成以下语言：
 
 - [简体中文 (zh-cn)](./README.zh-cn.md)
 - [繁體中文 (zh-tw)](./README.zh-tw.md)
@@ -33,17 +33,17 @@
 
 ## 示例
 
-| 项目                                                                             | 原始仓库                                                                                       | 描述                                                                                                                                                               | 星标 | 标签                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | :fireworks:交互式在线平台，可从代码可视化算法                                                                                               | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [algorithms](https://github.com/Project-Translation/algorithms)                     | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms)                     | :crystal_ball:算法可视化                                                                                                                                    | 401   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cline-docs](https://github.com/Project-Translation/cline-docs)                     | [cline/cline](https://github.com/cline/cline)                                                             | 您 IDE 中的自主编码代理，能够创建/编辑文件、执行命令、使用浏览器等，每一步都需要您的许可。 | 39572 | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cursor-docs](https://github.com/Project-Translation/cursor-docs)                   | [getcursor/docs](https://github.com/getcursor/docs)                                                       | Cursor 的开源文档                                                                                                                                        | 309   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [gobyexample](https://github.com/Project-Translation/gobyexample)                   | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample)                                           | Go 示例                                                                                                                                                             | 7523  | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [golang-website](https://github.com/Project-Translation/golang-website)             | [golang/website](https://github.com/golang/website)                                                       | [镜像] go.dev 和 golang.org 网站的主页                                                                                                                       | 402   | N/A                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [reference-en-us](https://github.com/Project-Translation/reference-en-us)           | [Fechin/reference](https://github.com/Fechin/reference)                                                   | ⭕ 为开发者分享快速参考备忘单。                                                                                                                      | 7808  | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
-| [styleguide](https://github.com/Project-Translation/styleguide)                     | [google/styleguide](https://github.com/google/styleguide)                                                 | Google 发起的开源项目的风格指南                                                                                                                   | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [vscode-docs](https://github.com/Project-Translation/vscode-docs)                   | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs)                                         | Visual Studio Code 的公共文档                                                                                                                               | 5914  | [`vscode`](https://github.com/topics/vscode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 项目 | 原始仓库 | 描述 | 星标数 | 标签 |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [algorithm-visualizer](https://github.com/Project-Translation/algorithm-visualizer) | [algorithm-visualizer/algorithm-visualizer](https://github.com/algorithm-visualizer/algorithm-visualizer) | 🎆交互式在线平台，可从代码可视化算法 | 47301 | [`algorithm`](https://github.com/topics/algorithm), [`animation`](https://github.com/topics/animation), [`data-structure`](https://github.com/topics/data-structure), [`visualization`](https://github.com/topics/visualization) |
+| [algorithms](https://github.com/Project-Translation/algorithms) | [algorithm-visualizer/algorithms](https://github.com/algorithm-visualizer/algorithms) | 🔮算法可视化 | 401 | N/A |
+| [cline-docs](https://github.com/Project-Translation/cline-docs) | [cline/cline](https://github.com/cline/cline) | 位于 IDE 中的自主编码代理，能够创建/编辑文件、执行命令、使用浏览器等，并在每一步都获得您的许可。 | 39572 | N/A |
+| [cursor-docs](https://github.com/Project-Translation/cursor-docs) | [getcursor/docs](https://github.com/getcursor/docs) | Cursor 的开源文档 | 309 | N/A |
+| [gobyexample](https://github.com/Project-Translation/gobyexample) | [mmcgrana/gobyexample](https://github.com/mmcgrana/gobyexample) | Go 示例 | 7523 | N/A |
+| [golang-website](https://github.com/Project-Translation/golang-website) | [golang/website](https://github.com/golang/website) | [镜像] go.dev 和 golang.org 网站的主页 | 402 | N/A |
+| [reference-en-us](https://github.com/Project-Translation/reference-en-us) | [Fechin/reference](https://github.com/Fechin/reference) | ⭕ 为开发者分享快速参考备忘单。 | 7808 | [`awk`](https://github.com/topics/awk), [`bash`](https://github.com/topics/bash), [`chatgpt`](https://github.com/topics/chatgpt), [`cheatsheet`](https://github.com/topics/cheatsheet), [`cheatsheets`](https://github.com/topics/cheatsheets), [`css`](https://github.com/topics/css), [`golang`](https://github.com/topics/golang), [`grep`](https://github.com/topics/grep), [`markdown`](https://github.com/topics/markdown), [`python`](https://github.com/topics/python), [`reference`](https://github.com/topics/reference), [`sed`](https://github.com/topics/sed), [`snippets`](https://github.com/topics/snippets), [`vim`](https://github.com/topics/vim) |
+| [styleguide](https://github.com/Project-Translation/styleguide) | [google/styleguide](https://github.com/google/styleguide) | Google 发起的开源项目的风格指南 | 38055 | [`cpplint`](https://github.com/topics/cpplint), [`style-guide`](https://github.com/topics/style-guide), [`styleguide`](https://github.com/topics/styleguide) |
+| [vscode-docs](https://github.com/Project-Translation/vscode-docs) | [microsoft/vscode-docs](https://github.com/microsoft/vscode-docs) | Visual Studio Code 的公共文档 | 5914 | [`vscode`](https://github.com/topics/vscode) |
 
 ## 请求项目翻译
 
@@ -52,25 +52,25 @@
 1. 使用以下模板创建问题：
 
 ```md
-**项目**: [project_url]
-**目标语言**: [target_lang]
-**描述**: 简要说明此翻译为何有价值
+**Project**: [project_url]
+**Target Language**: [target_lang]
+**Description**: Brief description of why this translation would be valuable
 ```
 
 2. 工作流：
 
 ```mermaid
 sequenceDiagram
-  贡献者->>项目翻译器: 创建翻译问题
-  项目翻译器->>社区: 审查问题
+  贡献者->>Project Translator: 创建翻译问题
+  Project Translator->>社区: 审查问题
   社区-->>贡献者: 批准/评论
   贡献者->>新项目: 开始翻译
   贡献者->>新项目: 提交到新项目
-  贡献者->>项目翻译器: 创建拉取请求，修改 README.Samples
-  项目翻译器-->>项目翻译器: 审查与合并
+  贡献者->>Project Translator: 创建拉取请求，修改 README.Samples
+  Project Translator-->>Project Translator: 审查与合并
 ```
 
-3. 拉取请求合并后，翻译将被添加到示例部分。
+3. PR 合并后，翻译将被添加到示例部分。
 
 当前正在进行的翻译：[查看问题](https://github.com/Project-Translation/project_translator/issues)
 
@@ -79,7 +79,7 @@ sequenceDiagram
 - 📁 文件夹级翻译支持
   - 将整个项目文件夹翻译成多种语言
   - 保持原始文件夹结构和层次
-  - 支持子文件夹递归翻译
+  - 支持子文件夹的递归翻译
   - 自动检测可翻译内容
   - 批量处理以实现高效的大规模翻译
 - 📄 文件级翻译支持
@@ -105,7 +105,7 @@ sequenceDiagram
   - 差异应用模式，用于高效更新现有翻译
   - 仅翻译更改的内容，减少 API 使用量
   - 以最小编辑保留版本历史
-  - ⚠️ 实验性功能 - 详情请参阅[高级功能](#differential-translation-diff-apply-mode)
+  - ⚠️ 实验性功能 - 详见[高级功能](#differential-translation-diff-apply-mode)
 
 ## 配置
 
@@ -116,13 +116,13 @@ sequenceDiagram
   "projectTranslator.specifiedFolders": [
     {
       "sourceFolder": {
-        "path": "源文件夹路径",
-        "lang": "源语言代码"
+        "path": "Source folder path",
+        "lang": "Source language code"
       },
       "targetFolders": [
         {
-          "path": "目标文件夹路径",
-          "lang": "目标语言代码"
+          "path": "Target folder path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -130,13 +130,13 @@ sequenceDiagram
   "projectTranslator.specifiedFiles": [
     {
       "sourceFile": {
-        "path": "源文件路径",
-        "lang": "源语言代码"
+        "path": "Source file path",
+        "lang": "Source language code"
       },
       "targetFiles": [
         {
-          "path": "目标文件路径",
-          "lang": "目标语言代码"
+          "path": "Target file path",
+          "lang": "Target language code"
         }
       ]
     }
@@ -145,7 +145,7 @@ sequenceDiagram
   "projectTranslator.vendors": [
     {
       "name": "openai",
-      "apiEndpoint": "API 端点 URL",
+      "apiEndpoint": "API endpoint URL",
       "apiKeyEnvVarName": "MY_OPENAI_API_KEY",
       "model": "gpt-4o",
       "rpm": "10",
@@ -155,8 +155,8 @@ sequenceDiagram
     }
   ],
   "projectTranslator.userPrompts": [
-      "1. 如果 Markdown 文件的前置数据中 'draft' 设置为 'true'，则应返回无需翻译。",
-      "2. 句子中的 './readmes/' 应替换为 './'",
+      "1. Should return no need translate if the markdown file has 'draft' set to 'true' in the front matter.",
+      "2. './readmes/' in the sentences should replace with './'",
   ],
   "projectTranslator.ignore": {
     "paths": [
@@ -169,30 +169,30 @@ sequenceDiagram
 }
 ```
 
-关键配置细节：
+关键配置详情：
 
-| 配置选项                        | 描述                                                                                    |
+| 配置选项 | 描述 |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `projectTranslator.specifiedFolders`        | 多个源文件夹及其对应的目标文件夹用于翻译           |
-| `projectTranslator.specifiedFiles`          | 多个源文件及其对应的目标文件用于翻译               |
-| `projectTranslator.translationIntervalDays` | 翻译间隔（天）（默认 7 天）                                                  |
-| `projectTranslator.copyOnly`                | 要复制但不翻译的文件（使用 `paths` 和 `extensions` 数组）                         |
-| `projectTranslator.ignore`                  | 完全忽略的文件（使用 `paths` 和 `extensions` 数组）                              |
-| `projectTranslator.skipFrontMatterMarkers`  | 基于前置标记跳过文件（使用 `enabled` 和 `markers` 数组）                 |
-| `projectTranslator.currentVendor`           | 当前使用的 API 供应商                                                                      |
-| `projectTranslator.vendors`                 | API 供应商配置列表（可直接使用 apiKey 或通过 apiKeyEnvVarName 使用环境变量） |
-| `projectTranslator.systemPromptLanguage`    | 内置系统提示使用的语言（默认：en）。影响模型指令方式，而非 UI 语言 |
-| `projectTranslator.systemPrompts`           | 用于指导翻译过程的系统提示数组                                        |
-| `projectTranslator.userPrompts`             | 用户定义的提示数组，这些提示将在翻译过程中添加到系统提示之后 |
-| `projectTranslator.segmentationMarkers`     | 按文件类型配置的分段标记，支持正则表达式                     |
-| `projectTranslator.debug`                   | 启用调试模式，将所有 API 请求和响应记录到输出通道（默认：false）     |
-| `projectTranslator.logFile`                 | 调试日志文件配置（请参阅[日志文件功能](./docs/log-file-feature.md)）         |
-| `projectTranslator.diffApply.enabled`       | 启用实验性差异翻译模式（默认：false）                             |
+| `projectTranslator.specifiedFolders` | 多个源文件夹及其对应的目标文件夹，用于翻译 |
+| `projectTranslator.specifiedFiles` | 多个源文件及其对应的目标文件，用于翻译 |
+| `projectTranslator.translationIntervalDays` | 翻译间隔（天）（默认 7 天） |
+| `projectTranslator.copyOnly` | 仅复制而不翻译的文件（使用 `paths` 和 `extensions` 数组） |
+| `projectTranslator.ignore` | 完全忽略的文件（使用 `paths` 和 `extensions` 数组） |
+| `projectTranslator.skipFrontMatterMarkers` | 根据前置数据标记跳过文件（使用 `enabled` 和 `markers` 数组） |
+| `projectTranslator.currentVendor` | 当前使用的 API 供应商 |
+| `projectTranslator.vendors` | API 供应商配置列表（可直接使用 apiKey 或使用 apiKeyEnvVarName 指定环境变量） |
+| `projectTranslator.systemPromptLanguage` | 内置系统提示使用的语言（默认：en）。影响模型指令方式，而非 UI 语言 |
+| `projectTranslator.systemPrompts` | 用于指导翻译过程的系统提示数组 |
+| `projectTranslator.userPrompts` | 用户定义的提示数组，这些提示将在翻译过程中添加到系统提示之后 |
+| `projectTranslator.segmentationMarkers` | 按文件类型配置的分段标记，支持正则表达式 |
+| `projectTranslator.debug` | 启用调试模式，将所有 API 请求和响应记录到输出通道（默认：false） |
+| `projectTranslator.logFile` | 调试日志文件配置（详见[日志文件功能](./docs/log-file-feature.md)） |
+| `projectTranslator.diffApply.enabled` | 启用实验性差异翻译模式（默认：false） |
 
 ## 使用
 
-1. 打开命令面板 (Ctrl+Shift+P / Cmd+Shift+P)
-2. 输入 "翻译项目" 并选择命令
+1. 打开命令面板（Ctrl+Shift+P / Cmd+Shift+P）
+2. 输入 "Translate Project" 并选择命令
 3. 如果未配置源文件夹，将出现文件夹选择对话框
 4. 等待翻译完成
 
@@ -203,9 +203,19 @@ sequenceDiagram
 - 翻译进度在通知区域显示
 - 详细日志在输出面板显示
 
+### 工作区打开时自动翻译
+
+您可以启用一个在工作区打开时运行的自动翻译任务：
+
+1. 运行命令：`Enable Auto Translate On Open`
+2. 扩展将更新 `.vscode/tasks.json`
+3. 下次打开工作区时生效（扩展不会触发窗口重新加载）
+
+要禁用它，请运行：`Disable Auto Translate On Open`。
+
 ## CLI 使用
 
-除了 VS Code 扩展外，项目现在还支持 CLI 执行。
+该项目现在除了 VS Code 扩展外还支持 CLI 执行。
 
 构建 CLI 输出：
 
@@ -216,10 +226,10 @@ npm run compile
 运行翻译：
 
 ```bash
-# 默认目标语言：en-us
+# Default target language: en-us
 npx project-translator translate project --workspace . --config project.translation.json
 
-# 指定目标语言
+# Specify target language
 npx project-translator translate project --workspace . --config project.translation.json --lang ja-jp
 ```
 
@@ -233,7 +243,7 @@ npx project-translator config validate --workspace . --config project.translatio
 ```
 
 `config schema` 默认将导出 `project.translation.schema.json`。  
-`config validate` 对配置文件执行 JSON Schema 验证，并在无效时返回非零退出码。
+`config validate` 对配置文件执行 JSON Schema 验证，并在无效时返回非零退出代码。
 
 ## 开发
 
@@ -243,15 +253,15 @@ npx project-translator config validate --workspace . --config project.translatio
 
 #### 可用脚本
 
-- `npm run build` - 生产构建，带压缩
+- `npm run build` - 生产环境构建（压缩）
 - `npm run compile` - 开发构建
 - `npm run watch` - 开发监视模式
 - `npm test` - 运行测试
 
 #### VS Code 任务
 
-- **构建** (Ctrl+Shift+P → "Tasks: Run Task" → "build") - 为生产环境打包扩展
-- **监视** (Ctrl+Shift+P → "Tasks: Run Task" → "watch") - 带自动重建的开发模式
+- **构建**（Ctrl+Shift+P → "Tasks: Run Task" → "build"）- 为生产环境打包扩展
+- **监视**（Ctrl+Shift+P → "Tasks: Run Task" → "watch"）- 带自动重建的开发模式
 
 ### 开发设置
 
@@ -261,16 +271,16 @@ npx project-translator config validate --workspace . --config project.translatio
 
 esbuild 配置：
 
-- 将所有 TypeScript 文件打包成单个 `out/extension.js`
+- 将所有 TypeScript 文件打包为单个 `out/extension.js`
 - 排除 VS Code API（标记为外部）
 
 ## 高级功能
 
-### 使用环境变量作为 API 密钥
+### 使用环境变量存储 API 密钥
 
-项目翻译器支持使用环境变量作为 API 密钥，这是一种比直接将 API 密钥存储在配置文件中更安全的方法：
+Project Translator 支持使用环境变量存储 API 密钥，这比将 API 密钥直接存储在配置文件中更安全：
 
-1. 使用 `apiKeyEnvVarName` 属性配置您的供应商：
+1. 使用 `apiKeyEnvVarName` 属性配置供应商：
 
 ```json
 {
@@ -294,16 +304,15 @@ esbuild 配置：
 2. 在系统中设置环境变量：
    - Windows：`set OPENAI_API_KEY=your_api_key`
    - macOS/Linux：`export OPENAI_API_KEY=your_api_key`
-
-3. 扩展运行时，它将：
+3. 扩展运行时，将：
    - 首先检查配置中是否直接提供了 `apiKey`
    - 如果没有，将查找 `apiKeyEnvVarName` 指定的环境变量
 
-这种方法使您的 API 密钥远离配置文件和版本控制系统。
+这种方法使您的 API 密钥不会出现在配置文件和版本控制系统中。
 
-### 基于前置标记跳过翻译
+### 根据前置数据跳过翻译
 
-项目翻译器可以根据 Markdown 文件的前置元数据跳过翻译。这对于草稿文档或标记为无需翻译的文件非常有用。
+Project Translator 可以根据 Markdown 文件的前置数据元数据跳过翻译。这对于草稿文档或标记为无需翻译的文件非常有用。
 
 要启用此功能，请配置 `projectTranslator.skipFrontMatterMarkers` 选项：
 
@@ -325,24 +334,24 @@ esbuild 配置：
 }
 ```
 
-使用此配置，任何包含 `draft: true` 或 `translate: false` 前置标记的 Markdown 文件将在翻译过程中被跳过，并直接复制到目标位置。
+使用此配置，任何包含 `draft: true` 或 `translate: false` 前置数据的 Markdown 文件将在翻译过程中被跳过，并直接复制到目标位置。
 
 将被跳过的 Markdown 文件示例：
 
 ```
 ---
 draft: true
-title: "草稿文档"
+title: "Draft Document"
 ---
 
-本文档是草稿，不应翻译。
+This document is a draft and should not be translated.
 ```
 
 ### 差异翻译（差异应用）模式
 
-> **⚠️ 实验性功能警告**：差异翻译模式目前是实验性功能，可能存在稳定性和兼容性问题。建议在生产环境中谨慎使用，并始终备份重要文件。
+> **⚠️ 实验性功能警告**：差异翻译模式目前是一项实验性功能，可能存在稳定性和兼容性问题。建议在生产环境中谨慎使用，并始终备份重要文件。
 
-该扩展支持可选的差异翻译模式（diff-apply）。启用后，扩展会将源内容和现有的翻译目标文件一起发送给模型。模型应返回一个或多个 SEARCH/REPLACE 块（纯文本，无代码围栏）。扩展在本地应用这些块，以最小化更改、减少 API 使用量，并更好地保留版本历史。
+该扩展支持可选的差异翻译模式（差异应用）。启用后，扩展会将源内容和现有的翻译目标文件一起发送给模型。模型应返回一个或多个 SEARCH/REPLACE 块（纯文本，无代码围栏）。扩展在本地应用这些块，以最小化更改、减少 API 使用量并更好地保留版本历史。
 
 - **切换**：在 VS Code 设置或 `project.translation.json` 中配置 `projectTranslator.diffApply.enabled`（默认：`false`）。
 - **选项**：
@@ -351,10 +360,9 @@ title: "草稿文档"
   - `maxOperationsPerFile`：（为兼容性保留）新策略不使用。
 
 工作流：
-
 1. 如果 `diffApply.enabled` 为 `true` 且目标文件存在，扩展将读取源内容和目标内容。
 2. 它使用差异提示调用模型，并要求返回纯文本 SEARCH/REPLACE 块。
-3. 在本地，扩展解析并应用 SEARCH/REPLACE 块。如果应用失败，则回退到正常完整翻译并覆盖目标文件。
+3. 在本地，扩展解析并应用 SEARCH/REPLACE 块。如果应用失败，它将回退到正常的完整翻译并覆盖目标文件。
 
 示例 SEARCH/REPLACE（允许多个块）：
 
@@ -381,38 +389,31 @@ function foo() {
 ```
 
 注意：
-
-- 在 SEARCH 部分中使用精确内容，包括缩进和空格。如果不确定，请使用最新文件内容。
+- 在 SEARCH 部分使用包括缩进和空格的精确内容。如果不确定，请使用最新文件内容。
 - 在 SEARCH 和 REPLACE 之间保持一行 `=======`。
 - 如果无需更改，模型应返回空字符串。
 
-为什么差异翻译目前表现不佳（解释）
+为什么差异翻译目前表现不佳（说明）
 
 - **跨语言对齐和比较挑战**：差异翻译需要将原始源文档和现有翻译文档一起发送给模型，模型必须跨语言比较它们以决定翻译的哪些部分需要更改。这比就地修改单个文档根本更难，因为模型必须准确对齐不同语言的片段并判断语义差异。
 - **格式和边界保留的复杂性**：许多文档包含代码块、表格、前端标记或特殊占位符。可靠的差异工作流必须在进行文本编辑的同时保留这些结构。如果模型不能始终产生严格遵循 SEARCH/REPLACE 格式的结果，自动应用编辑可能会引入格式回归或结构错误。
-- **上下文和术语一致性问题**：小范围的本地化编辑通常依赖于更广泛的上下文和现有的术语/风格词汇表。当要求产生最小编辑时，模型可能会忽视全局一致性（术语、风格、注释、变量名），导致不一致或语义偏移的翻译。
+- **上下文和术语一致性问题**：小范围的本地化编辑通常依赖于更广泛的上下文和现有的术语/风格词汇表。当要求产生最小编辑时，模型可能会忽视全局一致性（术语、风格、注释、变量名），导致翻译不一致或语义偏移。
 - **模型稳定性和成本权衡**：实现可靠的差异翻译需要具有强大比较推理能力和稳定、可预测输出格式的模型。当前主流模型不能可靠地同时提供强大的跨语言对齐和严格格式的输出，且成本合理，因此系统通常回退到完全重译以确保正确性。
 
-因此，虽然差异翻译理论上可以减少昂贵的输出令牌并更好地保留版本历史，但它目前受限于模型的跨语言比较能力和输出稳定性。此功能仍处于实验阶段；建议的缓解措施包括保持自动备份（`autoBackup: true`）、使用宽容的验证级别（`validationLevel: "normal"`）以及在匹配或格式化失败时回退到完全重译。未来，专业的双语对齐后处理器或定制的小型模型可能会提高差异方法的稳定性。
+因此，虽然差异翻译理论上可以减少昂贵的输出令牌并更好地保留版本历史，但它目前受限于模型的跨语言比较能力和输出稳定性。此功能仍处于实验阶段；建议的缓解措施包括保持自动备份（`autoBackup: true`）、使用宽容的验证级别（`validationLevel: "normal"`）以及在匹配或格式化失败时回退到完全重译。将来，专业的双语对齐后处理器或自定义较小模型可能会提高差异方法的稳定性。
 
 成本节约及其作用
 
-- **输入与输出令牌成本**：大模型 API 通常对输入（提示）和输出（完成）令牌收取不同费用。通常，输出令牌更昂贵，因为模型生成更长的文本。差异应用有帮助是因为我们将**更新的源（输入）**和**现有翻译文件（输入）**发送给模型，并请求一个紧凑的编辑 JSON。模型的响应是一个小 JSON（少量输出令牌），而不是完整的重译文件（大量输出令牌），因此您为昂贵的输出部分支付少得多。
-- **仅发送更改的内容**：每当发生小更改时，差异应用不会重新翻译整个文件，而是指示模型计算最小编辑操作以更新现有翻译。这对于之前已翻译且仅接收增量编辑的文件特别有效。
-- **最适合格式化文件**：具有严格格式的文件（JSON、XML、带代码块的 Markdown）受益匪浅，因为差异应用保留结构，仅更改需要翻译的文本部分。这减少了与格式相关的回归和模型重新格式化导致的额外输出令牌。
-- **面向行的基本单位，更智能的聚合**：工具将基本翻译单位视为“行”，SEARCH/REPLACE 策略在 `:start_line:` 附近应用精确或模糊匹配。使用 `validationLevel: "normal"` 以获得宽容行为，在需要保守、精确编辑时使用 `"strict"`。
+- **输入与输出令牌成本**：大模型 API 通常对输入（提示）和输出（完成）令牌收取不同费用。通常，输出令牌更昂贵，因为模型生成长文本。差异应用有帮助，因为我们向模型发送**更新的源（输入）**和**现有翻译文件（输入）**，并请求一个紧凑的编辑 JSON。模型的响应是一个小 JSON（少量输出令牌），而不是完整的重译文件（大量输出令牌），因此您为昂贵的输出部分支付更少。
+- **仅发送更改的内容**：与其在每次发生小更改时重新翻译整个文件，不如差异应用指示模型计算最小编辑操作以更新现有翻译。这对于之前已翻译且仅接收增量编辑的文件特别有效。
+- **最适合格式化文件**：具有严格格式的文件（JSON、XML、包含代码块的 Markdown）受益匪浅，因为差异应用保留结构，仅更改需要翻译的文本部分。这减少了与格式相关的回归和模型重新格式化导致的额外输出令牌。
+- **面向行的基本单位，更智能的聚合**：该工具将基本翻译单位视为“行”，SEARCH/REPLACE 策略在 `:start_line:` 附近应用精确或模糊匹配。使用 `validationLevel: "normal"` 以获得宽容行为，在需要保守、精确编辑时使用 `"strict"`。
 
 何时使用差异应用：
 
 - 当目标文件已存在且之前已翻译时使用。
 - 对于大型格式化文档，重新翻译整个文件成本高昂时使用。
-- 避免用于没有任何先前翻译的全新文件，或当您想要全新重译时。
-
-### 设计文档
-
-- 为开发构建生成源映射
-- 为生产构建压缩代码
-- 提供 VS Code 问题匹配器集成
+- 避免用于之前没有任何翻译的全新文件，或当您想要全新重译时。
 
 ## 注意
 

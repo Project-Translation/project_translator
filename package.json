@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.19.3",
+    "version": "0.19.5",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -32,20 +32,6 @@
     "engines": {
         "vscode": "^1.75.0"
     },
-    "activationEvents": [
-        "onStartupFinished",
-        "onCommand:extension.translateProject",
-        "onCommand:extension.translateFolders",
-        "onCommand:extension.translateFiles",
-        "onCommand:extension.pauseTranslation",
-        "onCommand:extension.resumeTranslation",
-        "onCommand:extension.cancelTranslation",
-        "onCommand:extension.addFileToTranslationSettings",
-        "onCommand:extension.addFolderToTranslationSettings",
-        "onCommand:extension.exportSettingsToConfig",
-        "onCommand:extension.enableAutoTranslateOnOpen",
-        "onCommand:extension.disableAutoTranslateOnOpen"
-    ],
     "main": "./out/extension.js",
     "bin": {
         "project-translator": "./out/cli.js"

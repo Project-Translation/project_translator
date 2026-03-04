@@ -308,27 +308,12 @@ async function handleEnableAutoTranslateOnOpen() {
         )
         logMessage(`${successLogPrefix} ${path.relative(workspace.uri.fsPath, tasksPath)}.`)
 
-        // 询问是否立即重载以触发 folderOpen 任务
-        const reloadPrompt = localize(
-            "autoTranslate.enable.reloadPrompt",
-            "Auto-translate on folder open has been enabled. Reload the window now to take effect?"
+        logMessage(
+            localize(
+                "autoTranslate.enable.nextOpenInfo",
+                "ℹ️ Auto-translate on folder open has been enabled. It will take effect next time you open this workspace."
+            )
         )
-        const reloadNowLabel = localize(
-            "autoTranslate.enable.reloadNow",
-            "Reload Window"
-        )
-        const reloadLaterLabel = localize(
-            "autoTranslate.enable.reloadLater",
-            "Later"
-        )
-        const action = await vscode.window.showInformationMessage(
-            reloadPrompt,
-            reloadNowLabel,
-            reloadLaterLabel
-        )
-        if (action === reloadNowLabel) {
-            await vscode.commands.executeCommand("workbench.action.reloadWindow")
-        }
     } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)
         const errorPrefix = localize(
