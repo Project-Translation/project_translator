@@ -1,8 +1,8 @@
 {
-    "name": "@techfetch-dev/project-translator",
+    "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.19.0",
+    "version": "0.19.3",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -33,7 +33,18 @@
         "vscode": "^1.75.0"
     },
     "activationEvents": [
-        "onStartupFinished"
+        "onStartupFinished",
+        "onCommand:extension.translateProject",
+        "onCommand:extension.translateFolders",
+        "onCommand:extension.translateFiles",
+        "onCommand:extension.pauseTranslation",
+        "onCommand:extension.resumeTranslation",
+        "onCommand:extension.cancelTranslation",
+        "onCommand:extension.addFileToTranslationSettings",
+        "onCommand:extension.addFolderToTranslationSettings",
+        "onCommand:extension.exportSettingsToConfig",
+        "onCommand:extension.enableAutoTranslateOnOpen",
+        "onCommand:extension.disableAutoTranslateOnOpen"
     ],
     "main": "./out/extension.js",
     "bin": {
@@ -868,6 +879,7 @@
     },
     "files": [
         "out/cli.js",
+        "out/extension.js",
         "prompts/**",
         "l10n/**",
         "package.nls*.json",
@@ -891,12 +903,11 @@
         "test": "npm run compile-tsc && node ./out/test/simpleRunner.js",
         "test-compile": "tsc -p ./",
         "pretest": "npm run test-compile",
-        "publish:minor": "npm run build && npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
-        "publish:patch": "npm run build && npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
         "pack:npm": "npm run build && npm pack",
-        "publish:npm": "npm run build && npm publish --access public",
+        "publish:npm": "node scripts/npm-publish.mjs",
+        "publish:vscode": "npm run build && vsce publish --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
         "publish:ovsx": "node scripts/ovsx-publish.mjs",
-        "package": "npm run build && npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+        "package": "npm run build && vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
         "deps:install": "npm install --no-fund",
         "update": "npm update --no-fund"
     },

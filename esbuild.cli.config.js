@@ -27,7 +27,6 @@ async function main() {
   const ctx = await esbuild.context({
     entryPoints: ['src/cli.ts'],
     bundle: true,
-    external: ['jsonc-parser', 'commander'],
     format: 'cjs',
     minify: production,
     sourcemap: !production,
@@ -35,7 +34,8 @@ async function main() {
     platform: 'node',
     outfile: 'out/cli.js',
     logLevel: 'silent',
-    mainFields: ['main', 'module'],
+    // 优先使用 ESM 入口，避免某些包的 CJS/UMD 入口残留相对 require 导致运行时缺文件
+    mainFields: ['module', 'main'],
     resolveExtensions: ['.ts', '.js'],
     plugins: [esbuildProblemMatcherPlugin],
   });

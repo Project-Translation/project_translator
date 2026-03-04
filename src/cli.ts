@@ -21,11 +21,16 @@ import { setRuntimeContext } from "./runtime/context";
 import { isOperationCancelledError, OperationCancelledError } from "./runtime/errors";
 import { RuntimeContext } from "./runtime/types";
 import { logMessage } from "./runtime/logging";
+import { Config } from "./config/config.types";
 
 interface GlobalOptions {
   workspace?: string;
   config?: string;
   json?: boolean;
+}
+
+interface TranslateOptions extends GlobalOptions {
+  lang?: string;
 }
 
 function resolveWorkspaceRoot(input?: string): string {
@@ -60,7 +65,64 @@ async function getOrCreateCliMachineId(): Promise<string> {
   return id;
 }
 
-function createCliRuntimeContext(workspaceRoot: string, configPath: string): RuntimeContext {
+function collectAvailableTargetLanguages(config: Config): string[] {
+  const languages = new Set<string>();
+
+  for (const group of config.specifiedFolders ?? []) {
+    for (const target of group?.targetFolders ?? []) {
+      if (target?.lang) {
+        languages.add(String(target.lang));
+      }
+    }
+  }
+
+  for (const group of config.specifiedFiles ?? []) {
+    for (const target of group?.targetFiles ?? []) {
+      if (target?.lang) {
+        languages.add(String(target.lang));
+      }
+    }
+  }
+
+  return [...languages].sort();
+}
+
+function filterConfigByTargetLanguage(config: Config, targetLanguage: string): Config {
+  const trimmedTargetLanguage = targetLanguage.trim();
+  if (!trimmedTargetLanguage) {
+    return config;
+  }
+
+  const available = collectAvailableTargetLanguages(config);
+
+  const specifiedFolders = (config.specifiedFolders ?? [])
+    .map((group) => ({
+      ...group,
+      targetFolders: (group.targetFolders ?? []).filter((t) => t?.lang === trimmedTargetLanguage),
+    }))
+    .filter((group) => group.targetFolders.length > 0);
+
+  const specifiedFiles = (config.specifiedFiles ?? [])
+    .map((group) => ({
+      ...group,
+      targetFiles: (group.targetFiles ?? []).filter((t) => t?.lang === trimmedTargetLanguage),
+    }))
+    .filter((group) => group.targetFiles.length > 0);
+
+  if (available.length > 0 && specifiedFolders.length === 0 && specifiedFiles.length === 0) {
+    throw new Error(
+      `未找到目标语言 "${trimmedTargetLanguage}" 的翻译目标。可用目标语言：${available.join(", ")}`
+    );
+  }
+
+  return {
+    ...config,
+    specifiedFolders,
+    specifiedFiles,
+  };
+}
+
+function createCliRuntimeContext(workspaceRoot: string, configPath: string, targetLanguage?: string): RuntimeContext {
   return {
     workspaceRoot,
     logger: {
@@ -76,7 +138,11 @@ function createCliRuntimeContext(workspaceRoot: string, configPath: string): Run
     },
     configProvider: {
       async getConfiguration() {
-        return getConfigurationFromProjectFile(workspaceRoot, configPath);
+        const config = await getConfigurationFromProjectFile(workspaceRoot, configPath);
+        if (typeof targetLanguage === "string") {
+          return filterConfigByTargetLanguage(config, targetLanguage);
+        }
+        return config;
       },
       clearCache() {
         clearConfigReaderCache();
@@ -135,11 +201,11 @@ function printTranslationResult(result: any, jsonOutput: boolean | undefined): v
 
 async function runTranslateTask(
   mode: "project" | "folders" | "files",
-  options: GlobalOptions
+  options: TranslateOptions
 ): Promise<number> {
   const workspaceRoot = resolveWorkspaceRoot(options.workspace);
   const configPath = resolveConfigFilePath(workspaceRoot, options.config);
-  const runtimeContext = createCliRuntimeContext(workspaceRoot, configPath);
+  const runtimeContext = createCliRuntimeContext(workspaceRoot, configPath, options.lang);
   setRuntimeContext(runtimeContext);
 
   const runner = new TranslationRunner(runtimeContext);
@@ -208,8 +274,16 @@ function addCommonOptions(command: Command): Command {
     .option("--json", "输出 JSON 结构化结果");
 }
 
-function mergeGlobalOptions(options: GlobalOptions, command?: Command): GlobalOptions {
-  const merged: GlobalOptions = { ...options };
+function addTranslateOptions(command: Command): Command {
+  return addCommonOptions(command).option(
+    "-l, --lang <lang>",
+    "仅翻译指定目标语言（默认：en-us）",
+    "en-us"
+  );
+}
+
+function mergeGlobalOptions<TOptions extends GlobalOptions>(options: TOptions, command?: Command): TOptions {
+  const merged: TOptions = { ...options };
   let current: Command | null = command?.parent ?? null;
 
   while (current) {
@@ -223,6 +297,11 @@ function mergeGlobalOptions(options: GlobalOptions, command?: Command): GlobalOp
     if (merged.json === undefined && parentOptions.json !== undefined) {
       merged.json = parentOptions.json;
     }
+    const parentOptionsWithLang = parentOptions as GlobalOptions & { lang?: string };
+    const mergedWithLang = merged as GlobalOptions & { lang?: string };
+    if (mergedWithLang.lang === undefined && parentOptionsWithLang.lang !== undefined) {
+      mergedWithLang.lang = parentOptionsWithLang.lang;
+    }
     current = current.parent;
   }
 
@@ -233,23 +312,23 @@ async function main(): Promise<void> {
   const program = new Command();
   program.name("project-translator").description("Project Translator CLI").version("0.0.0-dev");
 
-  const translate = addCommonOptions(program.command("translate").description("执行翻译任务"));
+  const translate = addTranslateOptions(program.command("translate").description("执行翻译任务"));
 
-  addCommonOptions(
+  addTranslateOptions(
     translate.command("project").description("翻译项目")
-  ).action(async (options: GlobalOptions, command: Command) => {
+  ).action(async (options: TranslateOptions, command: Command) => {
     process.exitCode = await runTranslateTask("project", mergeGlobalOptions(options, command));
   });
 
-  addCommonOptions(
+  addTranslateOptions(
     translate.command("folders").description("按指定文件夹翻译")
-  ).action(async (options: GlobalOptions, command: Command) => {
+  ).action(async (options: TranslateOptions, command: Command) => {
     process.exitCode = await runTranslateTask("folders", mergeGlobalOptions(options, command));
   });
 
-  addCommonOptions(
+  addTranslateOptions(
     translate.command("files").description("按指定文件翻译")
-  ).action(async (options: GlobalOptions, command: Command) => {
+  ).action(async (options: TranslateOptions, command: Command) => {
     process.exitCode = await runTranslateTask("files", mergeGlobalOptions(options, command));
   });
 

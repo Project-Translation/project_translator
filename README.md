@@ -218,7 +218,11 @@ npm run compile
 Run translation:
 
 ```bash
+# Default target language: en-us
 npx project-translator translate project --workspace . --config project.translation.json
+
+# Specify target language
+npx project-translator translate project --workspace . --config project.translation.json --lang ja-jp
 ```
 
 Manage config:

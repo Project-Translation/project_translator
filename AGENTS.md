@@ -10,7 +10,7 @@ This file provides guidance to agents when working with code in this repository.
   - **用途**：发布到 VSCode 扩展市场前的最终构建
   - **特点**：启用代码压缩、禁用 source map、将所有依赖打包成单个文件 `out/extension.js`
   - **输出**：体积最小化的生产代码，适合发布
-  - **相关命令**：`publish:minor`、`publish:patch`、`package` 都会调用此命令
+  - **相关命令**：`publish:vscode`、`publish:npm`、`pack:npm`、`package` 都会调用此命令
 
 - `npm run compile` - 开发环境编译（不压缩）
   - **用途**：日常开发调试

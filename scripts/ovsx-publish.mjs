@@ -5,16 +5,24 @@
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 
-function getToken() {
-  return (
-    process.env.OVSX_PAT ||
-    process.env.OPEN_VSX_TOKEN ||
-    process.env.OPENVSX_PAT ||
-    process.env.OPENVSX_TOKEN ||
-    ''
-  )
+function getTokenWithSource() {
+  const entries = [
+    ['OVSX_PAT', process.env.OVSX_PAT],
+    ['OPEN_VSX_TOKEN', process.env.OPEN_VSX_TOKEN],
+    ['OPENVSX_PAT', process.env.OPENVSX_PAT],
+    ['OPENVSX_TOKEN', process.env.OPENVSX_TOKEN],
+  ]
+
+  for (const [name, value] of entries) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return { token: value.trim(), source: name }
+    }
+  }
+
+  return { token: '', source: '' }
 }
 
 function findLatestVsix(cwd) {
@@ -30,7 +38,25 @@ function resolveOvsxBin() {
   return 'ovsx' // fallback to PATH
 }
 
-const token = getToken()
+function readNamespaceFromPackageJson(cwd) {
+  try {
+    const raw = readFileSync(resolve(cwd, 'package.json'), 'utf-8')
+    const pkg = JSON.parse(raw)
+    if (typeof pkg?.publisher === 'string' && pkg.publisher.trim().length > 0) {
+      return pkg.publisher.trim()
+    }
+  } catch {
+    // ignore
+  }
+  return null
+}
+
+function runOvsx(bin, args) {
+  const result = spawnSync(bin, args, { stdio: 'inherit' })
+  return result.status ?? 1
+}
+
+const { token, source: tokenSource } = getTokenWithSource()
 if (!token) {
   console.error('❌ 未提供 Open VSX Token（支持 OVSX_PAT / OPEN_VSX_TOKEN / OPENVSX_PAT / OPENVSX_TOKEN）')
   process.exit(1)
@@ -44,9 +70,22 @@ if (!vsix) {
   process.exit(1)
 }
 
+const namespace = process.env.OVSX_NAMESPACE || readNamespaceFromPackageJson(cwd)
+
+if (tokenSource) {
+  console.log(`🔐 使用 Token 来源环境变量: ${tokenSource}`)
+}
+if (namespace) {
+  console.log(`🔎 校验 PAT 是否可发布到 namespace: ${namespace}`)
+  const verifyStatus = runOvsx(resolveOvsxBin(), ['-p', token, 'verify-pat', namespace])
+  if (verifyStatus !== 0) {
+    console.error('❌ PAT 校验失败：通常表示 Token 对应的 Open VSX 账号未签署 Publisher Agreement，或无权限发布到该 namespace。')
+    console.error('   建议：用能发布 techfetch-dev 的账号重新生成 PAT，然后更新 OVSX_PAT（或设置 OVSX_NAMESPACE 进行覆盖）。')
+    process.exit(verifyStatus)
+  }
+}
+
 console.log(`🔎 使用 VSIX: ${vsix}`)
 const bin = resolveOvsxBin()
-const args = ['publish', vsix, '-p', token, '--skip-duplicate']
-const result = spawnSync(bin, args, { stdio: 'inherit' })
-process.exit(result.status ?? 1)
-
+const publishStatus = runOvsx(bin, ['-p', token, 'publish', vsix, '--skip-duplicate'])
+process.exit(publishStatus)

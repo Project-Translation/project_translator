@@ -37,15 +37,20 @@ export async function activate(context: vscode.ExtensionContext) {
     outputChannel = vscode.window.createOutputChannel("Project Translator");
     logMessage(localize("extension.activated", "Project Translator extension is now active!"));
 
+    // 先注册命令，避免后续非关键初始化失败导致命令不可用
+    const commands = registerCommands();
+    context.subscriptions.push(...commands);
+
     // 不在 activate/改设置时创建日志目录/文件；仅在真正启动翻译时创建
     await syncLogFileManagerWithConfig();
 
-    // Initialize machine ID
-    machineId = await AnalyticsService.getMachineId();
-
-    // Register commands
-    const commands = registerCommands();
-    context.subscriptions.push(...commands);
+    // 初始化 machine ID（失败时降级，不影响命令可用性）
+    try {
+        machineId = await AnalyticsService.getMachineId();
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logMessage(`Failed to initialize machineId: ${errorMessage}`, "warn");
+    }
 
     // Listen for configuration changes
     const configChangeListener = vscode.workspace.onDidChangeConfiguration(async (event) => {
