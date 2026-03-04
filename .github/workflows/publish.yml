@@ -77,7 +77,7 @@ jobs:
 
       - name: Publish to Visual Studio Marketplace
         run: |
-          npx @vscode/vsce publish --pat ${{ secrets.VSCE_PAT }}
+          npx @vscode/vsce publish --no-dependencies --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --pat ${{ secrets.VSCE_PAT }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
