@@ -2,6 +2,11 @@
 
 > Generated automatically from git history. Only the latest 10 versions are kept.
 
+## v0.19.6 (2026-03-05)
+
+- refactor: 移除自动翻译打开命令并添加 changelog 生成脚本 (9a7a576)
+- ci(publish): 增加 VSCE 发布参数 (a4f5a37)
+
 ## v0.19.5 (2026-03-04)
 
 - feat(auto-translate): 更新自动翻译开启说明与提示 (164639a)
@@ -45,9 +50,4 @@
 ## v0.18.0 (2026-01-18)
 
 - fix #3: refactor: improve translation output handling and sanitization (680849b)
-
-## v0.17.7 (2026-01-10)
-
-- refactor: enhance translation handling and configuration management (7879178)
-- chore: bump version to 0.17.7 in package.json and update configuration handling (b7e5ca0)
 
