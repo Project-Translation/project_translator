@@ -40,11 +40,11 @@ jobs:
           TAG="v$VERSION"
           echo "当前 package.json 版本: $VERSION"
           git fetch --tags
-          if git tag --list "*$VERSION*" | grep -q .; then
-            echo "已存在包含版本号 $VERSION 的 tag，跳过创建。"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "已存在 tag: $TAG，跳过创建。"
             echo "created_tag=false" >> $GITHUB_OUTPUT
           else
-            echo "不存在包含版本号 $VERSION 的 tag，将创建并推送新 tag: $TAG"
+            echo "不存在 tag: $TAG，将创建并推送。"
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git tag "$TAG"
@@ -75,9 +75,29 @@ jobs:
       - name: Package Extension
         run: npm run package
 
+      - name: Locate VSIX package
+        id: locate_vsix
+        run: |
+          VSIX_FILE=$(ls -1 project-translator-*.vsix | head -n 1)
+          if [ -z "$VSIX_FILE" ]; then
+            echo "::error::No VSIX package found."
+            exit 1
+          fi
+          echo "vsix_file=$VSIX_FILE" >> $GITHUB_OUTPUT
+
       - name: Publish to Visual Studio Marketplace
         run: |
-          npx @vscode/vsce publish --no-dependencies --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --pat ${{ secrets.VSCE_PAT }}
+          set +e
+          npx vsce publish --packagePath "${{ steps.locate_vsix.outputs.vsix_file }}" --pat "${{ secrets.VSCE_PAT }}" 2>&1 | tee publish.log
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          if [ "$EXIT_CODE" -ne 0 ]; then
+            if grep -qi "already exists" publish.log; then
+              echo "VS Marketplace 已存在相同版本，视为幂等成功。"
+              exit 0
+            fi
+            exit "$EXIT_CODE"
+          fi
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
