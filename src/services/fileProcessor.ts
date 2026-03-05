@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { Buffer } from 'buffer';
 import { isBinaryFile } from "isbinaryfile";
-import * as glob from 'glob';
+import { Minimatch } from "minimatch";
 import { TranslationDatabase } from "../translationDatabase";
 import { DestFolder, SupportedLanguage } from "../types/types";
 import { TranslatorService } from "./translatorService";
@@ -14,6 +14,7 @@ import { getRuntimeContext } from "../runtime/context";
 
 import { estimateTokenCount, segmentText, combineSegments } from "../segmentationUtils";
 import { getConfiguration } from "../config/config";
+import type { Config } from "../config/config.types";
 import { logMessage } from '../runtime/logging';
 
 // AI return code.
@@ -36,6 +37,13 @@ export class FileProcessor {
     private isPaused = false;
     private cancellationToken?: CancellationTokenLike;
     private workspaceRoot: string;
+    private ensuredDirs: Set<string> = new Set();
+
+    private configSnapshot: Config | null = null;
+    private ignorePathMatchers: Minimatch[] = [];
+    private copyOnlyPathMatchers: Minimatch[] = [];
+    private ignoreExtensions: Set<string> = new Set();
+    private copyOnlyExtensions: Set<string> = new Set();
     
     // Cache to store whether a (source,targetLang,targetPath) needs translation
     private translationDecisionCache: Map<string, {shouldTranslate: boolean, timestamp: number}> = new Map();
@@ -54,6 +62,43 @@ export class FileProcessor {
         
         // Get workspace root path
         this.workspaceRoot = this.runtimeContext.workspaceRoot || '';
+    }
+
+    private buildMatchers(patterns: string[]): Minimatch[] {
+        return (patterns || [])
+            .filter((p) => typeof p === "string" && p.trim().length > 0)
+            .map((pattern) => new Minimatch(pattern, { dot: true, nocomment: true }));
+    }
+
+    private matchAny(matchers: Minimatch[], relativePath: string, isDir: boolean): boolean {
+        const normalized = relativePath.replace(/\\/g, "/");
+        if (isDir) {
+            const withSlash = normalized.endsWith("/") ? normalized : `${normalized}/`;
+            return matchers.some((m) => m.match(normalized) || m.match(withSlash));
+        }
+        return matchers.some((m) => m.match(normalized));
+    }
+
+    private async ensureConfigSnapshot(): Promise<Config> {
+        if (this.configSnapshot) {
+            return this.configSnapshot;
+        }
+        const config = await getConfiguration();
+        this.configSnapshot = config;
+        this.ignorePathMatchers = this.buildMatchers(config.ignore?.paths || []);
+        this.copyOnlyPathMatchers = this.buildMatchers(config.copyOnly?.paths || []);
+        this.ignoreExtensions = new Set((config.ignore?.extensions || []).map((x) => String(x)));
+        this.copyOnlyExtensions = new Set((config.copyOnly?.extensions || []).map((x) => String(x)));
+        return config;
+    }
+
+    private async ensureDirOnce(dirPath: string): Promise<void> {
+        const normalized = path.normalize(dirPath);
+        if (this.ensuredDirs.has(normalized)) {
+            return;
+        }
+        await fsp.mkdir(normalized, { recursive: true });
+        this.ensuredDirs.add(normalized);
     }
 
     // Resolves a path that might be relative to workspace root
@@ -100,34 +145,29 @@ export class FileProcessor {
         try {
             this.checkCancellation();
 
-            const config = await getConfiguration();
-            const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
+            const config = await this.ensureConfigSnapshot();
             const sourceRoot = this.translationDb.getSourceRoot() || resolvedSourcePath;
+            const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
             const relativeToWorkspacePath = path.relative(workspaceRoot, resolvedSourcePath).replace(/\\/g, "/");
 
-            // Check if directory should be ignored using glob
-            if (config.ignore?.paths) {
-                for (const pattern of config.ignore.paths) {
-                    if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
-                        logMessage(`⏭️ Skipping ignored directory: ${resolvedSourcePath} (matched pattern: ${pattern})`);
-                        return;
-                    }
-                }
+            // Check if directory should be ignored
+            if (this.matchAny(this.ignorePathMatchers, relativeToWorkspacePath, true)) {
+                logMessage(`⏭️ Skipping ignored directory: ${resolvedSourcePath}`);
+                return;
             }
 
-            const files = await fsp.readdir(resolvedSourcePath);
-            logMessage(`📊 Found ${files.length} files/directories`);
+            const entries = await fsp.readdir(resolvedSourcePath, { withFileTypes: true });
+            logMessage(`📊 Found ${entries.length} files/directories`);
 
             let processedEntries = 0;
-            for (const file of files) {
+            for (const entry of entries) {
                 this.checkCancellation();
 
-                const fullPath = path.join(resolvedSourcePath, file);
-                const stat = await fsp.stat(fullPath);
-                if (stat.isDirectory()) {
-                    await this.processSubDirectory(fullPath, targetPaths, sourceRoot, config.ignore?.paths || [], sourceLang);
-                } else {
-                    logMessage(`\n📄 File: ${file}`);
+                const fullPath = path.join(resolvedSourcePath, entry.name);
+                if (entry.isDirectory()) {
+                    await this.processSubDirectory(fullPath, targetPaths, sourceRoot, sourceLang);
+                } else if (entry.isFile()) {
+                    logMessage(`\n📄 File: ${entry.name}`);
                     for (const target of targetPaths) {
                         // Resolve target path
                         const resolvedTargetPath = this.resolvePath(target.path);
@@ -156,36 +196,22 @@ export class FileProcessor {
         }
     }
 
-    private async processSubDirectory(fullPath: string, targetPaths: DestFolder[], sourceRoot: string, ignorePaths: string[], sourceLang: SupportedLanguage) {
+    private async processSubDirectory(fullPath: string, targetPaths: DestFolder[], sourceRoot: string, sourceLang: SupportedLanguage) {
+        await this.ensureConfigSnapshot();
         const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
         const relativeToWorkspacePath = path.relative(workspaceRoot, fullPath).replace(/\\/g, "/");
-        let shouldSkip = false;
-
-        for (const pattern of ignorePaths) {
-            if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
-                logMessage(`⏭️ Skipping ignored subdirectory: ${fullPath} (matched pattern: ${pattern})`);
-                shouldSkip = true;
-                break;
-            }
-        }
-
-        if (shouldSkip) {
+        if (this.matchAny(this.ignorePathMatchers, relativeToWorkspacePath, true)) {
+            logMessage(`⏭️ Skipping ignored subdirectory: ${fullPath}`);
             return;
         }
 
         logMessage(`\n📂 Processing subdirectory: ${path.basename(fullPath)}`);
 
-        // Create corresponding directories for each target path（使用异步 mkdir 避免阻塞）
+        // Create corresponding directories for each target path（使用异步 mkdir 避免阻塞，且去重）
         for (const target of targetPaths) {
             const resolvedTargetPath = this.resolvePath(target.path);
             logMessage(`Ensuring target directory exists: ${resolvedTargetPath}`);
-            try {
-                await fsp.mkdir(resolvedTargetPath, { recursive: true });
-            } catch (error) {
-                logMessage(`❌ Failed to create directory: ${resolvedTargetPath}`, "error");
-                logMessage(`❌ Error details: ${error instanceof Error ? error.message : String(error)}`, "error");
-                throw error;
-            }
+            await this.ensureDirOnce(resolvedTargetPath);
         }
 
         await this.processDirectory(fullPath, targetPaths, sourceLang);
@@ -196,6 +222,7 @@ export class FileProcessor {
             // Resolve paths
             const resolvedSourcePath = this.resolvePath(sourcePath);
             const resolvedTargetPath = this.resolvePath(targetPath);
+            await this.ensureConfigSnapshot();
 
             logMessage(`\n🔄 Translating file: ${path.basename(sourcePath)} from ${sourceLang} to ${targetLang}`);
 
@@ -211,7 +238,7 @@ export class FileProcessor {
 
             // Ensure target directory exists
             const targetDir = path.dirname(resolvedTargetPath);
-            await fsp.mkdir(targetDir, { recursive: true });
+            await this.ensureDirOnce(targetDir);
 
             // Skip if file should be ignored
             if (await this.shouldSkipFile(resolvedSourcePath, resolvedTargetPath, targetLang)) {
@@ -228,24 +255,15 @@ export class FileProcessor {
 
             // Handle different file types
             const ext = path.extname(resolvedSourcePath).toLowerCase();
-            const config = await getConfiguration();
 
             // Check if file should be completely ignored
-            if (this.shouldIgnoreFile(
-                resolvedSourcePath,
-                ext,
-                { ignore: config.ignore ?? { paths: [], extensions: [] } }
-            )) {
+            if (this.shouldIgnoreFile(resolvedSourcePath, ext)) {
                 logMessage(`⏭️ Skipping ignored file: ${resolvedSourcePath}`);
                 return;
             }
 
             // Check if file should be copied only (not translated)
-            if (this.shouldCopyOnly(
-                resolvedSourcePath,
-                ext,
-                { copyOnly: config.copyOnly ?? { paths: [], extensions: [] } }
-            )) {
+            if (this.shouldCopyOnly(resolvedSourcePath, ext)) {
                 await this.handleCopyOnlyFile(resolvedSourcePath, resolvedTargetPath);
                 return;
             }
@@ -306,7 +324,7 @@ export class FileProcessor {
 
     private async shouldSkipByFrontMatter(sourcePath: string): Promise<boolean> {
         // Only process if the feature is enabled and the file is markdown
-        const config = await getConfiguration();
+        const config = await this.ensureConfigSnapshot();
         const frontMatterConfig = config.skipFrontMatter;
         
         if (!frontMatterConfig || !frontMatterConfig.enabled) {
@@ -319,10 +337,14 @@ export class FileProcessor {
             return false;
         }
         
-        // Check if file exists
         try {
-            // Read the file content
-            const content = await fsp.readFile(sourcePath, 'utf-8');
+            // 仅读取文件头部即可判断 front matter（避免对大文件全量 readFile）
+            const maxBytes = 256 * 1024;
+            const handle = await fsp.open(sourcePath, "r");
+            try {
+                const buffer = Buffer.allocUnsafe(maxBytes);
+                const { bytesRead } = await handle.read(buffer, 0, maxBytes, 0);
+                const content = buffer.toString("utf8", 0, bytesRead);
             
             // Check if it has front matter
             if (!content.startsWith('---')) {
@@ -357,45 +379,38 @@ export class FileProcessor {
                 }
             }
             
-            return false;
+                return false;
+            } finally {
+                await handle.close();
+            }
         } catch (error) {
             logMessage(`⚠️ Error checking front matter in ${sourcePath}: ${error instanceof Error ? error.message : String(error)}`, "warn");
             return false;
         }
     }
 
-    private shouldIgnoreFile(sourcePath: string, ext: string, config: {
-        ignore: { paths: string[], extensions: string[] }
-    }): boolean {
+    private shouldIgnoreFile(sourcePath: string, ext: string): boolean {
         const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
         const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");        // Check ignore paths
-        if (config.ignore?.paths) {
-            for (const pattern of config.ignore.paths) {
-                if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
-                    return true;
-                }
-            }
+        if (this.matchAny(this.ignorePathMatchers, relativeToWorkspacePath, false)) {
+            return true;
         }
 
         // Check ignore extensions
-        return config.ignore.extensions.includes(ext);
+        return this.ignoreExtensions.has(ext);
     }
 
-    private shouldCopyOnly(sourcePath: string, ext: string, config: {
-        copyOnly: { paths: string[], extensions: string[] }
-    }): boolean {
+    private shouldCopyOnly(sourcePath: string, ext: string): boolean {
         const workspaceRoot = this.translationDb.getWorkspaceRoot() || this.workspaceRoot;
         const relativeToWorkspacePath = path.relative(workspaceRoot, sourcePath).replace(/\\/g, "/");
 
         // Check copyOnly paths
-        for (const pattern of config.copyOnly.paths) {
-            if (glob.sync(pattern, { cwd: workspaceRoot }).includes(relativeToWorkspacePath)) {
-                return true;
-            }
+        if (this.matchAny(this.copyOnlyPathMatchers, relativeToWorkspacePath, false)) {
+            return true;
         }
 
         // Check copyOnly extensions
-        return config.copyOnly.extensions.includes(ext);
+        return this.copyOnlyExtensions.has(ext);
     }
 
     private async handleCopyOnlyFile(sourcePath: string, targetPath: string) {
@@ -446,7 +461,7 @@ export class FileProcessor {
         const content = await fsp.readFile(sourcePath, "utf8");
 
         try {
-            const config = await getConfiguration();
+            const config = await this.ensureConfigSnapshot();
             const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
             const estimatedTokens = estimateTokenCount(content);
 
@@ -772,9 +787,10 @@ export class FileProcessor {
         sourceLang: SupportedLanguage,
         targetLang: SupportedLanguage
     ): Promise<[string, string]> {
+        let nonStreamWs: fs.WriteStream | null = null;
         try {
             logMessage("📏 Large file detected, segmenting content...");
-            const config = await getConfiguration();
+            const config = await this.ensureConfigSnapshot();
             const { maxTokensPerSegment = 4096, streamMode } = config.currentVendor;
 
             // Segment the content
@@ -791,6 +807,55 @@ export class FileProcessor {
 
             // 用于保证流式写入的顺序性
             let lastWritePromise: Promise<void> = Promise.resolve();
+            const nonStreamWrite = async (data: string): Promise<void> => {
+                if (!nonStreamWs) {
+                    return;
+                }
+                await new Promise<void>((resolve, reject) => {
+                    const ws = nonStreamWs!;
+                    let settled = false;
+                    const done = (fn: () => void) => {
+                        if (settled) {
+                            return;
+                        }
+                        settled = true;
+                        ws.off("drain", onDrain);
+                        ws.off("error", onError);
+                        fn();
+                    };
+                    const onDrain = () => done(resolve);
+                    const onError = (err: Error) => done(() => reject(err));
+
+                    ws.on("error", onError);
+                    const ok = ws.write(data, (err) => {
+                        if (err) {
+                            done(() => reject(err));
+                            return;
+                        }
+                        if (ok) {
+                            done(resolve);
+                        }
+                    });
+                    if (!ok) {
+                        ws.on("drain", onDrain);
+                    }
+                });
+            };
+            const nonStreamClose = async (): Promise<void> => {
+                if (!nonStreamWs) {
+                    return;
+                }
+                await new Promise<void>((resolve) => nonStreamWs!.end(() => resolve()));
+                nonStreamWs = null;
+            };
+
+            if (!streamMode) {
+                nonStreamWs = fs.createWriteStream(targetPath, { encoding: "utf8", flags: "w" });
+                nonStreamWs.on("error", (err) => {
+                    segmentsWithWriteIssues.push(0);
+                    logMessage(`❌ Failed to write non-stream content: ${err.message}`, "error");
+                });
+            }
 
             // Translate each segment
             for (let i = 0; i < segments.length; i++) {
@@ -983,17 +1048,17 @@ export class FileProcessor {
                     this.checkCancellation();
                     translatedSegments.push(translatedSegment);
 
-                    // Write progress to file
-                    const currentContent: string = combineSegments(translatedSegments);
-                    lastWritePromise = lastWritePromise.then(async () => {
-                        try {
-                            await fsp.writeFile(targetPath, currentContent);
-                            logMessage(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
-                        } catch (err) {
-                            segmentsWithWriteIssues.push(i + 1);
-                            logMessage(`❌ Failed to write segment content: ${err instanceof Error ? err.message : String(err)}`, "error");
+                    // 非流式：每段翻译完成后按顺序追加写入（避免每段全量重写）
+                    try {
+                        if (i > 0) {
+                            await nonStreamWrite("\n");
                         }
-                    });
+                        await nonStreamWrite(translatedSegment || "");
+                        logMessage(`💾 Written translation result for segment ${i + 1}/${segments.length}`);
+                    } catch (err) {
+                        segmentsWithWriteIssues.push(i + 1);
+                        throw err;
+                    }
                 }
 
                 // Warn: segment returned empty translation (usually abnormal)
@@ -1018,14 +1083,16 @@ export class FileProcessor {
             const finalContent = combineSegments(translatedSegments);
             // 确保所有挂起的写入完成
             await lastWritePromise;
-            // streamMode 下通常已经边接收边写入了文件，这里只在发现写入异常/不一致时才最终覆写一次。
-            if (streamMode && segmentsWithWriteIssues.length === 0 && !needsFinalOverwrite) {
+
+            if (!streamMode) {
+                await nonStreamClose();
+                logMessage("💾 Translation completed (non-stream, incremental append)");
+            } else if (segmentsWithWriteIssues.length === 0 && !needsFinalOverwrite) {
+                // streamMode 下通常已经边接收边写入了文件，这里只在发现写入异常/不一致时才最终覆写一次。
                 logMessage("💾 Stream translation completed (no final overwrite needed)");
             } else {
                 await fsp.writeFile(targetPath, finalContent);
-                if (streamMode) {
-                    logMessage("💾 Stream translation finalized (final overwrite applied)");
-                }
+                logMessage("💾 Stream translation finalized (final overwrite applied)");
             }
 
             if (segmentsWithEmptyTranslation.length > 0) {
@@ -1046,6 +1113,14 @@ export class FileProcessor {
         } catch (error) {
             if (this.runtimeContext.isCancellationError(error)) {
                 throw error;
+            }
+            if (nonStreamWs) {
+                try {
+                    await new Promise<void>((resolve) => nonStreamWs!.end(() => resolve()));
+                } catch {
+                    // ignore
+                }
+                nonStreamWs = null;
             }
             // 流式大文件/分段翻译过程中一旦出错，目标文件可能只写入了部分内容；清理以避免留下损坏文件
             try {

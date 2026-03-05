@@ -203,16 +203,6 @@ Key configuration details:
 - 번역 진행률이 알림 영역에 표시됨
 - 출력 패널에 상세 로그 표시
 
-### 작업 영역 열 때 자동 번역
-
-작업 영역을 열 때 실행되는 자동 번역 작업을 활성화할 수 있습니다:
-
-1. 명령 실행: `Enable Auto Translate On Open`
-2. 확장 프로그램이 `.vscode/tasks.json`을 업데이트합니다.
-3. 다음에 작업 영역을 열 때 적용됩니다 (확장 프로그램이 창 다시 로드를 트리거하지 않음)
-
-비활성화하려면: `Disable Auto Translate On Open` 명령을 실행하세요.
-
 ## CLI 사용 방법
 
 프로젝트는 VS Code 확장 프로그램 외에도 CLI 실행을 지원합니다.

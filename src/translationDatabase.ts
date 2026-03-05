@@ -37,6 +37,11 @@ export class TranslationDatabase {
   private runtimeContext: RuntimeContext;
   private readonly fsp = fs.promises;
 
+  private dirtyLanguages: Set<SupportedLanguage> = new Set();
+  private flushTimer: NodeJS.Timeout | null = null;
+  private flushInFlight: Promise<void> | null = null;
+  private readonly flushDelayMs = 1000;
+
   // Cache current source file info to avoid repeated stat/hash during scans.
   // Keyed by absolute source path.
   private sourceFileInfoCache: Map<
@@ -57,6 +62,42 @@ export class TranslationDatabase {
       );
     });
   }
+
+  private markDirty(lang: SupportedLanguage): void {
+    this.dirtyLanguages.add(lang);
+    if (this.flushTimer) {
+      return;
+    }
+    this.flushTimer = globalThis.setTimeout(() => {
+      this.flushTimer = null;
+      void this.flushDirtyLanguages();
+    }, this.flushDelayMs) as unknown as NodeJS.Timeout;
+  }
+
+  private async flushDirtyLanguages(): Promise<void> {
+    if (this.flushInFlight) {
+      return this.flushInFlight;
+    }
+    this.flushInFlight = (async () => {
+      while (this.dirtyLanguages.size > 0) {
+        const langs = Array.from(this.dirtyLanguages);
+        this.dirtyLanguages.clear();
+        await Promise.all(langs.map((lang) => this.saveCacheForLanguage(lang)));
+      }
+    })().finally(() => {
+      this.flushInFlight = null;
+    });
+    return this.flushInFlight;
+  }
+
+  public async flush(): Promise<void> {
+    if (this.flushTimer) {
+      globalThis.clearTimeout(this.flushTimer as any);
+      this.flushTimer = null;
+    }
+    await this.flushDirtyLanguages();
+  }
+
   private async initCache() {
     logMessage("🗂️ Initializing translation cache...");
 
@@ -304,8 +345,8 @@ export class TranslationDatabase {
     this.translationCache.set(targetLang, translationRecord);
     logMessage(`💾 Set translation record in memory cache for ${targetLang}`);
 
-    // Save to file
-    await this.saveCacheForLanguage(targetLang);
+    // 延迟批量落盘，避免“每文件一次全量写入”
+    this.markDirty(targetLang);
     logMessage(
       `✅ Updated translation record for ${relativeSourcePath}: hash=${fileInfo.src_hash.substring(
         0,
@@ -339,8 +380,8 @@ export class TranslationDatabase {
     // Save back to the cache
     this.translationCache.set(targetLang, translationRecord);
 
-    // Save to file
-    await this.saveCacheForLanguage(targetLang);
+    // 延迟批量落盘，避免频繁写入
+    this.markDirty(targetLang);
     logMessage(
       `✅ Set translation time for ${relativeSourcePath} at ${currentFileInfo.translate_datetime}`
     );
@@ -480,32 +521,31 @@ export class TranslationDatabase {
   public close(): Promise<void> {
     logMessage("🔒 Closing translation database...");
 
-    // Save all caches before closing
-    const languages = Array.from(this.translationCache.keys());
-    logMessage(
-      `💾 Saving caches for ${languages.length} languages before closing`
-    );
-    const savePromises = languages.map((lang) => {
-      logMessage(`💾 Saving cache for language: ${lang}`);
-      return this.saveCacheForLanguage(lang);
-    });
-
-    return Promise.all(savePromises).then(() => {
-      // Clear the cache to free up memory
+    return this.flush().then(() => {
       this.translationCache.clear();
       logMessage("✅ Translation database closed successfully");
     });
   }
   private async calculateFileHash(filePath: string): Promise<string> {
     try {
-      const fileContent = await this.fsp.readFile(filePath);
-      const hash = crypto.createHash("md5").update(fileContent).digest("hex");
+      const hash = crypto.createHash("md5");
+      await new Promise<void>((resolve, reject) => {
+        const rs = fs.createReadStream(filePath);
+        rs.on("data", (chunk) => {
+          hash.update(chunk);
+        });
+        rs.on("error", (err) => {
+          reject(err);
+        });
+        rs.on("end", () => resolve());
+      });
+      const digest = hash.digest("hex");
       logMessage(
         `🔍 Calculated file hash for ${path.basename(
           filePath
-        )}: ${hash.substring(0, 8)}...`
+        )}: ${digest.substring(0, 8)}...`
       );
-      return hash;
+      return digest;
     } catch (error) {
       logMessage(
         `❌ Error calculating hash for ${filePath}: ${error}`,

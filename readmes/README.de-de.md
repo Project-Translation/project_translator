@@ -205,16 +205,6 @@ Während der Übersetzung:
 - Übersetzungsfortschritt wird im Benachrichtigungsbereich angezeigt
 - Detaillierte Protokolle werden im Ausgabepanel angezeigt
 
-### Automatische Übersetzung beim Öffnen des Arbeitsbereichs
-
-Sie können eine Auto-Übersetzungsaufgabe aktivieren, die beim Öffnen des Arbeitsbereichs ausgeführt wird:
-
-1. Führen Sie den Befehl aus: `Enable Auto Translate On Open`
-2. Die Erweiterung aktualisiert `.vscode/tasks.json`
-3. Es wird beim nächsten Öffnen des Arbeitsbereichs wirksam (die Erweiterung löst kein Neuladen des Fensters aus)
-
-Um es zu deaktivieren, führen Sie aus: `Disable Auto Translate On Open`.
-
 ## CLI-Verwendung
 
 Das Projekt unterstützt jetzt zusätzlich zur VS Code-Erweiterung die CLI-Ausführung.

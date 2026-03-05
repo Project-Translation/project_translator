@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "Projektübersetzer: Zur Projektübersetzung hinzufügen",
   "command.addFolderToTranslationSettings": "Projektübersetzer: Zur Projektübersetzung hinzufügen",
   "command.exportSettingsToConfig": "Projektübersetzer: Einstellungen in project.translation.json exportieren",
-  "command.enableAutoTranslateOnOpen": "Projektübersetzer: Automatische Übersetzung beim Öffnen aktivieren",
-  "command.disableAutoTranslateOnOpen": "Projektübersetzer: Automatische Übersetzung beim Öffnen deaktivieren",
   "config.sourceFolder.description": "Quellordner-Pfad, wird verwendet, um den zuletzt ausgewählten Übersetzungsordnerpfad zu speichern",
   "config.targetFolders.description": "Konfiguration der Übersetzungszielordner, mehrere Zielordner und ihre entsprechenden Zielsprachen können angegeben werden",
   "config.translationIntervalDays.description": "Übersetzungsintervall in Tagen, wenn die Zieldatei existiert und innerhalb dieser Anzahl von Tagen übersetzt wurde, wird sie übersprungen",

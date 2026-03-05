@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "專案翻譯工具：新增至專案翻譯設定",
   "command.addFolderToTranslationSettings": "專案翻譯工具：新增至專案翻譯設定",
   "command.exportSettingsToConfig": "專案翻譯工具：匯出設定至 project.translation.json",
-  "command.enableAutoTranslateOnOpen": "專案翻譯工具：啟用開啟資料夾時自動翻譯",
-  "command.disableAutoTranslateOnOpen": "專案翻譯工具：停用開啟資料夾時自動翻譯",
   "config.sourceFolder.description": "來源資料夾路徑，用於儲存最後選擇的翻譯資料夾路徑",
   "config.targetFolders.description": "翻譯目標資料夾設定，可指定多個目標資料夾及其對應的目標語言",
   "config.translationIntervalDays.description": "翻譯間隔天數，若目標檔案存在且在此天數內曾被翻譯過，則會跳過",

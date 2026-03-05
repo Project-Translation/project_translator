@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "Traducteur de projet : Ajouter au projet de traduction",
   "command.addFolderToTranslationSettings": "Traducteur de projet : Ajouter au projet de traduction",
   "command.exportSettingsToConfig": "Traducteur de projet : Exporter les paramètres vers project.translation.json",
-  "command.enableAutoTranslateOnOpen": "Traducteur de projet : Activer la traduction automatique à l'ouverture du dossier",
-  "command.disableAutoTranslateOnOpen": "Traducteur de projet : Désactiver la traduction automatique à l'ouverture du dossier",
   "config.sourceFolder.description": "Chemin du dossier source, utilisé pour stocker le dernier chemin de dossier de traduction sélectionné",
   "config.targetFolders.description": "Configuration des dossiers cibles de traduction, plusieurs dossiers cibles et leurs langues cibles correspondantes peuvent être spécifiés",
   "config.translationIntervalDays.description": "Intervalle de jours entre les traductions, si le fichier cible existe et a été traduit dans ce nombre de jours, il sera ignoré",

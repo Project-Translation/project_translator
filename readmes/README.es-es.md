@@ -204,16 +204,6 @@ Durante la traducción:
 - El progreso de la traducción se muestra en el área de notificaciones
 - Los registros detallados se muestran en el panel de salida
 
-### Traducción automática al abrir el espacio de trabajo
-
-Puedes habilitar una tarea de traducción automática que se ejecuta cuando abres el espacio de trabajo:
-
-1. Ejecuta el comando: `Enable Auto Translate On Open`
-2. La extensión actualizará `.vscode/tasks.json`
-3. Tiene efecto la próxima vez que abras el espacio de trabajo (la extensión no activa una recarga de la ventana)
-
-Para deshabilitarla, ejecuta: `Disable Auto Translate On Open`.
-
 ## Uso de CLI
 
 El proyecto ahora admite ejecución de CLI además de la extensión de VS Code.

@@ -8,6 +8,13 @@ const packageJsonPath = resolve(process.cwd(), 'package.json');
 const originalPackageJson = readFileSync(packageJsonPath, 'utf8');
 
 try {
+  // 0. 生成 changelog（仅保留最近 10 个版本）
+  console.log('📝 Generating CHANGELOG.md...');
+  const changelogResult = spawnSync('npm', ['run', 'changelog'], { stdio: 'inherit' });
+  if (changelogResult.status !== 0) {
+    throw new Error('Changelog generation failed');
+  }
+
   // 1. 修改 package.json 中的 name
   const pkg = JSON.parse(originalPackageJson);
   pkg.name = '@techfetch-dev/project-translator';

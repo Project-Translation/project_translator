@@ -203,16 +203,6 @@ sequenceDiagram
 - 翻译进度在通知区域显示
 - 详细日志在输出面板显示
 
-### 工作区打开时自动翻译
-
-您可以启用一个在工作区打开时运行的自动翻译任务：
-
-1. 运行命令：`Enable Auto Translate On Open`
-2. 扩展将更新 `.vscode/tasks.json`
-3. 下次打开工作区时生效（扩展不会触发窗口重新加载）
-
-要禁用它，请运行：`Disable Auto Translate On Open`。
-
 ## CLI 使用
 
 该项目现在除了 VS Code 扩展外还支持 CLI 执行。

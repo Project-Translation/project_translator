@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "Traductor de Proyectos: Añadir a Traducción de Proyecto",
   "command.addFolderToTranslationSettings": "Traductor de Proyectos: Añadir a Traducción de Proyecto",
   "command.exportSettingsToConfig": "Traductor de Proyectos: Exportar Configuración a project.translation.json",
-  "command.enableAutoTranslateOnOpen": "Traductor de Proyectos: Habilitar Traducción Automática al Abrir Carpeta",
-  "command.disableAutoTranslateOnOpen": "Traductor de Proyectos: Deshabilitar Traducción Automática al Abrir Carpeta",
   "config.sourceFolder.description": "Ruta de la carpeta fuente, utilizada para almacenar la última ruta de carpeta de traducción seleccionada",
   "config.targetFolders.description": "Configuración de carpetas destino para traducción, se pueden especificar múltiples carpetas destino y sus idiomas objetivo correspondientes",
   "config.translationIntervalDays.description": "Días de intervalo de traducción, si el archivo destino existe y ha sido traducido dentro de este número de días, se omitirá",

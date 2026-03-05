@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "プロジェクト翻訳ツール: プロジェクト翻訳に追加",
   "command.addFolderToTranslationSettings": "プロジェクト翻訳ツール: プロジェクト翻訳に追加",
   "command.exportSettingsToConfig": "プロジェクト翻訳ツール: 設定をproject.translation.jsonにエクスポート",
-  "command.enableAutoTranslateOnOpen": "プロジェクト翻訳ツール: フォルダオープン時の自動翻訳を有効化",
-  "command.disableAutoTranslateOnOpen": "プロジェクト翻訳ツール: フォルダオープン時の自動翻訳を無効化",
   "config.sourceFolder.description": "ソースフォルダのパス。最後に選択した翻訳フォルダのパスを保存するために使用",
   "config.targetFolders.description": "翻訳対象フォルダの設定。複数のターゲットフォルダと対応するターゲット言語を指定可能",
   "config.translationIntervalDays.description": "翻訳間隔日数。ターゲットファイルが存在し、この日数以内に翻訳済みの場合はスキップされます",

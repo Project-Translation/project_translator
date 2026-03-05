@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "مترجم المشروع: إضافة إلى ترجمة المشروع",
   "command.addFolderToTranslationSettings": "مترجم المشروع: إضافة إلى ترجمة المشروع",
   "command.exportSettingsToConfig": "مترجم المشروع: تصدير الإعدادات إلى project.translation.json",
-  "command.enableAutoTranslateOnOpen": "مترجم المشروع: تمكين الترجمة التلقائية عند فتح المجلد",
-  "command.disableAutoTranslateOnOpen": "مترجم المشروع: تعطيل الترجمة التلقائية عند فتح المجلد",
   "config.sourceFolder.description": "مسار مجلد المصدر، يُستخدم لتخزين آخر مسار لمجلد ترجمة تم تحديده",
   "config.targetFolders.description": "تكوين مجلدات الترجمة المستهدفة، يمكن تحديد عدة مجلدات مستهدفة ولغاتها المستهدفة المقابلة",
   "config.translationIntervalDays.description": "أيام الفاصل الزمني للترجمة، إذا كان الملف الهدف موجودًا وتمت ترجمته خلال هذا العدد من الأيام، سيتم تخطيه",

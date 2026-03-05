@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "Project Translator: Добавить в перевод проекта",
   "command.addFolderToTranslationSettings": "Project Translator: Добавить в перевод проекта",
   "command.exportSettingsToConfig": "Project Translator: Экспортировать настройки в project.translation.json",
-  "command.enableAutoTranslateOnOpen": "Project Translator: Включить авто-перевод при открытии папки",
-  "command.disableAutoTranslateOnOpen": "Project Translator: Отключить авто-перевод при открытии папки",
   "config.sourceFolder.description": "Путь к исходной папке, используется для хранения последнего выбранного пути папки для перевода",
   "config.targetFolders.description": "Конфигурация папок для перевода, можно указать несколько целевых папок и соответствующих им языков",
   "config.translationIntervalDays.description": "Интервал перевода в днях, если целевой файл существует и был переведен в течение этого количества дней, он будет пропущен",

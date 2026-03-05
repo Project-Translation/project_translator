@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { getConfiguration } from "../config/config";
+import type { Config } from "../config/config.types";
 import { SupportedLanguage } from "../translationDatabase";
 import { logMessage } from "../runtime/logging";
 import * as path from "path";
@@ -345,10 +346,20 @@ export class TranslatorService {
   private workspaceRoot: string | null = null;
   private shownVendorHttpErrorKeys: Set<string> = new Set();
   private warnedStructuredDowngradeKeys: Set<string> = new Set();
+  private configSnapshot: Config | null = null;
 
   constructor(runtimeContext?: RuntimeContext) {
     this.runtimeContext = runtimeContext || getRuntimeContext();
     this.workspaceRoot = this.runtimeContext.workspaceRoot || null;
+  }
+
+  private async ensureConfigSnapshot(): Promise<Config> {
+    if (this.configSnapshot) {
+      return this.configSnapshot;
+    }
+    const config = await getConfiguration();
+    this.configSnapshot = config;
+    return config;
   }
 
   private async requestDiffResponseText(
@@ -418,7 +429,7 @@ export class TranslatorService {
   }
 
   public async initializeOpenAIClient() {
-    const { currentVendor } = await getConfiguration();
+    const { currentVendor } = await this.ensureConfigSnapshot();
     const { apiEndpoint, apiKey, apiKeyEnvVarName, model, timeout } = currentVendor;
     
     let finalApiKey = apiKey;
@@ -511,7 +522,7 @@ export class TranslatorService {
       throw new Error(error);
     }
 
-    const config = await getConfiguration();
+    const config = await this.ensureConfigSnapshot();
     const { currentVendorName, currentVendor, customPrompts } = config;
     const debug = !!config.debug;
     // Ensure temperature has a sensible default if undefined
@@ -641,7 +652,7 @@ export class TranslatorService {
       throw new Error(error);
     }
 
-    const config = await getConfiguration();
+    const config = await this.ensureConfigSnapshot();
     const { currentVendorName, currentVendor, customPrompts } = config;
     const debug = !!config.debug;
     const {

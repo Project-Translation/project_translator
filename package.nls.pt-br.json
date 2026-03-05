@@ -11,8 +11,6 @@
   "command.addFileToTranslationSettings": "Tradutor de Projetos: Adicionar à Tradução do Projeto",
   "command.addFolderToTranslationSettings": "Tradutor de Projetos: Adicionar à Tradução do Projeto",
   "command.exportSettingsToConfig": "Tradutor de Projetos: Exportar Configurações para project.translation.json",
-  "command.enableAutoTranslateOnOpen": "Tradutor de Projetos: Habilitar Tradução Automática ao Abrir Pasta",
-  "command.disableAutoTranslateOnOpen": "Tradutor de Projetos: Desabilitar Tradução Automática ao Abrir Pasta",
   "config.sourceFolder.description": "Caminho da pasta de origem, usado para armazenar o último caminho de pasta de tradução selecionado",
   "config.targetFolders.description": "Configuração da pasta de destino da tradução, múltiplas pastas de destino e seus respectivos idiomas podem ser especificados",
   "config.translationIntervalDays.description": "Intervalo de dias para tradução, se o arquivo de destino existir e tiver sido traduzido dentro deste número de dias, será ignorado",

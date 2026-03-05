@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.19.5",
+    "version": "0.19.6",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -74,14 +74,6 @@
             {
                 "command": "extension.exportSettingsToConfig",
                 "title": "%command.exportSettingsToConfig%"
-            },
-            {
-                "command": "extension.enableAutoTranslateOnOpen",
-                "title": "%command.enableAutoTranslateOnOpen%"
-            },
-            {
-                "command": "extension.disableAutoTranslateOnOpen",
-                "title": "%command.disableAutoTranslateOnOpen%"
             }
         ],
         "menus": {
@@ -869,12 +861,14 @@
         "prompts/**",
         "l10n/**",
         "package.nls*.json",
+        "CHANGELOG.md",
         "project.translation.schema.json",
         "resources/project-translator.png",
         "README.md",
         "LICENSE"
     ],
     "scripts": {
+        "changelog": "node scripts/generate-changelog.mjs",
         "build": "npm run esbuild:extension -- --production && npm run esbuild:cli -- --production",
         "compile": "npm run esbuild:extension && npm run esbuild:cli",
         "compile-tsc": "tsc -p ./",
@@ -889,11 +883,11 @@
         "test": "npm run compile-tsc && node ./out/test/simpleRunner.js",
         "test-compile": "tsc -p ./",
         "pretest": "npm run test-compile",
-        "pack:npm": "npm run build && npm pack",
+        "pack:npm": "npm run changelog && npm run build && npm pack",
         "publish:npm": "node scripts/npm-publish.mjs",
-        "publish:vscode": "npm run build && vsce publish --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
-        "publish:ovsx": "node scripts/ovsx-publish.mjs",
-        "package": "npm run build && vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
+        "publish:vscode": "npm run changelog && npm run build && vsce publish --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
+        "publish:ovsx": "npm run changelog && node scripts/ovsx-publish.mjs",
+        "package": "npm run changelog && npm run build && vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
         "deps:install": "npm install --no-fund",
         "update": "npm update --no-fund"
     },
