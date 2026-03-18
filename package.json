@@ -2,7 +2,7 @@
     "name": "project-translator",
     "displayName": "Project Translator",
     "description": "%description.description%",
-    "version": "0.19.6",
+    "version": "0.20.0",
     "publisher": "techfetch-dev",
     "icon": "resources/project-translator.png",
     "categories": [
@@ -872,6 +872,7 @@
         "build": "npm run esbuild:extension -- --production && npm run esbuild:cli -- --production",
         "compile": "npm run esbuild:extension && npm run esbuild:cli",
         "compile-tsc": "tsc -p ./",
+        "prepare": "node scripts/setup-git-hooks.mjs",
         "watch-tsc": "tsc -watch -p ./",
         "watch": "npm run watch:extension",
         "watch:extension": "npm run esbuild:extension -- --watch",

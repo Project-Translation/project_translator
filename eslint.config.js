@@ -23,6 +23,8 @@ module.exports = [
         Buffer: 'readonly',
         NodeJS: 'readonly',
         describe: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
         it: 'readonly',
         suite: 'readonly',
         test: 'readonly'

@@ -4,12 +4,11 @@ import * as os from 'os'
 import * as path from 'path'
 import type { RuntimeContext } from '../../runtime/types'
 import { TranslationRunner } from '../../app/translationRunner'
-
-const configModule = require('../../config/config') as Record<string, unknown>
-const translatorServiceModule = require('../../services/translatorService') as Record<string, unknown>
-const fileProcessorModule = require('../../services/fileProcessor') as Record<string, unknown>
-const translationDatabaseModule = require('../../translationDatabase') as Record<string, unknown>
-const analyticsModule = require('../../services/analytics') as Record<string, unknown>
+import * as configModule from '../../config/config'
+import * as translatorServiceModule from '../../services/translatorService'
+import * as fileProcessorModule from '../../services/fileProcessor'
+import * as translationDatabaseModule from '../../translationDatabase'
+import * as analyticsModule from '../../services/analytics'
 
 const CANCELLATION_CODE = 'E_OPERATION_CANCELLED'
 
