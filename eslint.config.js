@@ -46,6 +46,6 @@ module.exports = [
     }
   },
   {
-    ignores: ['out/**', 'dist/**', '**/*.d.ts']
+    ignores: ['**/out/**', '**/dist/**', '**/*.d.ts']
   }
 ];

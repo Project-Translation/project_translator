@@ -1,14 +1,13 @@
-name: Publish Extension
+name: Publish Packages
 
 on:
   push:
-    # 仅在 main 分支 push 时检查 / 创建 tag 并发布
     branches:
       - main
 
 jobs:
   create-tag:
-    name: Create tag from package.json version if needed
+    name: Create tag from root package version if needed
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
@@ -18,16 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # 需要完整历史和已有 tags
           fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # 使用 GitHub Actions 提供的最新 LTS 版本
-          node-version: 'lts/*'
+          node-version: "lts/*"
 
-      - name: Read version from package.json
+      - name: Read version from root package.json
         id: get_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
@@ -38,13 +35,10 @@ jobs:
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           TAG="v$VERSION"
-          echo "当前 package.json 版本: $VERSION"
           git fetch --tags
           if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "已存在 tag: $TAG，跳过创建。"
             echo "created_tag=false" >> $GITHUB_OUTPUT
           else
-            echo "不存在 tag: $TAG，将创建并推送。"
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git tag "$TAG"
@@ -52,33 +46,53 @@ jobs:
             echo "created_tag=true" >> $GITHUB_OUTPUT
           fi
 
-  publish:
-    # 当本次 push 创建了新 tag 时，发布到 VS Marketplace
+  validate:
+    name: Build and test workspaces
     needs: create-tag
     if: needs.create-tag.outputs.created_tag == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # 使用 GitHub Actions 提供的最新 LTS 版本
-          node-version: 'lts/*'
-          
+          node-version: "lts/*"
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Build
         run: npm run build
-        
-      - name: Package Extension
-        run: npm run package
+
+      - name: Test
+        run: npm run test
+
+  publish-vscode:
+    name: Publish to Visual Studio Marketplace
+    needs:
+      - create-tag
+      - validate
+    if: needs.create-tag.outputs.created_tag == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package extension
+        run: npm run package:extension
 
       - name: Locate VSIX package
         id: locate_vsix
         run: |
-          VSIX_FILE=$(ls -1 project-translator-*.vsix | head -n 1)
+          VSIX_FILE=$(ls -1 packages/vscode-extension/project-translator-*.vsix | head -n 1)
           if [ -z "$VSIX_FILE" ]; then
             echo "::error::No VSIX package found."
             exit 1
@@ -93,19 +107,18 @@ jobs:
           set -e
           if [ "$EXIT_CODE" -ne 0 ]; then
             if grep -qi "already exists" publish.log; then
-              echo "VS Marketplace 已存在相同版本，视为幂等成功。"
+              echo "VS Marketplace already has this version; treating as success."
               exit 0
             fi
             exit "$EXIT_CODE"
           fi
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
   publish-ovsx:
-    # 当本次 push 创建了新 tag 时，发布到 Open VSX
-    needs: create-tag
-    if: needs.create-tag.outputs.created_tag == 'true'
     name: Publish to Open VSX
+    needs:
+      - create-tag
+      - validate
+    if: needs.create-tag.outputs.created_tag == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -113,20 +126,39 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # 使用 GitHub Actions 提供的最新 LTS 版本
-          node-version: 'lts/*'
+          node-version: "lts/*"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
-      - name: Package Extension
-        run: npm run package
+      - name: Package extension
+        run: npm run package:extension
 
       - name: Publish to Open VSX Registry
         env:
           OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
-        run: |
-          npm run publish:ovsx
+        run: npm run publish:ovsx
+
+  publish-cli:
+    name: Publish CLI to npm
+    needs:
+      - create-tag
+      - validate
+    if: needs.create-tag.outputs.created_tag == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish CLI
+        run: npm run publish:npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

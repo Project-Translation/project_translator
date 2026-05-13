@@ -217,19 +217,19 @@ npm run compile
 
 ```bash
 # Default target language: en-us
-npx project-translator translate project --workspace . --config project.translation.json
+npx project-translator-cli translate project --workspace . --config project.translation.json
 
 # Specify target language
-npx project-translator translate project --workspace . --config project.translation.json --lang ja-jp
+npx project-translator-cli translate project --workspace . --config project.translation.json --lang ja-jp
 ```
 
 管理配置：
 
 ```bash
-npx project-translator config list --workspace . --config project.translation.json --json
-npx project-translator config set currentVendor deepseek --workspace . --config project.translation.json
-npx project-translator config schema --workspace .
-npx project-translator config validate --workspace . --config project.translation.json
+npx project-translator-cli config list --workspace . --config project.translation.json --json
+npx project-translator-cli config set currentVendor deepseek --workspace . --config project.translation.json
+npx project-translator-cli config schema --workspace .
+npx project-translator-cli config validate --workspace . --config project.translation.json
 ```
 
 `config schema` 默认将导出 `project.translation.schema.json`。  

@@ -13,13 +13,17 @@ async function runTests() {
         timeout: 10000,
         reporter: 'spec'
     });
+    mocha.suite.emit('pre-require', globalThis, 'global', mocha);
+    (globalThis as typeof globalThis & Record<string, unknown>).suite = globalThis.describe;
+    (globalThis as typeof globalThis & Record<string, unknown>).test = globalThis.it;
+    (globalThis as typeof globalThis & Record<string, unknown>).setup = globalThis.beforeEach;
+    (globalThis as typeof globalThis & Record<string, unknown>).teardown = globalThis.afterEach;
 
     try {
         const testsRoot = path.resolve(__dirname, '.');
         console.log('Looking for tests in:', testsRoot);
         
-        // Run only service tests that don't require VS Code
-            const files = await glob('services/*.test.js', { cwd: testsRoot });
+        const files = await glob('services/*.test.js', { cwd: testsRoot });
         console.log('Found test files:', files);
 
         if (files.length === 0) {

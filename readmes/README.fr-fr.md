@@ -219,19 +219,19 @@ Exécuter la traduction :
 
 ```bash
 # Langue cible par défaut : en-us
-npx project-translator translate project --workspace . --config project.translation.json
+npx project-translator-cli translate project --workspace . --config project.translation.json
 
 # Spécifier la langue cible
-npx project-translator translate project --workspace . --config project.translation.json --lang ja-jp
+npx project-translator-cli translate project --workspace . --config project.translation.json --lang ja-jp
 ```
 
 Gérer la configuration :
 
 ```bash
-npx project-translator config list --workspace . --config project.translation.json --json
-npx project-translator config set currentVendor deepseek --workspace . --config project.translation.json
-npx project-translator config schema --workspace .
-npx project-translator config validate --workspace . --config project.translation.json
+npx project-translator-cli config list --workspace . --config project.translation.json --json
+npx project-translator-cli config set currentVendor deepseek --workspace . --config project.translation.json
+npx project-translator-cli config schema --workspace .
+npx project-translator-cli config validate --workspace . --config project.translation.json
 ```
 
 `config schema` exportera `project.translation.schema.json` par défaut.  

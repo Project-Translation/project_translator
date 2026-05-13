@@ -4,7 +4,7 @@
   "steps": [
     "Enable diffApply in project.translation.json.",
     "Keep backup enabled for important files.",
-    "Run CLI: project-translator translate files --workspace sample.",
+    "Run CLI: project-translator-cli translate files --workspace sample.",
     "Check generated backups after diff edits are applied.",
     "For more details, see the documentation.",
     "Learn more about diff translation best practices in our blog post."

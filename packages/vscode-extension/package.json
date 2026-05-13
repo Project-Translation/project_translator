@@ -1,0 +1,884 @@
+{
+  "name": "project-translator",
+  "displayName": "Project Translator",
+  "description": "%description.description%",
+  "version": "0.20.0",
+  "publisher": "techfetch-dev",
+  "icon": "resources/project-translator.png",
+  "categories": [
+    "Other",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "translation",
+    "localization",
+    "i18n",
+    "internationalization",
+    "multi-language",
+    "ai",
+    "openai",
+    "gpt",
+    "project",
+    "folder",
+    "file",
+    "batch",
+    "automation",
+    "documentation",
+    "markdown",
+    "json",
+    "xml",
+    "language-model-tools"
+  ],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "main": "./out/extension.js",
+  "l10n": "./l10n",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.translateProject",
+        "title": "%command.translateProject%"
+      },
+      {
+        "command": "extension.translateFolders",
+        "title": "%command.translateFolders%"
+      },
+      {
+        "command": "extension.translateFiles",
+        "title": "%command.translateFiles%"
+      },
+      {
+        "command": "extension.pauseTranslation",
+        "title": "%command.pauseTranslation%"
+      },
+      {
+        "command": "extension.resumeTranslation",
+        "title": "%command.resumeTranslation%"
+      },
+      {
+        "command": "extension.cancelTranslation",
+        "title": "%command.cancelTranslation%"
+      },
+      {
+        "command": "extension.addFileToTranslationSettings",
+        "title": "%command.addFileToTranslationSettings%"
+      },
+      {
+        "command": "extension.addFolderToTranslationSettings",
+        "title": "%command.addFolderToTranslationSettings%"
+      },
+      {
+        "command": "extension.exportSettingsToConfig",
+        "title": "%command.exportSettingsToConfig%"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "extension.addFileToTranslationSettings",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "projectTranslator@1"
+        },
+        {
+          "command": "extension.addFolderToTranslationSettings",
+          "when": "resourceScheme == file && explorerResourceIsFolder",
+          "group": "projectTranslator@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "%configuration.title%",
+      "properties": {
+        "projectTranslator.currentVendor": {
+          "type": "string",
+          "default": "deepseek",
+          "description": "%config.currentVendor.description%",
+          "order": 1
+        },
+        "projectTranslator.vendors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "%config.vendor.name.description%",
+                "default": "grok"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "description": "%config.vendor.apiEndpoint.description%",
+                "default": "https://api.x.ai/v1"
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "%config.vendor.apiKey.description%",
+                "default": ""
+              },
+              "apiKeyEnvVarName": {
+                "type": "string",
+                "description": "%config.vendor.apiKeyEnvVarName.description%",
+                "default": ""
+              },
+              "model": {
+                "type": "string",
+                "description": "%config.vendor.model.description%",
+                "default": "grok-2"
+              },
+              "rpm": {
+                "type": "number",
+                "description": "%config.vendor.rpm.description%",
+                "default": 20
+              },
+              "maxTokensPerSegment": {
+                "type": "number",
+                "description": "%config.vendor.maxTokensPerSegment.description%",
+                "default": 1500
+              },
+              "timeout": {
+                "type": "number",
+                "description": "%config.vendor.timeout.description%",
+                "default": 180
+              },
+              "temperature": {
+                "type": "number",
+                "description": "%config.vendor.temperature.description%",
+                "minimum": 0,
+                "maximum": 2,
+                "default": 0.1
+              },
+              "top_p": {
+                "type": "number",
+                "description": "Controls diversity via nucleus sampling: 0.95 is a good default value",
+                "minimum": 0,
+                "maximum": 1,
+                "default": 0.95
+              },
+              "streamMode": {
+                "type": "boolean",
+                "description": "%config.vendor.streamMode.description%",
+                "default": true
+              }
+            },
+            "required": [
+              "name",
+              "apiEndpoint",
+              "model"
+            ]
+          },
+          "default": [
+            {
+              "name": "deepseek",
+              "apiEndpoint": "https://api.deepseek.com/v1",
+              "apiKey": "",
+              "apiKeyEnvVarName": "",
+              "model": "deepseek-chat",
+              "rpm": 20,
+              "maxTokensPerSegment": 3000,
+              "timeout": 300,
+              "temperature": 0.1,
+              "top_p": 0.95,
+              "streamMode": true
+            }
+          ],
+          "description": "%config.vendors.description%",
+          "order": 2
+        },
+        "projectTranslator.systemPromptLanguage": {
+          "type": "string",
+          "enum": [
+            "en",
+            "zh-cn"
+          ],
+          "default": "en",
+          "description": "%config.systemPromptLanguage.description%",
+          "order": 3
+        },
+        "projectTranslator.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug mode to log all OpenAI API requests and responses to output channel",
+          "order": 4
+        },
+        "projectTranslator.logFile": {
+          "type": "object",
+          "default": {
+            "enabled": false,
+            "path": "",
+            "maxSizeKB": 10240,
+            "maxFiles": 5
+          },
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable writing debug logs to file when debug mode is active"
+            },
+            "path": {
+              "type": "string",
+              "default": "",
+              "description": "Custom path for log files (leave empty to use default: workspace/.vscode/project-translator-logs)"
+            },
+            "maxSizeKB": {
+              "type": "number",
+              "default": 10240,
+              "minimum": 1024,
+              "maximum": 102400,
+              "description": "Maximum size of each log file in KB (1MB - 100MB)"
+            },
+            "maxFiles": {
+              "type": "number",
+              "default": 5,
+              "minimum": 1,
+              "maximum": 20,
+              "description": "Maximum number of log files to keep (1-20)"
+            }
+          },
+          "description": "Configuration for debug log files",
+          "order": 5
+        },
+        "projectTranslator.specifiedFiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sourceFile": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "%config.sourceFile.description%"
+                  },
+                  "lang": {
+                    "type": "string",
+                    "enum": [
+                      "en-us",
+                      "ar-ae",
+                      "ar-sa",
+                      "cs-cz",
+                      "da-dk",
+                      "de-de",
+                      "el-gr",
+                      "es-es",
+                      "fi-fi",
+                      "fr-fr",
+                      "he-il",
+                      "hi-in",
+                      "hu-hu",
+                      "id-id",
+                      "it-it",
+                      "ja-jp",
+                      "ko-kr",
+                      "nl-nl",
+                      "no-no",
+                      "pl-pl",
+                      "pt-br",
+                      "ru-ru",
+                      "sv-se",
+                      "th-th",
+                      "tr-tr",
+                      "vi-vn",
+                      "zh-cn",
+                      "zh-hk",
+                      "zh-tw"
+                    ],
+                    "enumDescriptions": [
+                      "English (United States)",
+                      "Arabic (United Arab Emirates)",
+                      "Arabic (Saudi Arabia)",
+                      "Czech (Czech Republic)",
+                      "Danish (Denmark)",
+                      "German (Germany)",
+                      "Greek (Greece)",
+                      "Spanish (Spain)",
+                      "Finnish (Finland)",
+                      "French (France)",
+                      "Hebrew (Israel)",
+                      "Hindi (India)",
+                      "Hungarian (Hungary)",
+                      "Indonesian (Indonesia)",
+                      "Italian (Italy)",
+                      "Japanese (Japan)",
+                      "Korean (Korea)",
+                      "Dutch (Netherlands)",
+                      "Norwegian (Norway)",
+                      "Polish (Poland)",
+                      "Portuguese (Brazil)",
+                      "Russian (Russia)",
+                      "Swedish (Sweden)",
+                      "Thai (Thailand)",
+                      "Turkish (Turkey)",
+                      "Vietnamese (Vietnam)",
+                      "Chinese (China)",
+                      "Chinese (Hong Kong)",
+                      "Chinese (Taiwan)"
+                    ],
+                    "default": "en-us",
+                    "description": "%config.language.description%"
+                  }
+                },
+                "required": [
+                  "path",
+                  "lang"
+                ]
+              },
+              "targetFiles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "%config.targetFiles.description%"
+                    },
+                    "lang": {
+                      "type": "string",
+                      "enum": [
+                        "en-us",
+                        "ar-ae",
+                        "ar-sa",
+                        "cs-cz",
+                        "da-dk",
+                        "de-de",
+                        "el-gr",
+                        "es-es",
+                        "fi-fi",
+                        "fr-fr",
+                        "he-il",
+                        "hi-in",
+                        "hu-hu",
+                        "id-id",
+                        "it-it",
+                        "ja-jp",
+                        "ko-kr",
+                        "nl-nl",
+                        "no-no",
+                        "pl-pl",
+                        "pt-br",
+                        "ru-ru",
+                        "sv-se",
+                        "th-th",
+                        "tr-tr",
+                        "vi-vn",
+                        "zh-cn",
+                        "zh-hk",
+                        "zh-tw"
+                      ],
+                      "enumDescriptions": [
+                        "English (United States)",
+                        "Arabic (United Arab Emirates)",
+                        "Arabic (Saudi Arabia)",
+                        "Czech (Czech Republic)",
+                        "Danish (Denmark)",
+                        "German (Germany)",
+                        "Greek (Greece)",
+                        "Spanish (Spain)",
+                        "Finnish (Finland)",
+                        "French (France)",
+                        "Hebrew (Israel)",
+                        "Hindi (India)",
+                        "Hungarian (Hungary)",
+                        "Indonesian (Indonesia)",
+                        "Italian (Italy)",
+                        "Japanese (Japan)",
+                        "Korean (Korea)",
+                        "Dutch (Netherlands)",
+                        "Norwegian (Norway)",
+                        "Polish (Poland)",
+                        "Portuguese (Brazil)",
+                        "Russian (Russia)",
+                        "Swedish (Sweden)",
+                        "Thai (Thailand)",
+                        "Turkish (Turkey)",
+                        "Vietnamese (Vietnam)",
+                        "Chinese (China)",
+                        "Chinese (Hong Kong)",
+                        "Chinese (Taiwan)"
+                      ],
+                      "description": "%config.targetLanguage.description%"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "lang"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "sourceFile",
+              "targetFiles"
+            ]
+          },
+          "default": [],
+          "description": "%config.specifiedFiles.description%",
+          "order": 5
+        },
+        "projectTranslator.specifiedFolders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sourceFolder": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "%config.sourceFolder.description%"
+                  },
+                  "lang": {
+                    "type": "string",
+                    "enum": [
+                      "en-us",
+                      "ar-ae",
+                      "ar-sa",
+                      "cs-cz",
+                      "da-dk",
+                      "de-de",
+                      "el-gr",
+                      "es-es",
+                      "fi-fi",
+                      "fr-fr",
+                      "he-il",
+                      "hi-in",
+                      "hu-hu",
+                      "id-id",
+                      "it-it",
+                      "ja-jp",
+                      "ko-kr",
+                      "nl-nl",
+                      "no-no",
+                      "pl-pl",
+                      "pt-br",
+                      "ru-ru",
+                      "sv-se",
+                      "th-th",
+                      "tr-tr",
+                      "vi-vn",
+                      "zh-cn",
+                      "zh-hk",
+                      "zh-tw"
+                    ],
+                    "enumDescriptions": [
+                      "English (United States)",
+                      "Arabic (United Arab Emirates)",
+                      "Arabic (Saudi Arabia)",
+                      "Czech (Czech Republic)",
+                      "Danish (Denmark)",
+                      "German (Germany)",
+                      "Greek (Greece)",
+                      "Spanish (Spain)",
+                      "Finnish (Finland)",
+                      "French (France)",
+                      "Hebrew (Israel)",
+                      "Hindi (India)",
+                      "Hungarian (Hungary)",
+                      "Indonesian (Indonesia)",
+                      "Italian (Italy)",
+                      "Japanese (Japan)",
+                      "Korean (Korea)",
+                      "Dutch (Netherlands)",
+                      "Norwegian (Norway)",
+                      "Polish (Poland)",
+                      "Portuguese (Brazil)",
+                      "Russian (Russia)",
+                      "Swedish (Sweden)",
+                      "Thai (Thailand)",
+                      "Turkish (Turkey)",
+                      "Vietnamese (Vietnam)",
+                      "Chinese (China)",
+                      "Chinese (Hong Kong)",
+                      "Chinese (Taiwan)"
+                    ],
+                    "default": "en-us",
+                    "description": "%config.language.description%"
+                  }
+                },
+                "required": [
+                  "path",
+                  "lang"
+                ]
+              },
+              "targetFolders": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "%config.targetFolders.description%"
+                    },
+                    "lang": {
+                      "type": "string",
+                      "enum": [
+                        "en-us",
+                        "ar-ae",
+                        "ar-sa",
+                        "cs-cz",
+                        "da-dk",
+                        "de-de",
+                        "el-gr",
+                        "es-es",
+                        "fi-fi",
+                        "fr-fr",
+                        "he-il",
+                        "hi-in",
+                        "hu-hu",
+                        "id-id",
+                        "it-it",
+                        "ja-jp",
+                        "ko-kr",
+                        "nl-nl",
+                        "no-no",
+                        "pl-pl",
+                        "pt-br",
+                        "ru-ru",
+                        "sv-se",
+                        "th-th",
+                        "tr-tr",
+                        "vi-vn",
+                        "zh-cn",
+                        "zh-hk",
+                        "zh-tw"
+                      ],
+                      "enumDescriptions": [
+                        "English (United States)",
+                        "Arabic (United Arab Emirates)",
+                        "Arabic (Saudi Arabia)",
+                        "Czech (Czech Republic)",
+                        "Danish (Denmark)",
+                        "German (Germany)",
+                        "Greek (Greece)",
+                        "Spanish (Spain)",
+                        "Finnish (Finland)",
+                        "French (France)",
+                        "Hebrew (Israel)",
+                        "Hindi (India)",
+                        "Hungarian (Hungary)",
+                        "Indonesian (Indonesia)",
+                        "Italian (Italy)",
+                        "Japanese (Japan)",
+                        "Korean (Korea)",
+                        "Dutch (Netherlands)",
+                        "Norwegian (Norway)",
+                        "Polish (Poland)",
+                        "Portuguese (Brazil)",
+                        "Russian (Russia)",
+                        "Swedish (Sweden)",
+                        "Thai (Thailand)",
+                        "Turkish (Turkey)",
+                        "Vietnamese (Vietnam)",
+                        "Chinese (China)",
+                        "Chinese (Hong Kong)",
+                        "Chinese (Taiwan)"
+                      ],
+                      "description": "%config.targetLanguage.description%"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "lang"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "sourceFolder",
+              "targetFolders"
+            ]
+          },
+          "default": [],
+          "description": "%config.specifiedFolders.description%",
+          "order": 6
+        },
+        "projectTranslator.translationIntervalDays": {
+          "type": "number",
+          "default": -1,
+          "description": "%config.translationIntervalDays.description%",
+          "order": 7
+        },
+        "projectTranslator.copyOnly": {
+          "type": "object",
+          "properties": {
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "%config.copyOnly.paths.description%"
+            },
+            "extensions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                ".svg"
+              ],
+              "description": "%config.copyOnly.extensions.description%"
+            }
+          },
+          "default": {
+            "paths": [],
+            "extensions": [
+              ".svg"
+            ]
+          },
+          "description": "%config.copyOnly.description%",
+          "order": 8
+        },
+        "projectTranslator.ignore": {
+          "type": "object",
+          "properties": {
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "**/node_modules/**",
+                "**/.git/**",
+                "**/.github/**",
+                "**/.vscode/**",
+                "**/.translation-cache/**",
+                "project.translation.json"
+              ],
+              "description": "%config.ignore.paths.description%"
+            },
+            "extensions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "%config.ignore.extensions.description%"
+            }
+          },
+          "default": {
+            "paths": [
+              "**/node_modules/**",
+              "**/.git/**",
+              "**/.github/**",
+              "**/.vscode/**",
+              "**/.nuxt/**",
+              "**/.next/**"
+            ],
+            "extensions": []
+          },
+          "description": "%config.ignore.description%",
+          "order": 9
+        },
+        "projectTranslator.customPrompts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "%config.customPrompts.description%",
+          "order": 10
+        },
+        "projectTranslator.segmentationMarkers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "default": {
+            "markdown": [
+              "^#\\s",
+              "^##\\s",
+              "^###\\s"
+            ],
+            "html": [
+              "^<h1[^>]*>",
+              "^<h2[^>]*>",
+              "^<h3[^>]*>"
+            ],
+            "javascript": [
+              "^function\\s+\\w+\\(",
+              "^class\\s+\\w+"
+            ],
+            "typescript": [
+              "^function\\s+\\w+\\(",
+              "^class\\s+\\w+",
+              "^interface\\s+\\w+"
+            ],
+            "python": [
+              "^def\\s+\\w+\\(",
+              "^class\\s+\\w+"
+            ],
+            "java": [
+              "^public\\s+(class|interface|enum)\\s+\\w+",
+              "^\\s*public\\s+\\w+\\s+\\w+\\("
+            ],
+            "go": [
+              "^func\\s+\\w+\\(",
+              "^type\\s+\\w+\\s+struct"
+            ],
+            "c#": [
+              "^public\\s+(class|interface|enum)\\s+\\w+",
+              "^\\s*public\\s+\\w+\\s+\\w+\\("
+            ],
+            "php": [
+              "^function\\s+\\w+\\(",
+              "^class\\s+\\w+"
+            ],
+            "ruby": [
+              "^def\\s+\\w+",
+              "^class\\s+\\w+"
+            ],
+            "rust": [
+              "^fn\\s+\\w+",
+              "^struct\\s+\\w+",
+              "^enum\\s+\\w+"
+            ],
+            "swift": [
+              "^func\\s+\\w+",
+              "^class\\s+\\w+",
+              "^struct\\s+\\w+"
+            ],
+            "kotlin": [
+              "^fun\\s+\\w+",
+              "^class\\s+\\w+"
+            ],
+            "plaintext": [
+              "^\\s*$"
+            ]
+          },
+          "description": "%config.segmentationMarkers.description%",
+          "order": 12
+        },
+        "projectTranslator.diffApply": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "⚠️ EXPERIMENTAL: Enable differential translation mode that applies AI-generated edits to existing files. This is an experimental feature and may have stability and compatibility issues. Use with caution in production environments and always backup important files."
+            },
+            "validationLevel": {
+              "type": "string",
+              "enum": [
+                "normal",
+                "strict"
+              ],
+              "default": "normal",
+              "description": "Validation strictness when applying edits"
+            },
+            "autoBackup": {
+              "type": "boolean",
+              "default": true,
+              "description": "Automatically back up target file before applying edits"
+            },
+            "maxOperationsPerFile": {
+              "type": "number",
+              "default": 100,
+              "minimum": 1,
+              "maximum": 10000,
+              "description": "Safety limit for number of edit operations per file"
+            }
+          },
+          "default": {
+            "enabled": false,
+            "validationLevel": "normal",
+            "autoBackup": true,
+            "maxOperationsPerFile": 100
+          },
+          "description": "⚠️ EXPERIMENTAL: Configuration for differential translation (diff-apply) mode. This feature is experimental and may have stability and compatibility issues. Use with caution in production environments.",
+          "order": 13
+        },
+        "projectTranslator.enableMetrics": {
+          "type": "boolean",
+          "default": true,
+          "description": "%config.enableMetrics.description%",
+          "order": 14
+        },
+        "projectTranslator.skipFrontMatterMarkers": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable checking front matter for translation skip markers"
+            },
+            "markers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The front matter key to check"
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "The value that indicates the file should be skipped"
+                  }
+                },
+                "required": [
+                  "key",
+                  "value"
+                ]
+              },
+              "default": [
+                {
+                  "key": "draft",
+                  "value": "true"
+                }
+              ],
+              "description": "List of front matter markers that indicate a file should be skipped from translation"
+            }
+          },
+          "default": {
+            "enabled": false,
+            "markers": [
+              {
+                "key": "draft",
+                "value": "true"
+              }
+            ]
+          },
+          "description": "Configuration for skipping files based on front matter markers",
+          "order": 15
+        }
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Project-Translation/project_translator"
+  },
+  "capabilities": {
+    "virtualWorkspaces": true
+  },
+  "permissions": [
+    "machineId"
+  ],
+  "files": [
+    "out/extension.js",
+    "prompts/**",
+    "l10n/**",
+    "package.nls*.json",
+    "resources/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run compile-tsc && node ./esbuild.extension.config.js --production",
+    "compile": "npm run compile-tsc && node ./esbuild.extension.config.js",
+    "compile-tsc": "tsc -p ./tsconfig.json",
+    "watch-tsc": "tsc -watch -p ./tsconfig.json",
+    "watch": "node ./esbuild.extension.config.js --watch",
+    "lint": "eslint src --ext ts",
+    "package": "npm run build && vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
+    "publish:vscode": "npm run build && vsce publish --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
+    "publish:ovsx": "node scripts/ovsx-publish.mjs"
+  },
+  "devDependencies": {
+    "@project-translator/core": "file:../core"
+  }
+}

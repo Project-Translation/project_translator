@@ -219,19 +219,19 @@ npm run compile
 
 ```bash
 # Standard-Zielsprache: en-us
-npx project-translator translate project --workspace . --config project.translation.json
+npx project-translator-cli translate project --workspace . --config project.translation.json
 
 # Zielsprache angeben
-npx project-translator translate project --workspace . --config project.translation.json --lang ja-jp
+npx project-translator-cli translate project --workspace . --config project.translation.json --lang ja-jp
 ```
 
 Konfiguration verwalten:
 
 ```bash
-npx project-translator config list --workspace . --config project.translation.json --json
-npx project-translator config set currentVendor deepseek --workspace . --config project.translation.json
-npx project-translator config schema --workspace .
-npx project-translator config validate --workspace . --config project.translation.json
+npx project-translator-cli config list --workspace . --config project.translation.json --json
+npx project-translator-cli config set currentVendor deepseek --workspace . --config project.translation.json
+npx project-translator-cli config schema --workspace .
+npx project-translator-cli config validate --workspace . --config project.translation.json
 ```
 
 `config schema` exportiert standardmäßig `project.translation.schema.json`.  

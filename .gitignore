@@ -1,5 +1,6 @@
 node_modules/
 out/
+packages/**/out/
 *.vsix
 .vscode-test/
 .copilot-codeGeneration-instructions*.md
@@ -8,3 +9,4 @@ sample/.translation-logs/
 logs/project-translator.log/
 go-translator/translator
 *.tgz
+packages/cli/*.tgz

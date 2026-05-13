@@ -1,0 +1,22 @@
+{
+  "name": "@project-translator/core",
+  "private": true,
+  "version": "0.20.0",
+  "description": "Shared core for Project Translator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Project-Translation/project_translator"
+  },
+  "main": "./out/index.js",
+  "types": "./src/index.ts",
+  "files": [
+    "out/**"
+  ],
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "compile": "tsc -p ./tsconfig.json",
+    "watch-tsc": "tsc -watch -p ./tsconfig.json",
+    "lint": "eslint src --ext ts",
+    "test": "npm run build && node ./out/test/simpleRunner.js"
+  }
+}

@@ -30,7 +30,7 @@
                     ]
                 }
             ],
-            "detail": "Bundle extension with esbuild"
+            "detail": "Build all monorepo workspaces"
         },
         {
             "label": "watch",
@@ -38,7 +38,7 @@
             "command": "npm",
             "args": [
                 "run",
-                "watch"
+                "watch:extension"
             ],
             "group": "build",
             "isBackground": true,
@@ -59,8 +59,8 @@
                     ],
                     "background": {
                         "activeOnStart": true,
-                        "beginsPattern": "^\\[watch\\] build started$",
-                        "endsPattern": "^\\[watch\\] build finished$"
+                        "beginsPattern": "^\\[watch\\] extension build started$",
+                        "endsPattern": "^\\[watch\\] extension build finished$"
                     }
                 }
             ],
@@ -72,13 +72,15 @@
             "command": "npm",
             "args": [
                 "run",
-                "compile-tsc"
+                "compile",
+                "-w",
+                "packages/vscode-extension"
             ],
             "group": "build",
             "problemMatcher": [
                 "$tsc"
             ],
-            "detail": "Compile TypeScript files (fallback)"
+            "detail": "Compile the VSCode extension workspace"
         },
         {
             "label": "watch-tsc",
@@ -86,34 +88,36 @@
             "command": "npm",
             "args": [
                 "run",
-                "watch-tsc"
+                "watch-tsc",
+                "-w",
+                "packages/vscode-extension"
             ],
             "group": "build",
             "problemMatcher": [
                 "$tsc-watch"
             ],
-            "detail": "Watch TypeScript files for changes (fallback)"
+            "detail": "Watch TypeScript files for the VSCode extension workspace"
         },
         {
-            "label": "publish patch",
+            "label": "publish vscode marketplace",
             "type": "shell",
-            "command": "npx @vscode/vsce publish patch --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+            "command": "npm",
+            "args": [
+                "run",
+                "publish:vscode"
+            ],
             "group": "build",
             "problemMatcher": [],
-            "detail": "Publish Patch VS Code extension"
-        },
-        {
-            "label": "publish minor",
-            "type": "shell",
-            "command": "npx @vscode/vsce publish minor --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
-            "group": "build",
-            "problemMatcher": [],
-            "detail": "Publish Minor VS Code extension"
+            "detail": "Publish the VSCode extension workspace to Marketplace"
         },
         {
             "label": "package vsix",
             "type": "shell",
-            "command": "npx @vscode/vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --dependencies",
+            "command": "npm",
+            "args": [
+                "run",
+                "package:extension"
+            ],
             "group": "build",
             "dependsOn": [
                 "build"
@@ -127,7 +131,9 @@
             "command": "npm",
             "args": [
                 "run",
-                "test-compile"
+                "compile",
+                "-w",
+                "packages/core"
             ],
             "group": "build",
             "problemMatcher": [
@@ -146,7 +152,6 @@
                 "kind": "test",
                 "isDefault": true
             },
-            "dependsOn": "test-compile",
             "problemMatcher": [],
             "detail": "Run all tests"
         },
@@ -159,9 +164,9 @@
                 "128",
                 "-h",
                 "128",
-                "${workspaceFolder}/resources/project-translator.svg",
+                "${workspaceFolder}/packages/vscode-extension/resources/project-translator.svg",
                 "-o",
-                "${workspaceFolder}/resources/project-translator.png"
+                "${workspaceFolder}/packages/vscode-extension/resources/project-translator.png"
             ],
             "group": "build",
             "problemMatcher": [],

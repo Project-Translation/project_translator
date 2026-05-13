@@ -4,7 +4,7 @@
   "steps": [
     "在 project.translation.json 中启用 diffApply。",
     "为重要文件保持备份启用。",
-    "运行 CLI: project-translator translate files --workspace sample。",
+    "运行 CLI: project-translator-cli translate files --workspace sample。",
     "在差异编辑应用后检查生成的备份。",
     "更多详情，请参阅文档。",
     "阅读我们的博客文章，了解更多差异翻译最佳实践。"

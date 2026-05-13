@@ -1,14 +1,17 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { RuntimeConfigProvider } from "../runtime/types";
-import { Config, DEFAULT_VENDOR_CONFIG, VendorConfig } from "./config.types";
 import {
   clearConfigReaderCache,
+  Config,
+  DEFAULT_VENDOR_CONFIG,
+  normalizeConfigData,
+  normalizeEnvVarNameFromVendorName,
   readRawConfigFile,
   resolveConfigPath,
-} from "./config.reader";
-import { normalizeConfigData, normalizeEnvVarNameFromVendorName } from "./config.normalize";
+  RuntimeConfigProvider,
+  VendorConfig,
+} from "@project-translator/core";
 
 const fsp = fs.promises;
 

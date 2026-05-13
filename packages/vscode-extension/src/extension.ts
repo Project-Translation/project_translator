@@ -1,17 +1,24 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { TranslationDatabase } from "./translationDatabase";
-import { FileProcessor } from "./services/fileProcessor";
-import { TranslatorService } from "./services/translatorService";
-import { AnalyticsService } from "./services/analytics";
-import { getConfiguration, exportSettingsToConfigFile, clearConfigurationCache } from "./config/config";
+import {
+    AnalyticsService,
+    clearConfigurationCache,
+    DestFolder,
+    exportSettingsToConfigFile,
+    FileProcessor,
+    getConfiguration,
+    getRuntimeContext,
+    isOperationCancelledError,
+    LogFileManager,
+    OperationCancelledError,
+    setRuntimeContext,
+    TranslationDatabase,
+    TranslationRunner,
+    TranslationRunResult,
+    TranslatorService,
+} from "@project-translator/core";
 import { createVscodeConfigProvider } from "./config/config.vscode";
-import { DestFolder } from "./types/types";
-import { LogFileManager } from "./services/logFileManager";
 import * as fs from "fs";
-import { getRuntimeContext, setRuntimeContext } from "./runtime/context";
-import { OperationCancelledError, isOperationCancelledError } from "./runtime/errors";
-import { TranslationRunner, TranslationRunResult } from "./app/translationRunner";
 
 function localize(id: string, defaultMessage: string): string {
     const result = vscode.l10n.t(id)

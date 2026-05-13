@@ -1,13 +1,13 @@
-const esbuild = require('esbuild');
+const esbuild = require("esbuild");
 
-const production = process.argv.includes('--production');
-const watch = process.argv.includes('--watch');
+const production = process.argv.includes("--production");
+const watch = process.argv.includes("--watch");
 
 const esbuildProblemMatcherPlugin = {
-  name: 'esbuild-problem-matcher-cli',
+  name: "esbuild-problem-matcher-cli",
   setup(build) {
     build.onStart(() => {
-      console.log('[watch] cli build started');
+      console.log("[watch] cli build started");
     });
     build.onEnd((result) => {
       result.errors.forEach(({ text, location }) => {
@@ -15,28 +15,27 @@ const esbuildProblemMatcherPlugin = {
         if (location) {
           console.error(`    ${location.file}:${location.line}:${location.column}:`);
         } else {
-          console.error('    Location information not available');
+          console.error("    Location information not available");
         }
       });
-      console.log('[watch] cli build finished');
+      console.log("[watch] cli build finished");
     });
   },
 };
 
 async function main() {
   const ctx = await esbuild.context({
-    entryPoints: ['src/cli.ts'],
+    entryPoints: ["src/cli.ts"],
     bundle: true,
-    format: 'cjs',
+    format: "cjs",
     minify: production,
     sourcemap: !production,
     sourcesContent: !production,
-    platform: 'node',
-    outfile: 'out/cli.js',
-    logLevel: 'silent',
-    // 优先使用 ESM 入口，避免某些包的 CJS/UMD 入口残留相对 require 导致运行时缺文件
-    mainFields: ['module', 'main'],
-    resolveExtensions: ['.ts', '.js'],
+    platform: "node",
+    outfile: "out/cli.js",
+    logLevel: "silent",
+    mainFields: ["module", "main"],
+    resolveExtensions: [".ts", ".js"],
     plugins: [esbuildProblemMatcherPlugin],
   });
 
@@ -48,7 +47,7 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });

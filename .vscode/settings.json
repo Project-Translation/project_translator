@@ -10,101 +10,101 @@
     "projectTranslator.customPrompts": [
         "1. 如果 Markdown 文件的前置数据（front matter）中 'draft' 设置为 'true'，则应返回无需翻译。",
         "2. 句子中的 './readmes/' 应替换为 './'",
-        "3. 句子中的 './resources/' 应替换为 '../resources/'",
+        "3. 句子中的 './packages/vscode-extension/resources/' 应替换为 '../packages/vscode-extension/resources/'",
     ],
     "projectTranslator.specifiedFiles": [
         {
             "sourceFile": {
-                "path": "l10n/bundle.l10n.json",
+                "path": "packages/vscode-extension/l10n/bundle.l10n.json",
                 "lang": "en-us"
             },
             "targetFiles": [
                 {
-                    "path": "l10n/bundle.l10n.zh-cn.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.zh-cn.json",
                     "lang": "zh-cn"
                 },
                 {
-                    "path": "l10n/bundle.l10n.zh-tw.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.zh-tw.json",
                     "lang": "zh-tw"
                 },
                 {
-                    "path": "l10n/bundle.l10n.ja-jp.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.ja-jp.json",
                     "lang": "ja-jp"
                 },
                 {
-                    "path": "l10n/bundle.l10n.ko-kr.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.ko-kr.json",
                     "lang": "ko-kr"
                 },
                 {
-                    "path": "l10n/bundle.l10n.fr-fr.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.fr-fr.json",
                     "lang": "fr-fr"
                 },
                 {
-                    "path": "l10n/bundle.l10n.de-de.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.de-de.json",
                     "lang": "de-de"
                 },
                 {
-                    "path": "l10n/bundle.l10n.es-es.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.es-es.json",
                     "lang": "es-es"
                 },
                 {
-                    "path": "l10n/bundle.l10n.pt-br.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.pt-br.json",
                     "lang": "pt-br"
                 },
                 {
-                    "path": "l10n/bundle.l10n.ru-ru.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.ru-ru.json",
                     "lang": "ru-ru"
                 },
                 {
-                    "path": "l10n/bundle.l10n.ar-sa.json",
+                    "path": "packages/vscode-extension/l10n/bundle.l10n.ar-sa.json",
                     "lang": "ar-sa"
                 }
             ]
         },
         {
             "sourceFile": {
-                "path": "package.nls.json",
+                "path": "packages/vscode-extension/package.nls.json",
                 "lang": "en-us"
             },
             "targetFiles": [
                 {
-                    "path": "package.nls.zh-cn.json",
+                    "path": "packages/vscode-extension/package.nls.zh-cn.json",
                     "lang": "zh-cn"
                 },
                 {
-                    "path": "package.nls.zh-tw.json",
+                    "path": "packages/vscode-extension/package.nls.zh-tw.json",
                     "lang": "zh-tw"
                 },
                 {
-                    "path": "package.nls.ja-jp.json",
+                    "path": "packages/vscode-extension/package.nls.ja-jp.json",
                     "lang": "ja-jp"
                 },
                 {
-                    "path": "package.nls.ko-kr.json",
+                    "path": "packages/vscode-extension/package.nls.ko-kr.json",
                     "lang": "ko-kr"
                 },
                 {
-                    "path": "package.nls.fr-fr.json",
+                    "path": "packages/vscode-extension/package.nls.fr-fr.json",
                     "lang": "fr-fr"
                 },
                 {
-                    "path": "package.nls.de-de.json",
+                    "path": "packages/vscode-extension/package.nls.de-de.json",
                     "lang": "de-de"
                 },
                 {
-                    "path": "package.nls.es-es.json",
+                    "path": "packages/vscode-extension/package.nls.es-es.json",
                     "lang": "es-es"
                 },
                 {
-                    "path": "package.nls.pt-br.json",
+                    "path": "packages/vscode-extension/package.nls.pt-br.json",
                     "lang": "pt-br"
                 },
                 {
-                    "path": "package.nls.ru-ru.json",
+                    "path": "packages/vscode-extension/package.nls.ru-ru.json",
                     "lang": "ru-ru"
                 },
                 {
-                    "path": "package.nls.ar-sa.json",
+                    "path": "packages/vscode-extension/package.nls.ar-sa.json",
                     "lang": "ar-sa"
                 }
             ]

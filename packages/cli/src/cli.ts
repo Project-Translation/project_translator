@@ -5,23 +5,26 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { randomUUID } from "crypto";
-import { TranslationRunner } from "./app/translationRunner";
-import { resolveConfigPath, getConfigurationFromProjectFile, clearConfigReaderCache } from "./config/config.reader";
 import {
+  clearConfigReaderCache,
+  Config,
   getByKeyPath,
+  getConfigurationFromProjectFile,
+  getProjectTranslationSchemaJson,
+  isOperationCancelledError,
   loadRawConfigForEdit,
+  logMessage,
+  OperationCancelledError,
   parseValueByType,
   removeByKeyPath,
+  resolveConfigPath,
+  RuntimeContext,
   saveRawConfigCanonical,
   setByKeyPath,
-} from "./config/config.writer";
-import { getProjectTranslationSchemaJson } from "./config/config.schema";
-import { validateProjectTranslationConfig } from "./config/config.schema.validator";
-import { setRuntimeContext } from "./runtime/context";
-import { isOperationCancelledError, OperationCancelledError } from "./runtime/errors";
-import { RuntimeContext } from "./runtime/types";
-import { logMessage } from "./runtime/logging";
-import { Config } from "./config/config.types";
+  setRuntimeContext,
+  TranslationRunner,
+  validateProjectTranslationConfig,
+} from "@project-translator/core";
 
 interface GlobalOptions {
   workspace?: string;
@@ -310,7 +313,7 @@ function mergeGlobalOptions<TOptions extends GlobalOptions>(options: TOptions, c
 
 async function main(): Promise<void> {
   const program = new Command();
-  program.name("project-translator").description("Project Translator CLI").version("0.0.0-dev");
+  program.name("project-translator-cli").description("Project Translator CLI").version("0.0.0-dev");
 
   const translate = addTranslateOptions(program.command("translate").description("执行翻译任务"));
 

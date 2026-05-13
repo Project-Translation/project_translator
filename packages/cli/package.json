@@ -1,0 +1,33 @@
+{
+  "name": "project-translator-cli",
+  "version": "0.20.0",
+  "description": "Project Translator CLI",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Project-Translation/project_translator"
+  },
+  "license": "MIT",
+  "bin": {
+    "project-translator-cli": "./out/cli.js"
+  },
+  "files": [
+    "out/cli.js",
+    "prompts/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run compile-tsc && node ./esbuild.cli.config.js --production",
+    "compile": "npm run compile-tsc && node ./esbuild.cli.config.js",
+    "compile-tsc": "tsc -p ./tsconfig.json",
+    "watch-tsc": "tsc -watch -p ./tsconfig.json",
+    "watch": "node ./esbuild.cli.config.js --watch",
+    "lint": "eslint src --ext ts",
+    "test": "npm run compile-tsc && node ./out/test/simpleRunner.js",
+    "pack:npm": "npm run build && npm pack",
+    "publish:npm": "node scripts/npm-publish.mjs"
+  },
+  "devDependencies": {
+    "@project-translator/core": "file:../core"
+  }
+}
