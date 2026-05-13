@@ -2,8 +2,14 @@
 
 > Generated automatically from git history. Only the latest 10 versions are kept.
 
+## v0.20.0 (2026-03-18)
+
+- feat(config): 更新 ESLint 配置和依赖版本 (8225f9c)
+- ci(publish): 改进 tag 检查和 VSIX 发布逻辑 (1cadeba)
+
 ## v0.19.6 (2026-03-05)
 
+- docs: 更新 CHANGELOG.md 以包含 v0.19.6 版本信息 (f9f0f04)
 - refactor: 移除自动翻译打开命令并添加 changelog 生成脚本 (9a7a576)
 - ci(publish): 增加 VSCE 发布参数 (a4f5a37)
 
@@ -46,8 +52,4 @@
 ## v0.18.1 (2026-01-29)
 
 - feat: enhance translation output sanitization with start/end tag handling (595ad92)
-
-## v0.18.0 (2026-01-18)
-
-- fix #3: refactor: improve translation output handling and sanitization (680849b)
 

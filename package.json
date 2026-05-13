@@ -30,7 +30,7 @@
     "update": "npm update --no-fund"
   },
   "dependencies": {
-    "axios": "^1.13.5",
+    "axios": "^1.16.0",
     "bindings": "^1.5.0",
     "commander": "^14.0.1",
     "diff": "^5.2.2",

@@ -4,11 +4,11 @@
   "description": "Project Translator CLI",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Project-Translation/project_translator"
+    "url": "git+https://github.com/Project-Translation/project_translator.git"
   },
   "license": "MIT",
   "bin": {
-    "project-translator-cli": "./out/cli.js"
+    "project-translator-cli": "out/cli.js"
   },
   "files": [
     "out/cli.js",
