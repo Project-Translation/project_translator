@@ -41,6 +41,17 @@
 | Publish Extension | VSCE / OVSX |
 | Publish CLI | `npm publish --workspace packages/cli --access public` |
 
+## GitHub Actions npm Publish
+
+| Item | Requirement |
+| --- | --- |
+| Authentication mode | npm Trusted Publisher |
+| GitHub Actions permission | `id-token: write` |
+| Secret requirement | 不使用 `NPM_TOKEN` |
+| Registry setup | `actions/setup-node` 配置 `registry-url: https://registry.npmjs.org` |
+
+当前仓库的 npm 发布流程依赖 GitHub Actions OIDC 与 npm Trusted Publisher 绑定关系完成鉴权。若重新引入 `NODE_AUTH_TOKEN` / `NPM_TOKEN` 旧流程，Trusted Publisher 不会生效。
+
 ## Rollback
 
 | Target | Rollback Strategy |

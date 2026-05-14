@@ -146,6 +146,9 @@ jobs:
       - validate
     if: needs.create-tag.outputs.created_tag == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -160,5 +163,3 @@ jobs:
 
       - name: Publish CLI
         run: npm run publish:npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
