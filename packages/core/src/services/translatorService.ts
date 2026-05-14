@@ -10,6 +10,7 @@ import { shouldWarnZeroEstimatedOutputTokens } from "./translationWarnings";
 import { formatVendorHttpErrorForPopup } from "./vendorHttpError";
 import { stripReasoningFromModelOutput } from "./translationReasoningStripper";
 import { formatRawErrorForLog } from "./errorLog";
+import { diagnoseOpenAIAbortError } from "./openaiAbortDiagnosis";
 import { CancellationTokenLike, RuntimeContext } from "../runtime/types";
 import { getRuntimeContext } from "../runtime/context";
 // no fs usage here
@@ -1187,6 +1188,17 @@ ${change.replace}
         // 记录事实：触发的是“无消息超时”，不是猜测
         logMessage(`❌ ${inactivityAbortReason.message}`, "error");
         throw inactivityAbortReason;
+      }
+      const abortDiagnosis = diagnoseOpenAIAbortError(err, {
+        elapsedMs: Date.now() - startTime,
+        configuredTimeoutMs: streamIdleTimeoutMs,
+        cancellationRequested: !!cancellationToken?.isCancellationRequested,
+        vendorName: currentVendorName,
+        model,
+        sourcePath,
+      });
+      if (abortDiagnosis) {
+        logMessage(`❌ [ABORT DIAGNOSIS] ${abortDiagnosis}`, "error");
       }
       throw err;
     } finally {

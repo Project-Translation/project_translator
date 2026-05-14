@@ -280,8 +280,7 @@ function addCommonOptions(command: Command): Command {
 function addTranslateOptions(command: Command): Command {
   return addCommonOptions(command).option(
     "-l, --lang <lang>",
-    "仅翻译指定目标语言（默认：en-us）",
-    "en-us"
+    "仅翻译指定目标语言"
   );
 }
 

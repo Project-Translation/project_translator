@@ -461,4 +461,29 @@ describe('CLI mode', () => {
     expect(parsed.cancelled).to.eq(false)
     expect(parsed.fatalError).to.contain('No translation tasks configured')
   })
+
+  it('does not implicitly filter translate targets to en-us when --lang is omitted', () => {
+    const configPath = path.join(workspaceRoot, 'project.translation.json')
+    writeJsonFile(configPath, {
+      currentVendor: 'deepseek',
+      vendors: [{ name: 'deepseek', apiEndpoint: 'https://api.deepseek.com/v1', apiKey: 'test-key', model: 'deepseek-chat' }],
+      specifiedFiles: [
+        {
+          sourceFile: { path: 'docs/en.md', lang: 'en-us' },
+          targetFiles: [{ path: 'docs/zh.md', lang: 'zh-cn' }],
+        },
+      ],
+      specifiedFolders: [],
+    })
+
+    const result = runCli(
+      ['translate', 'project', '--json', '--workspace', workspaceRoot],
+      workspaceRoot
+    )
+
+    expect(result.stdout).to.not.contain('未找到目标语言 "en-us"')
+    expect(result.stderr).to.not.contain('未找到目标语言 "en-us"')
+    expect(result.status).to.eq(1)
+    expect(result.stdout).to.contain('"fatalError": "Source file not found: docs/en.md"')
+  })
 })
