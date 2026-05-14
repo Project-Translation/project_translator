@@ -1,6 +1,6 @@
 {
   "name": "project-translator-cli",
-  "version": "0.20.0",
+  "version": "0.21.1",
   "description": "Project Translator CLI",
   "repository": {
     "type": "git",

@@ -41,9 +41,9 @@ flowchart LR
 | `npm run test` | 运行 `core` 与 `cli` 测试 |
 | `npm run lint` | 检查全部包 |
 | `npm run package:extension` | 生成 VSIX |
-| `npm run publish:vscode` | 发布 VSCode 扩展 |
+| `npm run publish:vscode` | 自动递增版本并发布 VSCode 扩展 |
 | `npm run publish:ovsx` | 发布 Open VSX 扩展 |
-| `npm run publish:npm` | 发布 CLI 到 npm |
+| `npm run publish:npm` | 自动递增版本并发布 CLI 到 npm |
 | `npm pack -w packages/cli` | 生成 CLI npm tarball |
 
 ## CLI Usage

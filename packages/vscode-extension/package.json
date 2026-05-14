@@ -2,7 +2,7 @@
   "name": "project-translator",
   "displayName": "Project Translator",
   "description": "%description.description%",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "publisher": "techfetch-dev",
   "icon": "resources/project-translator.png",
   "categories": [
@@ -875,7 +875,7 @@
     "watch": "node ./esbuild.extension.config.js --watch",
     "lint": "eslint src --ext ts",
     "package": "npm run build && vsce package --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
-    "publish:vscode": "npm run build && vsce publish --baseContentUrl https://github.com/Project-Translation/project_translator/tree/main --no-dependencies",
+    "publish:vscode": "node scripts/vscode-publish.mjs",
     "publish:ovsx": "node scripts/ovsx-publish.mjs"
   },
   "devDependencies": {

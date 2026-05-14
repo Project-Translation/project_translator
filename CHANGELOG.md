@@ -2,6 +2,15 @@
 
 > Generated automatically from git history. Only the latest 10 versions are kept.
 
+## v0.21.1 (2026-05-14)
+
+- feat(core): 添加 OpenAI 中止错误诊断功能 (8c93b5a)
+- chore(release): 更新版本号并优化 npm 发布脚本 (7820a79)
+- build(repo): 重构为 npm workspaces monorepo (09c3565)
+- chore(deps): fix dependabot alerts (d33b87f)
+- fix(deps): override lodash to 4.18.1 (CVE-2026-4800) (9780b28)
+- build(workflow): 使用 npm ci 替代 npm install 以提高构建一致性 (1f0a15e)
+
 ## v0.20.0 (2026-03-18)
 
 - feat(config): 更新 ESLint 配置和依赖版本 (8225f9c)
@@ -48,8 +57,4 @@
 ## v0.18.2 (2026-01-31)
 
 - chore: bump version to 0.18.2 and update configuration parameters (e1b8ab9)
-
-## v0.18.1 (2026-01-29)
-
-- feat: enhance translation output sanitization with start/end tag handling (595ad92)
 
